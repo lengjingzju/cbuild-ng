@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) ljson(native cache psysroot): unselect
+
+PACKAGE_NAME     = ljson
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 7b2f6ae6cf7011e94682b073669f5ff8f69095cc
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/lengjingzju/json.git
+SRC_REV          = $(VERSION)
+MAKE_FILE        = $(shell pwd)/patch/Makefile
+
+CACHE_BUILD      = y
+CACHE_CHECKSUM  += $(MAKE_FILE)
+CACHE_DEPENDS    = none
+
+MAKES_FLAGS      = INS_PREFIX=$(INS_PREFIX) OBJ_PREFIX=$(OBJ_PREFIX) -C $(SRC_PATH)
+
+define do_prepend
+	cp -f $(MAKE_FILE) $(SRC_PATH)
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) tcpdump(native cache psysroot): unselect libpcap
+
+PACKAGE_NAME     = tcpdump
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 4.99.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://www.tcpdump.org/release/$(SRC_NAME)
+SRC_MD5          = 491aeb15c1c72d59b9288a5a6953e8a9
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
+
+define do_append
+	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION); \
+	ln -sf tcpdump $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

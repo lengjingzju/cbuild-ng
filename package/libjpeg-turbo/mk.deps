@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libjpeg-turbo(native cache psysroot): unselect
+
+PACKAGE_NAME     = libjpeg-turbo
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.1.5.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 33f72421d83ba487ff7b5c81e8765185
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DWITH_SIMD=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

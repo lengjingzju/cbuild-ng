@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) iw(native cache psysroot): unselect libnl
+
+PACKAGE_NAME     = iw
+SEARCH_HDRS      = libnl3
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 5.19
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://cdn.kernel.org/pub/software/network/iw/$(SRC_NAME)
+SRC_MD5          = fd17ca2dd5f160a5d9e5fd3f8a69f416
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+MAKES_FLAGS      = PREFIX=$(INS_TOPDIR) MANDIR=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

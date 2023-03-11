@@ -1,0 +1,24 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) ncurses(native cache psysroot): ncurses-native unselect
+
+PACKAGE_NAME     = ncurses
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 6.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://ftp.gnu.org/pub/gnu/ncurses/$(SRC_NAME)
+SRC_MD5          = 5a62487b5d4ac6b132fe2bf9f8fad29b
+
+CACHE_BUILD      = y
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --disable-stripping --with-shared --with-static --enable-widec
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

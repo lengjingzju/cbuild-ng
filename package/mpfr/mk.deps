@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) mpfr(native cache psysroot): unselect gmp
+
+PACKAGE_NAME     = mpfr
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 4.2.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://ftp.gnu.org/gnu/mpfr/$(SRC_NAME)
+SRC_MD5          = a25091f337f25830c16d2054d74b5af7
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-gmp=$(DEP_PREFIX)/usr
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

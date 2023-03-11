@@ -1,0 +1,28 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) abseil-cpp(native cache psysroot release): unselect
+
+PACKAGE_NAME     = abseil-cpp
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 20230125.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/abseil/abseil-cpp/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 19821db7aeb34315500e0fd5f0d9d399
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DCMAKE_CXX_STANDARD=11 -DABSL_PROPAGATE_CXX_STD=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+release:
+	@

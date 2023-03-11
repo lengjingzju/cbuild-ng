@@ -1,0 +1,104 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) gcc(cache psysroot): unselect gmp mpfr mpc isl
+
+PACKAGE_NAME     = gcc
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = $(shell $(MACHINE_SCRIPT) gcc_version)
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://ftp.gnu.org/gnu/gcc/gcc-$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 73bafd0af874439dcdb9fc063b6fb069
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-gmp=$(DEP_PREFIX)/usr \
+                   --with-mpfr=$(DEP_PREFIX)/usr \
+                   --with-mpc=$(DEP_PREFIX)/usr \
+                   --with-isl=$(DEP_PREFIX)/usr
+
+ifneq ($(CROSS_COMPILE), )
+GLIBC_SYSROOT    = $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot)
+AUTOTOOLS_FLAGS += --with-build-sysroot=$(GLIBC_SYSROOT) \
+                   --with-toolexeclibdir=$(GLIBC_SYSROOT)/lib
+endif
+
+AUTOTOOLS_FLAGS += --enable-languages=c,c++ \
+                   --enable-shared \
+                   --enable-threads=posix \
+                   --enable-checking=release
+
+AUTOTOOLS_FLAGS += $(shell $(MACHINE_SCRIPT) gcc_arch_option)
+
+AUTOTOOLS_FLAGS += --disable-bootstrap \
+                   --disable-multilib \
+                   --enable-multiarch
+
+AUTOTOOLS_FLAGS += --enable-nls \
+                   --without-included-gettext \
+                   --enable-clocale=gnu \
+                   --enable-lto \
+                   --enable-linker-build-id \
+                   --enable-gnu-unique-object \
+                   --enable-libstdcxx-debug \
+                   --enable-libstdcxx-time=yes
+
+ifeq ($(CROSS_COMPILE), )
+
+.PHONY: all clean install psysroot
+
+all clean install psysroot:
+	@
+
+else
+
+define do_prepend
+	sed -i 's@print-multi-os-directory@print-multi-directory@g' \
+		`find $(SRC_PATH) -name configure -o -name configure.ac -o -name Makefile.in | xargs`
+endef
+
+define do_append
+	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/cpp $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)*; \
+	ln -sf g++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++; \
+	for bin in c++ g++ gcc gcc-ar gcc-nm gcc-ranlib; do \
+		if [ -e $(INS_TOPDIR)$(INS_SUBDIR)/bin/$${bin} ]; then \
+			ln -sf $${bin} $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)$${bin}; \
+		fi; \
+	done; \
+	ln -sf $(CROSS_COMPILE)gcc $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)gcc-$(VERSION)
+endef
+
+define do_compile
+	set -e; \
+	$(if $(SRC_URLS),$(call do_fetch),true); \
+	mkdir -p $(OBJ_PREFIX); \
+	$(if $(do_prepend),$(call do_prepend),true); \
+	cd $(OBJ_PREFIX) && $(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) \
+		--prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT); \
+	rm -rf $(INS_TOPDIR) && $(MAKES) all-host $(LOGOUTPUT) && $(MAKES) install-host $(LOGOUTPUT); \
+	$(if $(do_append),$(call do_append),true); \
+	set +e
+endef
+
+ifeq ($(INSTALL_OPTION), release)
+define do_install
+	install -d $(INS_PREFIX); \
+	flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
+endef
+else
+define do_install
+	true
+endef
+endif
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+endif

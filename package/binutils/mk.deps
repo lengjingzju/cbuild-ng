@@ -1,0 +1,56 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) binutils(cache psysroot): unselect gmp mpfr mpc isl
+
+PACKAGE_NAME     = binutils
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.40
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://ftp.gnu.org/gnu/binutils/$(SRC_NAME)
+SRC_MD5          = 007b59bd908a737c06e5a8d3d2c737eb
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-gmp=$(DEP_PREFIX)/usr \
+                   --with-mpfr=$(DEP_PREFIX)/usr \
+                   --with-mpc=$(DEP_PREFIX)/usr \
+                   --with-isl=$(DEP_PREFIX)/usr
+
+ifneq ($(CROSS_COMPILE), )
+CROSS_TARGET     = $(shell $(MACHINE_SCRIPT) cross_target)
+GLIBC_SYSROOT    = $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot)
+AUTOTOOLS_FLAGS += --with-build-sysroot=$(GLIBC_SYSROOT)
+endif
+
+AUTOTOOLS_FLAGS += --disable-bootstrap \
+                   --disable-multilib
+
+ifeq ($(CROSS_COMPILE), )
+
+.PHONY: all clean install psysroot
+
+all clean install psysroot:
+	@
+
+else
+
+define do_append
+	mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc; \
+	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd; \
+	ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd; \
+	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd; \
+	ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+endif

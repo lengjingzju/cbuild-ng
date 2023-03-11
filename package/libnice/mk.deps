@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libnice(native cache psysroot): unselect openssl glib
+
+PACKAGE_NAME     = libnice
+SEARCH_HDRS      = openssl glib-2.0
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.1.21
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://libnice.freedesktop.org/releases/$(SRC_NAME)
+SRC_MD5          = fe43ff9ed4db2ecbb2d480c670bee855
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = meson
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,27 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) uvc-gadget(cache psysroot): unselect
+
+PACKAGE_NAME     = uvc-gadget
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 0.3.0
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(PACKAGE_NAME)
+SRC_URL          = git://git.ideasonboard.org/$(SRC_NAME).git
+SRC_TAG          = v$(VERSION)
+PATCH_FOLDER     = $(shell pwd)/patch
+
+CACHE_BUILD      = y
+CACHE_CHECKSUM  += $(PATCH_FOLDER)
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = meson
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

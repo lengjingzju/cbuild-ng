@@ -1,0 +1,24 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) gmp(native cache psysroot): unselect
+
+PACKAGE_NAME     = gmp
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 6.2.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://ftp.gnu.org/gnu/gmp/$(SRC_NAME)
+SRC_MD5          = 0b82665c4a92fd2ade7440c13fcaa42b
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

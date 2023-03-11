@@ -1,0 +1,25 @@
+From c2ac7775ed74f53aba70341661f5e2b028f64e9f Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Sat, 4 Mar 2023 13:45:32 +0800
+Subject: [PATCH 1/4] bzip2: Remove test target
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index f8a1772..3e76d41 100644
+--- a/Makefile
++++ b/Makefile
+@@ -35,7 +35,7 @@ OBJS= blocksort.o  \
+       decompress.o \
+       bzlib.o
+ 
+-all: libbz2.a bzip2 bzip2recover test
++all: libbz2.a bzip2 bzip2recover
+ 
+ bzip2: libbz2.a bzip2.o
+ 	$(CC) $(CFLAGS) $(LDFLAGS) -o bzip2 bzip2.o -L. -lbz2
+-- 
+2.17.1
+

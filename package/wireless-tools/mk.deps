@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) wireless-tools(native cache psysroot): unselect
+
+PACKAGE_NAME     = wireless-tools
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 29
+SRC_DIR          = $(subst -,_,$(PACKAGE_NAME)).$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://hewlettpackard.github.io/wireless-tools/$(SRC_NAME)
+SRC_MD5          = e06c222e186f7cc013fd272d023710cb
+PATCH_FOLDER     = $(shell pwd)/patch
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+CACHE_CHECKSUM  += $(PATCH_FOLDER)
+
+MAKES_FLAGS      = PREFIX=$(INS_TOPDIR) INSTALL_INC=$(INS_TOPDIR)/usr/include INSTALL_MAN=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
+MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
+
+define do_prepend
+	sed -i '/ldconfig/ d' $(SRC_PATH)/Makefile
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

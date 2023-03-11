@@ -1,0 +1,3 @@
+MOD_NAME = hello_sub
+
+include $(ENV_MAKE_DIR)/inc.mod.mk

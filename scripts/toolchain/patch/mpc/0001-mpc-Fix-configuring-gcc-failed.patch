@@ -1,0 +1,24 @@
+From 4ae03c1afe7119fe8ca496321d9888515a5f49c8 Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Fri, 16 Dec 2022 18:38:55 +0800
+Subject: [PATCH] mpc: Fix configuring gcc failed
+
+---
+ src/mpc.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/mpc.h b/src/mpc.h
+index c7071f3..da5a8f1 100644
+--- a/src/mpc.h
++++ b/src/mpc.h
+@@ -22,6 +22,7 @@ along with this program. If not, see http://www.gnu.org/licenses/ .
+ #define __MPC_H
+ 
+ #include <stdint.h>
++#include <stdio.h>
+ #include "gmp.h"
+ #include "mpfr.h"
+ 
+-- 
+2.17.1
+

@@ -1,0 +1,27 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) x265(native cache psysroot): unselect
+
+PACKAGE_NAME     = x265
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 3.5
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(PACKAGE_NAME)
+SRC_URL          = https://bitbucket.org/multicoreware/$(PACKAGE_NAME)_git.git
+SRC_TAG          = $(VERSION)
+SRC_PATH         = $(WORKDIR)/$(SRC_DIR)/source
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-fPIC"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

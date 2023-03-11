@@ -1,0 +1,56 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) gdb(cache psysroot): unselect gmp mpfr mpc isl
+
+PACKAGE_NAME     = gdb
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 13.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://ftp.gnu.org/gnu/gdb/$(SRC_NAME)
+SRC_MD5          = 4aaad768ff2585464173c091947287ec
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-gmp=$(DEP_PREFIX)/usr \
+                   --with-mpfr=$(DEP_PREFIX)/usr \
+                   --with-mpc=$(DEP_PREFIX)/usr \
+                   --with-isl=$(DEP_PREFIX)/usr \
+                   --with-libgmp-prefix=$(DEP_PREFIX)/usr
+
+AUTOTOOLS_FLAGS += --disable-bootstrap \
+                   --disable-multilib \
+                   gl_cv_c_multiarch=yes \
+                   --enable-lto
+
+ifeq ($(CROSS_COMPILE), )
+
+.PHONY: all clean install psysroot
+
+all clean install psysroot:
+	@
+
+else
+
+ifeq ($(INSTALL_OPTION), release)
+define do_install
+	install -d $(INS_PREFIX); \
+	flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
+endef
+else
+define do_install
+	true
+endef
+endif
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+endif

@@ -1,0 +1,27 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) freetype(native cache psysroot): unselect libpng zlib bzip2 harfbuzz-without-freetype
+
+PACKAGE_NAME     = freetype
+SEARCH_HDRS      = zlib libpng16 bzip2 harfbuzz
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.13.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://download.savannah.gnu.org/releases/freetype/$(SRC_NAME)
+SRC_MD5          = fe73327ebbf0b629f3ad24be656d59de
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-zlib=yes --with-bzip2=yes --with-png=yes --with-bzip2=yes --with-harfbuzz=yes
+AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config BZIP2_CFLAGS="-I$(DEP_PREFIX)/usr/include" BZIP2_LIBS="-L$(DEP_PREFIX)/usr/lib -lbz2"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,8 @@
+#DEPS(mk.deps) test-hello-sub(nocache): ?linux
+
+PACKAGE_NAME     = test-hello-sub
+COMPILE_TOOL     = kbuild
+MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-mod/test-hello-sub
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+include $(ENV_MAKE_DIR)/inc.rule.mk

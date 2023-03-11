@@ -1,0 +1,49 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) rootfs(nocache): finally
+
+PACKAGE_NAME     = rootfs
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
+FAKEROOT_DIR    ?= $(ENV_CROSS_ROOT)/fakeroot
+
+.PHONY: all clean install prepare_packages strip_elfs
+
+all: | prepare_packages strip_elfs
+	@echo "Build $(PACKAGE_NAME) Done."
+
+clean:
+	@echo "Clean $(PACKAGE_NAME) Done."
+
+install:
+	@
+
+prepare_packages:
+	@rm -rf $(FAKEROOT_DIR)
+	@echo "Install Packages:"
+	@echo "----------------------------------------"
+	@mkdir -p $(FAKEROOT_DIR)
+	@make -s -C $(ENV_TOP_DIR) PRECMD= CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_release_targets
+ifneq ($(ENV_BUILD_TOOL), )
+	@echo "    glibc from $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot)"
+	@$(SYSROOT_SCRIPT) release $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot) $(FAKEROOT_DIR)
+endif
+	@echo "----------------------------------------"
+
+strip_elfs:
+	@echo "Strip ELFs ..."
+	@rm -rf $(FAKEROOT_DIR)/include/* $(FAKEROOT_DIR)/usr/include/* $(FAKEROOT_DIR)/usr/local/include/*
+	@libs=$$(find $(FAKEROOT_DIR) -name "*.a" -o -name "*.la"); \
+	if [ ! -z "$${libs}" ]; then \
+		rm -rf $${libs}; \
+	fi
+	@elfs=$$(find $(FAKEROOT_DIR) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+	if [ ! -z "$${elfs}" ]; then \
+		$(STRIP) -s $${elfs}; \
+	fi

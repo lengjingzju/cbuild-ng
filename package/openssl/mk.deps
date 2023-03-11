@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) openssl(native cache psysroot): unselect
+
+PACKAGE_NAME     = openssl
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.1.1t
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://ftp.openssl.org/source/$(SRC_NAME)
+SRC_MD5          = 1cfee919e0eac6be62c88c5ae8bcd91e
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+define do_compile
+	$(call do_fetch); \
+	cd $(WORKDIR)/$(SRC_DIR) && ./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) \
+		$(if $(CROSS_COMPILE),--cross-compile-prefix='') $(LOGOUTPUT); \
+	sed -i 's/ -m64//g' Makefile; \
+	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT)
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,29 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) alsa-utils(native cache psysroot): unselect alsa-lib
+
+PACKAGE_NAME     = alsa-utils
+SEARCH_HDRS      = alsa
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.2.8
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = http://www.alsa-project.org/files/pub/utils/$(SRC_NAME)
+SRC_MD5          = 51175f5cd413daf7009a80684c65113d
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-udev-rules-dir=$(INS_TOPDIR)/lib/udev/rules.d
+AUTOTOOLS_FLAGS += --with-systemdsystemunitdir=$(INS_TOPDIR)/lib/systemd/system
+AUTOTOOLS_FLAGS += --disable-alsamixer --disable-xmlto --disable-rst2man
+AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" CPPFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,26 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libpng(native cache psysroot): unselect zlib
+
+PACKAGE_NAME     = libpng
+SEARCH_HDRS      = zlib
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.6.39
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://nchc.dl.sourceforge.net/project/libpng/libpng16/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = aa1ae92e172417039bda072b702f6326
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = CFLAGS="$(call link_hdrs)" CPPFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

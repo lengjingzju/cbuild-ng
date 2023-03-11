@@ -1,0 +1,24 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libiconv(native cache psysroot): unselect
+
+PACKAGE_NAME     = libiconv
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.17
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://ftp.gnu.org/gnu/libiconv/$(SRC_NAME)
+SRC_MD5          = d718cd5a59438be666d1575855be72c3
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

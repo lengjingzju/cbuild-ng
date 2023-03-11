@@ -1,0 +1,34 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) alsa-plugins(native cache psysroot): unselect alsa-lib
+
+PACKAGE_NAME     = alsa-plugins
+SEARCH_HDRS      = alsa
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.2.7.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = http://www.alsa-project.org/files/pub/plugins/$(SRC_NAME)
+SRC_MD5          = 8fb7e05b84c87f30655a8997a9a983d1
+INS_SUBDIR       =
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
+AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" CPPFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+AUTOTOOLS_FLAGS += --libdir=$(INS_TOPDIR)/usr/lib --datarootdir=$(INS_TOPDIR)/usr/share
+
+define do_prepend
+	cd $(SRC_PATH) && autoreconf; \
+	sed -i 's@ln -s \$$(ALSA_GCONF_DIR)/\$$\$$i .@ln -sf ../../../usr/share/alsa/alsa.conf.d/\$$\$$i .@g' `grep -rl 'ln -s \$$(ALSA_GCONF_DIR)/\$$\$$i .' $(SRC_PATH) | xargs` $(SRC_PATH)/configure
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,24 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) json-c(native cache psysroot): unselect
+
+PACKAGE_NAME     = json-c
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.16-20220414
+SRC_DIR          = $(PACKAGE_NAME)-$(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.gz
+SRC_URL          = http://github.com/json-c/json-c/archive/refs/tags/$(SRC_NAME)
+SRC_MD5          = 4f3288a5f14e0e6abe914213f41234e0
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

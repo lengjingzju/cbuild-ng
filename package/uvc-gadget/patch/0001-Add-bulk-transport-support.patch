@@ -1,0 +1,87 @@
+From 0dacb67fc4d39743fe0ee7f2871bbdea6b5b33bc Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Fri, 3 Feb 2023 15:40:18 +0800
+Subject: [PATCH] Add bulk transport support
+
+---
+ include/uvcgadget/configfs.h |  1 +
+ lib/uvc.c                    |  4 +++-
+ src/main.c                   | 10 +++++++++-
+ 3 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/include/uvcgadget/configfs.h b/include/uvcgadget/configfs.h
+index e5a7efa..054051e 100644
+--- a/include/uvcgadget/configfs.h
++++ b/include/uvcgadget/configfs.h
+@@ -100,6 +100,7 @@ struct uvc_function_config {
+ 
+ 	struct uvc_function_config_control control;
+ 	struct uvc_function_config_streaming streaming;
++	unsigned int max_payload_size;
+ };
+ 
+ struct uvc_function_config *configfs_parse_uvc_function(const char *function);
+diff --git a/lib/uvc.c b/lib/uvc.c
+index 747cd65..f130332 100644
+--- a/lib/uvc.c
++++ b/lib/uvc.c
+@@ -173,7 +173,9 @@ uvc_fill_streaming_control(struct uvc_device *dev,
+ 		break;
+ 	}
+ 
+-	ctrl->dwMaxPayloadTransferSize = dev->fc->streaming.ep.wMaxPacketSize;
++	ctrl->dwMaxPayloadTransferSize = dev->fc->max_payload_size ? \
++					 dev->fc->max_payload_size : \
++					 dev->fc->streaming.ep.wMaxPacketSize;
+ 	ctrl->bmFramingInfo = 3;
+ 	ctrl->bPreferedVersion = 1;
+ 	ctrl->bMaxVersion = 1;
+diff --git a/src/main.c b/src/main.c
+index cec622a..faa9e88 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -9,6 +9,7 @@
+ 
+ #include <signal.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <unistd.h>
+ 
+ #include "config.h"
+@@ -25,6 +26,7 @@ static void usage(const char *argv0)
+ {
+ 	fprintf(stderr, "Usage: %s [options] <uvc device>\n", argv0);
+ 	fprintf(stderr, "Available options are\n");
++	fprintf(stderr, " -p max_payload_size	Set dwMaxPayloadTransferSize\n");
+ #ifdef HAVE_LIBCAMERA
+ 	fprintf(stderr, " -c <index|id> libcamera camera name\n");
+ #endif
+@@ -76,11 +78,16 @@ int main(int argc, char *argv[])
+ 	struct uvc_stream *stream = NULL;
+ 	struct video_source *src = NULL;
+ 	struct events events;
++	unsigned int max_payload_size = 0;
+ 	int ret = 0;
+ 	int opt;
+ 
+-	while ((opt = getopt(argc, argv, "c:d:i:s:k:h")) != -1) {
++	while ((opt = getopt(argc, argv, "p:c:d:i:s:k:h")) != -1) {
+ 		switch (opt) {
++		case 'p':
++			max_payload_size = atoi(optarg);
++			break;
++
+ #ifdef HAVE_LIBCAMERA
+ 		case 'c':
+ 			camera = optarg;
+@@ -117,6 +124,7 @@ int main(int argc, char *argv[])
+ 		printf("Failed to identify function configuration\n");
+ 		return 1;
+ 	}
++	fc->max_payload_size = max_payload_size;
+ 
+ 	if (cap_device != NULL && img_path != NULL) {
+ 		printf("Both capture device and still image specified\n");
+-- 
+2.17.1
+

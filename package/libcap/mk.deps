@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libcap(native cache psysroot): unselect
+
+PACKAGE_NAME     = libcap
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.67
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/$(SRC_NAME)
+SRC_MD5          = 06333f4301657298890fd8d6f1fb4793
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+MAKES_FLAGS      = -C $(SRC_PATH) FAKEROOT=$(INS_TOPDIR) lib=lib
+MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) BUILD_CC=gcc)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

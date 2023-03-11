@@ -1,0 +1,29 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) glib(native cache psysroot): unselect libffi zlib pcre2
+
+PACKAGE_NAME     = glib
+SEARCH_HDRS      = libffi zlib pcre2
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.75.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://download.gnome.org/sources/glib/$(shell echo $(VERSION) | sed -E 's/([0-9]+).([0-9]+).([0-9]+)/\1.\2/g')/$(SRC_NAME)
+SRC_MD5          = 2255253ed0794b99d19b7f61c7628929
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = meson
+
+define do_prepend
+	sed -i "s@^gdb_install_dir = join_paths.*@gdb_install_dir = join_paths(glib_datadir, 'gdb', 'auto-load')@g" $(SRC_PATH)/glib/meson.build
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

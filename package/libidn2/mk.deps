@@ -1,0 +1,29 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libidn2(native cache psysroot): unselect libiconv libunistring
+
+PACKAGE_NAME     = libidn2
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.3.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://ftp.gnu.org/gnu/libidn/$(SRC_NAME)
+SRC_MD5          = a12109804fc9c5d7fb31f068c66655b8
+
+AUTOTOOLS_FLAGS  = --with-libiconv-prefix=$(DEP_PREFIX)/usr \
+                   --with-libunistring-prefix=$(DEP_PREFIX)/usr \
+                   --without-included-libunistring
+AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,24 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) exfat-utils(native cache psysroot): unselect
+
+PACKAGE_NAME     = exfat-utils
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.3.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/relan/exfat/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = f8928571b152455e828ca0bd42af8b73
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

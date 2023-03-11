@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libffi(native cache psysroot): unselect
+
+PACKAGE_NAME     = libffi
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.4.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/libffi/libffi/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 0da1a5ed7786ac12dcbaf0d499d8a049
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = enable_multi_os_directory=no
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

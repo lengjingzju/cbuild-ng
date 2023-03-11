@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) cbuild(native release):
+
+PACKAGE_NAME  = cbuild
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+
+.PHONY: all clean install release
+
+all:
+	@echo "Build $(PACKAGE_NAME) Done."
+
+clean:
+	@echo "Clean $(PACKAGE_NAME) Done."
+
+include $(ENV_MAKE_DIR)/inc.ins.mk
+
+INSTALL_TOFILE_config =  $(ENV_CFG_ROOT)/.config /usr/include/$(PACKAGE_NAME)
+INSTALL_TOFILE_header =  $(ENV_CFG_ROOT)/config.h /usr/include/$(PACKAGE_NAME).h
+install: install_tofile_config install_tofile_header
+
+release:
+	@
+

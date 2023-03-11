@@ -1,0 +1,7 @@
+#DEPS(mk.deps) test-app2(nocache native): test-app1
+
+PACKAGE_NAME     = test-app2
+MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-app/test-app2
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+include $(ENV_MAKE_DIR)/inc.rule.mk

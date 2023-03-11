@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) icu(native cache psysroot): unselect zlib
+
+PACKAGE_NAME     = icu
+SEARCH_HDRS      = zlib
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 72.1
+SRC_DIR          = $(PACKAGE_NAME)-release-$(subst .,-,$(VERSION))
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/unicode-org/icu/archive/refs/tags/release-$(subst .,-,$(VERSION)).tar.gz
+SRC_MD5          = cbfd3e149b3afbae7c992dad3e704a0d
+SRC_PATH         = $(WORKDIR)/$(SRC_DIR)/icu4c/source
+CFG_PATH         = $(OBJ_PREFIX)/icu-cfg
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --disable-samples --disable-tests
+AUTOTOOLS_FLAGS += --with-cross-build=$(CFG_PATH) PKG_CONFIG=pkg-config
+
+define do_prepend
+	mkdir -p $(CFG_PATH) && cd $(CFG_PATH) && $(SRC_PATH)/runConfigureICU Linux/gcc $(LOGOUTPUT) && make $(LOGOUTPUT)
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

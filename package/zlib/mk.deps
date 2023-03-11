@@ -1,0 +1,28 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) zlib(native cache psysroot): unselect
+
+PACKAGE_NAME     = zlib
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = zip
+VERSION          = 1.2.13
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).zip
+SRC_URL          = http://www.zlib.net/zlib1213.zip
+SRC_MD5          = 9cb22b7d2aa208b61f5850c04bebda58
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+define do_prepend
+cd $(OBJ_PREFIX) && \
+	$(SRC_PATH)/configure --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(LOGOUTPUT)
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,74 @@
+
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" version="1.1" width="528.4484252929688" height="334.8000183105469">
+          <text x='20' y='30' fill='blue'>INCDEPS Statement for Classic Build</text>
+            <defs>
+              <style type="text/css">svg {
+          background-color: #fff; }
+
+        .root text,
+        .root tspan {
+          font: 12px Arial; }
+
+        .root path {
+          fill-opacity: 0;
+          stroke-width: 2px;
+          stroke: #000; }
+
+        .root circle {
+          fill: #6b6659;
+          stroke-width: 2px;
+          stroke: #000; }
+
+        .anchor text, .any-character text {
+          fill: #fff; }
+
+        .anchor rect, .any-character rect {
+          fill: #6b6659; }
+
+        .escape text, .charset-escape text, .literal text {
+          fill: #000; }
+
+        .escape rect, .charset-escape rect {
+          fill: #bada55; }
+
+        .literal rect {
+          fill: #dae9e5; }
+
+        .charset .charset-box {
+          fill: #cbcbba; }
+
+        .subexp .subexp-label tspan,
+        .charset .charset-label tspan,
+        .match-fragment .repeat-label tspan {
+          font-size: 10px; }
+
+        .repeat-label {
+          cursor: help; }
+
+        .subexp .subexp-label tspan,
+        .charset .charset-label tspan {
+          dominant-baseline: text-after-edge; }
+
+        .subexp .subexp-box {
+          stroke: #908c83;
+          stroke-dasharray: 6,2;
+          stroke-width: 2px;
+          fill-opacity: 0; }
+
+        .quote {
+          fill: #908c83; }
+        </style>
+            </defs>
+            <metadata>
+              <rdf:rdf>
+                <cc:license rdf:about="http://creativecommons.org/licenses/by/3.0/">
+                  <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction"></cc:permits>
+                  <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution"></cc:permits>
+                  <cc:requires rdf:resource="http://creativecommons.org/ns#Notice"></cc:requires>
+                  <cc:requires rdf:resource="http://creativecommons.org/ns#Attribution"></cc:requires>
+                  <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks"></cc:permits>
+                </cc:license>
+              </rdf:rdf>
+            </metadata>
+          <desc>Created with Snap</desc><g class="root" transform="matrix(1,0,0,1,15,10)"><g class="regexp match" transform="matrix(1,0,0,1,10,0)"><path d="M78.0250015258789,163.60000019073487H103.025M177.7203125,163.60000019073487H202.7203M224.05779961853028,163.60000019073487H249.0578M323.7531125,163.60000019073487H368.7531"></path><g class="match-fragment literal" transform="matrix(1,0,0,1,0,151.8)"><g class="label"><rect width="78.0250015258789" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>#INCDEPS</tspan><tspan class="quote">”</tspan></text></g></g><g class="match-fragment" transform="matrix(1,0,0,1,88.025,141.8)"><path d="M0,21.800000190734863q10,0 10,-10v-1.8000001907348633q0,-10 10,-10h64.6953125q10,0 10,10v1.8000001907348633q0,10 10,10M15,21.800000190734863q-10,0 -10,10v1.8000001907348633q0,10 10,10h74.6953125q10,0 10,-10v-1.8000001907348633q0,-10 -10,-10M99.6953125,36.80000019073486l5,-5m-5,5l-5,-5"></path><g class="escape" transform="matrix(1,0,0,1,15,10)"><g class="label"><rect width="74.6953125" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan>white space</tspan></text></g></g></g><g class="match-fragment literal" transform="matrix(1,0,0,1,202.7203,151.8)"><g class="label"><rect width="21.337499618530273" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>:</tspan><tspan class="quote">”</tspan></text></g></g><g class="match-fragment" transform="matrix(1,0,0,1,234.0578,141.8)"><path d="M0,21.800000190734863q10,0 10,-10v-1.8000001907348633q0,-10 10,-10h64.6953125q10,0 10,10v1.8000001907348633q0,10 10,10M15,21.800000190734863q-10,0 -10,10v1.8000001907348633q0,10 10,10h74.6953125q10,0 10,-10v-1.8000001907348633q0,-10 -10,-10M99.6953125,36.80000019073486l5,-5m-5,5l-5,-5"></path><g class="escape" transform="matrix(1,0,0,1,15,10)"><g class="label"><rect width="74.6953125" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan>white space</tspan></text></g></g></g><g class="match-fragment subexp" transform="matrix(1,0,0,1,348.7531,0)"><rect rx="3" ry="3" class="subexp-box" transform="matrix(1,0,0,1,0,11.2)" width="129.6953125" height="303.6000061035156"></rect><text x="0" y="0" class="subexp-label" transform="matrix(1,0,0,1,0,11.2)"><tspan>group #1: Subdirs</tspan></text><g class="regexp match match-fragment" transform="matrix(1,0,0,1,10,21.2)"><path d="M10,142.4000045776367q-10,0 -10,10v121.20000169277193q0,10 10,10h84.6953125q10,0 10,-10v-121.20000169277193q0,-10 -10,-10M104.6953125,157.4000045776367l5,-5m-5,5l-5,-5"></path><g class="charset" transform="matrix(1,0,0,1,10,0)"><rect rx="3" ry="3" class="charset-box" transform="matrix(1,0,0,1,0,11.2)" width="84.6953125" height="262.40000915527344"></rect><text x="0" y="0" class="charset-label" transform="matrix(1,0,0,1,0,11.2)"><tspan>One of:</tspan></text><g transform="matrix(1,0,0,1,5,16.2)"><g class="charset-escape" transform="matrix(1,0,0,1,0,0)"><g class="label"><rect width="74.6953125" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan>white space</tspan></text></g></g><g class="charset-escape" transform="matrix(1,0,0,1,18.9414,28.6)"><g class="label"><rect width="36.8125" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan>word</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,26.6789,57.2)"><g class="label"><rect width="21.337499618530273" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>\</tspan><tspan class="quote">”</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,26.3477,85.8)"><g class="label"><rect width="22" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>-</tspan><tspan class="quote">”</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,26.6789,114.4)"><g class="label"><rect width="21.337499618530273" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>.</tspan><tspan class="quote">”</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,26.6789,143)"><g class="label"><rect width="21.337499618530273" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>/</tspan><tspan class="quote">”</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,25.0102,171.6)"><g class="label"><rect width="24.675000190734863" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>$</tspan><tspan class="quote">”</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,26.3414,200.2)"><g class="label"><rect width="22.012499809265137" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>{</tspan><tspan class="quote">”</tspan></text></g></g><g class="literal" transform="matrix(1,0,0,1,26.3414,228.8)"><g class="label"><rect width="22.012499809265137" height="23.600000381469727" rx="3" ry="3"></rect><text x="0" y="0" transform="matrix(1,0,0,1,5,16.8)"><tspan class="quote">“</tspan><tspan>}</tspan><tspan class="quote">”</tspan></text></g></g></g></g></g></g></g><path d="M10,163.60000019073487H0M463.4484125,163.60000019073487H498.44842529296875"></path><circle cx="0" cy="163.60000019073487" r="5"></circle><circle cx="498.44842529296875" cy="163.60000019073487" r="5"></circle></g></svg>
+

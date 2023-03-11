@@ -1,0 +1,28 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libcap-ng(native cache psysroot): unselect
+
+PACKAGE_NAME     = libcap-ng
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.8.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/stevegrubb/libcap-ng/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 297aacdca53629b26ce37e078f479c78
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+define do_prepend
+	cd $(SRC_PATH) && ./autogen.sh
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

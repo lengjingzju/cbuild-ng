@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) cjson(native cache psysroot): unselect
+
+PACKAGE_NAME     = cjson
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.7.15
+SRC_DIR          = cJSON-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://github.com/DaveGamble/cJSON/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 921b4bcb401aa604dc632fdb1c8dbdea
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DENABLE_CJSON_UTILS=ON -DENABLE_CJSON_TEST=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

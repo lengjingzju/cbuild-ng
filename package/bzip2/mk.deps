@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) bzip2(native cache psysroot): unselect
+
+PACKAGE_NAME     = bzip2
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.0.8
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = http://sourceware.org/pub/bzip2/$(SRC_NAME)
+SRC_MD5          = 67e051268d0c475ea773822f7500d0e5
+PATCH_FOLDER     = $(shell pwd)/patch
+
+CACHE_BUILD      = y
+CACHE_CHECKSUM  += $(PATCH_FOLDER)
+CACHE_DEPENDS    = none
+
+MAKES_FLAGS      = -C $(WORKDIR)/$(SRC_DIR) PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
+MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
+PMAKES           = $(MAKES) -f Makefile-libbz2_so
+
+define do_compile
+	set -e; \
+	$(call do_fetch); \
+	$(if $(PATCH_FOLDER),$(call do_patch),true); \
+	rm -rf $(INS_TOPDIR) && $(PMAKES) $(LOGOUTPUT) && $(PMAKES) $(LOGOUTPUT) install && \
+		$(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \
+	set +e
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

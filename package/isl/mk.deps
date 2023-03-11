@@ -1,0 +1,26 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) isl(native cache psysroot): unselect gmp
+
+PACKAGE_NAME     = isl
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.25
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://libisl.sourceforge.io/$(SRC_NAME)
+SRC_MD5          = 69cee1cb1db3a5a6856095958ee1ff6c
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-gmp-prefix=$(DEP_PREFIX)/usr
+AUTOTOOLS_FLAGS += LDFLAGS="$(call link_libs)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,35 @@
+From 1b13c433e7b661d93cded9f6c9d948ae34247214 Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Sat, 4 Mar 2023 13:46:37 +0800
+Subject: [PATCH 2/4] bzip2: Fix wrong symbol links
+
+---
+ Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3e76d41..eeb3c89 100644
+--- a/Makefile
++++ b/Makefile
+@@ -90,14 +90,14 @@ install: bzip2 bzip2recover
+ 	cp -f libbz2.a $(PREFIX)/lib
+ 	chmod a+r $(PREFIX)/lib/libbz2.a
+ 	cp -f bzgrep $(PREFIX)/bin/bzgrep
+-	ln -s -f $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzegrep
+-	ln -s -f $(PREFIX)/bin/bzgrep $(PREFIX)/bin/bzfgrep
++	ln -s -f bzgrep $(PREFIX)/bin/bzegrep
++	ln -s -f bzgrep $(PREFIX)/bin/bzfgrep
+ 	chmod a+x $(PREFIX)/bin/bzgrep
+ 	cp -f bzmore $(PREFIX)/bin/bzmore
+-	ln -s -f $(PREFIX)/bin/bzmore $(PREFIX)/bin/bzless
++	ln -s -f bzmore $(PREFIX)/bin/bzless
+ 	chmod a+x $(PREFIX)/bin/bzmore
+ 	cp -f bzdiff $(PREFIX)/bin/bzdiff
+-	ln -s -f $(PREFIX)/bin/bzdiff $(PREFIX)/bin/bzcmp
++	ln -s -f bzdiff $(PREFIX)/bin/bzcmp
+ 	chmod a+x $(PREFIX)/bin/bzdiff
+ 	cp -f bzgrep.1 bzmore.1 bzdiff.1 $(PREFIX)/man/man1
+ 	chmod a+r $(PREFIX)/man/man1/bzgrep.1
+-- 
+2.17.1
+

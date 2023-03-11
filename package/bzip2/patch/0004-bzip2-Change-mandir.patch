@@ -1,0 +1,61 @@
+From 62ff7043b7b8a6109f0f5ca149cbfd31a3047d14 Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Sat, 4 Mar 2023 13:49:38 +0800
+Subject: [PATCH 4/4] bzip2: Change mandir
+
+---
+ Makefile | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index eeb3c89..01707bb 100644
+--- a/Makefile
++++ b/Makefile
+@@ -72,8 +72,8 @@ test: bzip2
+ install: bzip2 bzip2recover
+ 	if ( test ! -d $(PREFIX)/bin ) ; then mkdir -p $(PREFIX)/bin ; fi
+ 	if ( test ! -d $(PREFIX)/lib ) ; then mkdir -p $(PREFIX)/lib ; fi
+-	if ( test ! -d $(PREFIX)/man ) ; then mkdir -p $(PREFIX)/man ; fi
+-	if ( test ! -d $(PREFIX)/man/man1 ) ; then mkdir -p $(PREFIX)/man/man1 ; fi
++	if ( test ! -d $(PREFIX)/share/man ) ; then mkdir -p $(PREFIX)/share/man ; fi
++	if ( test ! -d $(PREFIX)/share/man/man1 ) ; then mkdir -p $(PREFIX)/share/man/man1 ; fi
+ 	if ( test ! -d $(PREFIX)/include ) ; then mkdir -p $(PREFIX)/include ; fi
+ 	cp -f bzip2 $(PREFIX)/bin/bzip2
+ 	cp -f bzip2 $(PREFIX)/bin/bunzip2
+@@ -83,8 +83,8 @@ install: bzip2 bzip2recover
+ 	chmod a+x $(PREFIX)/bin/bunzip2
+ 	chmod a+x $(PREFIX)/bin/bzcat
+ 	chmod a+x $(PREFIX)/bin/bzip2recover
+-	cp -f bzip2.1 $(PREFIX)/man/man1
+-	chmod a+r $(PREFIX)/man/man1/bzip2.1
++	cp -f bzip2.1 $(PREFIX)/share/man/man1
++	chmod a+r $(PREFIX)/share/man/man1/bzip2.1
+ 	cp -f bzlib.h $(PREFIX)/include
+ 	chmod a+r $(PREFIX)/include/bzlib.h
+ 	cp -f libbz2.a $(PREFIX)/lib
+@@ -99,14 +99,14 @@ install: bzip2 bzip2recover
+ 	cp -f bzdiff $(PREFIX)/bin/bzdiff
+ 	ln -s -f bzdiff $(PREFIX)/bin/bzcmp
+ 	chmod a+x $(PREFIX)/bin/bzdiff
+-	cp -f bzgrep.1 bzmore.1 bzdiff.1 $(PREFIX)/man/man1
+-	chmod a+r $(PREFIX)/man/man1/bzgrep.1
+-	chmod a+r $(PREFIX)/man/man1/bzmore.1
+-	chmod a+r $(PREFIX)/man/man1/bzdiff.1
+-	echo ".so man1/bzgrep.1" > $(PREFIX)/man/man1/bzegrep.1
+-	echo ".so man1/bzgrep.1" > $(PREFIX)/man/man1/bzfgrep.1
+-	echo ".so man1/bzmore.1" > $(PREFIX)/man/man1/bzless.1
+-	echo ".so man1/bzdiff.1" > $(PREFIX)/man/man1/bzcmp.1
++	cp -f bzgrep.1 bzmore.1 bzdiff.1 $(PREFIX)/share/man/man1
++	chmod a+r $(PREFIX)/share/man/man1/bzgrep.1
++	chmod a+r $(PREFIX)/share/man/man1/bzmore.1
++	chmod a+r $(PREFIX)/share/man/man1/bzdiff.1
++	echo ".so man1/bzgrep.1" > $(PREFIX)/share/man/man1/bzegrep.1
++	echo ".so man1/bzgrep.1" > $(PREFIX)/share/man/man1/bzfgrep.1
++	echo ".so man1/bzmore.1" > $(PREFIX)/share/man/man1/bzless.1
++	echo ".so man1/bzdiff.1" > $(PREFIX)/share/man/man1/bzcmp.1
+ 
+ clean: 
+ 	rm -f *.o libbz2.a bzip2 bzip2recover \
+-- 
+2.17.1
+

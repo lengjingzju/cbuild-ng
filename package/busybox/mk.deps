@@ -1,0 +1,53 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) busybox(cache psysroot defconfig menuconfig): unselect
+
+PACKAGE_NAME     = busybox
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.36.0
+SRC_DIR          = busybox-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = http://www.busybox.net/downloads/$(SRC_NAME)
+SRC_MD5          = 835e3ac11e8a5ca13756eb1573719566
+
+CACHE_BUILD      = y
+CACHE_CHECKSUM  += $(shell pwd)/config/$(CFG_NAME)
+CACHE_DEPENDS    = none
+
+CFG_NAME         = default_defconfig
+MAKES_FLAGS      = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
+
+define do_prepend
+	if [ ! -f $(OBJ_PREFIX)/.config ]; then \
+		cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME); \
+		mkdir -p $(OBJ_PREFIX); \
+		$(MAKES) $(CFG_NAME) $(LOGOUTPUT); \
+	fi
+endef
+
+define do_append
+	rm -f $(INS_TOPDIR)/linuxrc $(INS_TOPDIR)/sbin/init
+endef
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+.PHONY: defconfig menuconfig
+
+defconfig:
+	@$(call do_fetch)
+	@cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME)
+	@mkdir -p $(OBJ_PREFIX)
+	@$(MAKES) $(CFG_NAME)
+	@$(call do_unsetforce)
+
+menuconfig:
+	@$(call do_fetch)
+	@$(call do_prepend)
+	@$(MAKES) menuconfig
+	@$(call do_setforce)

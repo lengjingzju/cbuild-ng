@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) pcre2(native cache psysroot): unselect
+
+PACKAGE_NAME     = pcre2
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 10.42
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = http://github.com/PCRE2Project/pcre2/releases/download/$(SRC_DIR)/$(SRC_NAME)
+SRC_MD5          = a8e9ab2935d428a4807461f183034abe
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-pcre2-16 --enable-pcre2-32
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,25 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) tbb(native cache psysroot): unselect
+
+PACKAGE_NAME     = tbb
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2021.8.0
+SRC_DIR          = oneTBB-$(VERSION)
+SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.gz
+SRC_URL          = http://github.com/oneapi-src/oneTBB/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 392421c6f33ebd00edb57eba36054da9
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DTBB_TEST=OFF -DTBB_STRICT=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

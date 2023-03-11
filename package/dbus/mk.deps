@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) dbus(native cache psysroot): unselect expat
+
+PACKAGE_NAME     = dbus
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.15.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://dbus.freedesktop.org/releases/dbus/$(SRC_NAME)
+SRC_MD5          = 5f948b755ccd7c4d0a32d5b7fa423dd5
+INS_SUBDIR       =
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config --without-x --disable-tests
+AUTOTOOLS_FLAGS += --includedir=$(INS_TOPDIR)/usr/include \
+                   --datarootdir=$(INS_TOPDIR)/usr/share \
+                   --bindir=$(INS_TOPDIR)/usr/bin \
+                   --libdir=$(INS_TOPDIR)/usr/lib \
+                   --libexecdir=$(INS_TOPDIR)/usr/libexec
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

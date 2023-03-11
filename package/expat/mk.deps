@@ -1,0 +1,24 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) expat(native cache psysroot): unselect
+
+PACKAGE_NAME     = expat
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.5.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = http://github.com/libexpat/libexpat/releases/download/R_$(subst .,_,$(VERSION))/$(SRC_NAME)
+SRC_MD5          = ac6677b6d1b95d209ab697ce8b688704
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
