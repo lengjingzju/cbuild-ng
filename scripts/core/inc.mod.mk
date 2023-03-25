@@ -84,13 +84,13 @@ export SEARCH_HDRS PACKAGE_NAME
 .PHONY: modules modules_clean modules_install symvers_install
 
 modules:
-	@make $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
+	@$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
 
 modules_clean:
-	@make $(MOD_MAKES) clean
+	@$(MAKE) $(MOD_MAKES) clean
 
 modules_install:
-	@make $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
+	@$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
 
 symvers_install:
 	@install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)

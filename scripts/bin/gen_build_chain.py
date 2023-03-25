@@ -1119,7 +1119,7 @@ class Deps:
                 if item['target'].endswith('-native') or item['target'] in self.FinallyList:
                     release_flag = False
 
-                make = '@$(PRECMD)make'
+                make = '@$(PRECMD)$(MAKE)'
                 if 'jobserver' in item['targets']:
                     make += ' $(ENV_BUILD_JOBS)'
                 make += ' $(ENV_BUILD_FLAGS) -C $(%s-path)' % (item['target'])
