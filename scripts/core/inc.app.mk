@@ -31,13 +31,12 @@ endif
 CFLAGS         += -Wall # This enables all the warnings about constructions that some users consider questionable.
 CFLAGS         += -Wextra # This enables some extra warning flags that are not enabled by -Wall (This option used to be called -W).
 CFLAGS         += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),1024) # Warn whenever an object is defined whose size exceeds object_byte_size.
-CFLAGS         += -Wframe-larger-than=$(if $(object_byte_size),$(object_byte_size),8192) # Warn if the size of a function frame exceeds byte-size.
+CFLAGS         += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
 #CFLAGS        += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
 
-ifeq ($(DEBUG), y)
-CFLAGS         += -O0 -g -ggdb
-else
-CFLAGS         += -ffunction-sections -fdata-sections -O2
+CFLAGS         += $(CC_OPT_VALUE)
+ifeq ($(CC_OPT_OPTION),release)
+CFLAGS         += -ffunction-sections -fdata-sections
 LDFLAGS        += -Wl,--gc-sections
 endif
 #LDFLAGS       += -static

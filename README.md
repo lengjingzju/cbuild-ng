@@ -482,6 +482,13 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * SEARCH_HDRS               : Sub-folders to search headers, its default value is equal to `PACKAGE_DEPS`
 <br>
 
+* CC_OPT_OPTION: CC optimization option, it has three options:
+    * release: the default value od CC_OPT_VALUE is `-O2`
+    * speed: the default value od CC_OPT_VALUE is `-O3`
+    * debug: the default value od CC_OPT_VALUE is `-O0 -g -ggdb`
+* CC_OPT_VALUE: CC optimization value
+<br>
+
 * WORKDIR                   : Top-level work directory
     * Its default value is equal to `$(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)` in the cross-compilation or `$(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)` in the native-compilation
     * The default values of OBJ_PREFIX / INS_PREFIX / DEP_PREFIX / PATH_PREFIX are defined under WORKDIR
@@ -676,7 +683,6 @@ Note: The reason for providing the above functions is that multiple libraries or
 * CFLAGS: Sets global compilation flags for `gcc g++`
 * AFLAGS: Sets global assembly flags for `as`
 * LDFLAGS: Sets global link flags for `gcc g++`
-* DEBUG: When set to y, `-O0 -g -ggdb` are enabled
 
 
 ### Configuration Template inc.conf.mk

@@ -465,6 +465,13 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * SEARCH_HDRS: 查找头文件子目录列表，默认值等于 PACKAGE_DEPS 的值
 <br>
 
+* CC_OPT_OPTION: CC 优化等级选项，总共3个选项:
+    * release: CC_OPT_VALUE 默认取值 `-O2`
+    * speed: CC_OPT_VALUE 默认取值 `-O3`
+    * debug: CC_OPT_VALUE 默认取值 `-O0 -g -ggdb`
+* CC_OPT_VALUE: CC优化等级值
+<br>
+
 * WORKDIR    : 工作目录
     * 交叉编译默认值为 `$(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)`，本地编译默认值为 `$(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)`
     * OBJ_PREFIX / INS_PREFIX / DEP_PREFIX / PATH_PREFIX 的默认定义都在此目录下
@@ -660,7 +667,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * LDFLAGS: 用户可以设置包自己的一些全局链接标记
 * CFLAGS_xxx.o: 用户可以单独为指定源码 `xxx.c / xxx.cpp / ... / xxx.S` 设置编译标记
 * AFLAGS_xxx.o: 用户可以单独为指定源码 `xxx.s / xxx.asm` 设置编译标记
-* DEBUG: 设置为 y 时使用 `-O0 -g -ggdb` 编译
 
 
 ### 配置模板 inc.conf.mk

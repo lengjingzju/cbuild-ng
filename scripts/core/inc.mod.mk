@@ -13,6 +13,7 @@ ccflags-y      += $(patsubst %,-I%,$(src) $(src)/include $(obj))
 ifneq ($(SEARCH_HDRS), )
 ccflags-y      += $(call link_hdrs)
 endif
+ccflags-y      += $(CC_OPT_VALUE)
 
 define translate_obj
 $(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))

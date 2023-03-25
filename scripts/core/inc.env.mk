@@ -15,6 +15,15 @@ else
 PACKAGE_ID     := $(PACKAGE_NAME)-native
 endif
 
+CC_OPT_OPTION  ?= release
+ifeq ($(CC_OPT_OPTION),debug)
+CC_OPT_VALUE   ?= -O0 -g -ggdb
+else ifeq ($(CC_OPT_OPTION),speed)
+CC_OPT_VALUE   ?= -O3
+else
+CC_OPT_VALUE   ?= -O2
+endif
+
 ifneq ($(ENV_BUILD_MODE), yocto)
 
 ifneq ($(NATIVE_BUILD), y)
