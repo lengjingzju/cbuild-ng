@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) binutils(cache psysroot): unselect gmp mpfr mpc isl
+#DEPS(mk.deps) binutils(psysroot): unselect gmp mpfr mpc isl
 
 PACKAGE_NAME     = binutils
 

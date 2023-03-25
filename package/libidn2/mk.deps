@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) libidn2(native cache psysroot): unselect libiconv libunistring
+#DEPS(mk.deps) libidn2(native psysroot): unselect libiconv libunistring
 
 PACKAGE_NAME     = libidn2
 

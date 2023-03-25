@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) hostapd(native cache psysroot): unselect openssl libnl
+#DEPS(mk.deps) hostapd(native psysroot): unselect openssl libnl
 
 PACKAGE_NAME     = hostapd
 SEARCH_HDRS      = libnl3 openssl

@@ -21,7 +21,7 @@ else
 SRC_PATH        ?= $(shell pwd)
 endif
 
-BUILD_JOBS      ?= $(if $(filter kbuild,$(COMPILE_TOOL)),,$(ENV_BUILD_JOBS))
+BUILD_JOBS      ?= $(ENV_BUILD_JOBS)
 
 ifneq ($(COMPILE_TOOL), meson)
 MAKES           ?= make $(BUILD_JOBS) $(ENV_BUILD_FLAGS) $(MAKES_FLAGS)
@@ -181,9 +181,6 @@ distclean:
 	@echo "Distclean $(PACKAGE_ID) Done."
 
 install:
-ifeq ($(INSTALL_OPTION), release)
-	@echo "    $(PACKAGE_ID)"
-endif
 	@$(call do_install)
 
 endif # USER_DEFINED_TARGET
@@ -218,7 +215,7 @@ psysroot:
 		echo "$${checkinfo}"; \
 	fi; \
 	if [ $${matchflag} -eq 0 ]; then \
-		$(call prepare_sysroot); \
+		$(MAKE) $(PREPARE_SYSROOT); \
 	fi
 
 setforce:
@@ -239,7 +236,7 @@ nocachebuild:
 	@echo "Build $(PACKAGE_ID) Done."
 
 psysroot:
-	@$(call prepare_sysroot)
+	@$(MAKE) $(PREPARE_SYSROOT)
 
 endif
 

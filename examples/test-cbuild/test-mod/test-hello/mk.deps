@@ -1,7 +1,6 @@
-#DEPS(mk.deps) test-hello(nocache psysroot): ?linux test-hello-add test-hello-sub
+#DEPS(mk.deps) test-hello(psysroot): ?linux test-hello-add test-hello-sub
 
 PACKAGE_NAME     = test-hello
-COMPILE_TOOL     = kbuild
 MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-mod/test-hello
 
 include $(ENV_MAKE_DIR)/inc.env.mk

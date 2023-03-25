@@ -4,8 +4,8 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(harfbuzz-without-freetype.mk) harfbuzz-without-freetype(native cache psysroot release): unselect icu glib
-#DEPS(mk.deps) harfbuzz(native cache psysroot): unselect icu libpng freetype glib
+#DEPS(harfbuzz-without-freetype.mk) harfbuzz-without-freetype(native psysroot norelease): unselect icu glib
+#DEPS(mk.deps) harfbuzz(native psysroot): unselect icu libpng freetype glib
 
 PACKAGE_NAME    ?= harfbuzz
 SEARCH_HDRS      = icu glib

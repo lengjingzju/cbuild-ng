@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) zlib(native cache psysroot): unselect
+#DEPS(mk.deps) zlib(native psysroot): unselect
 
 PACKAGE_NAME     = zlib
 

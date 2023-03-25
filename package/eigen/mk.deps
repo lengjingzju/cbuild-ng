@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) eigen(native cache psysroot release): unselect
+#DEPS(mk.deps) eigen(native psysroot norelease): unselect
 
 PACKAGE_NAME     = eigen
 
@@ -26,6 +26,3 @@ define do_prepend
 endef
 
 include $(ENV_MAKE_DIR)/inc.rule.mk
-
-release:
-	@

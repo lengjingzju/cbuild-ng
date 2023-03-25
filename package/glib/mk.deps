@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) glib(native cache psysroot): unselect libffi zlib pcre2
+#DEPS(mk.deps) glib(native psysroot): unselect libffi zlib pcre2
 
 PACKAGE_NAME     = glib
 SEARCH_HDRS      = libffi zlib pcre2

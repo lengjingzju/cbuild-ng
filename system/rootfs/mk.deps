@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) rootfs(nocache): finally
+#DEPS(mk.deps) rootfs(custom): finally
 
 PACKAGE_NAME     = rootfs
 
@@ -13,9 +13,9 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
 FAKEROOT_DIR    ?= $(ENV_CROSS_ROOT)/fakeroot
 
-.PHONY: all clean install prepare_packages strip_elfs
+.PHONY: all clean install packages elfs
 
-all: | prepare_packages strip_elfs
+all: elfs
 	@echo "Build $(PACKAGE_NAME) Done."
 
 clean:
@@ -24,19 +24,19 @@ clean:
 install:
 	@
 
-prepare_packages:
+packages:
 	@rm -rf $(FAKEROOT_DIR)
 	@echo "Install Packages:"
 	@echo "----------------------------------------"
 	@mkdir -p $(FAKEROOT_DIR)
-	@make -s -C $(ENV_TOP_DIR) PRECMD= CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_release_targets
+	@$(MAKE) -s -C $(ENV_TOP_DIR) PRECMD= CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_release_targets
 ifneq ($(ENV_BUILD_TOOL), )
 	@echo "    glibc from $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot)"
 	@$(SYSROOT_SCRIPT) release $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot) $(FAKEROOT_DIR)
 endif
 	@echo "----------------------------------------"
 
-strip_elfs:
+elfs: packages
 	@echo "Strip ELFs ..."
 	@rm -rf $(FAKEROOT_DIR)/include/* $(FAKEROOT_DIR)/usr/include/* $(FAKEROOT_DIR)/usr/local/include/*
 	@libs=$$(find $(FAKEROOT_DIR) -name "*.a" -o -name "*.la"); \
@@ -47,3 +47,12 @@ strip_elfs:
 	if [ ! -z "$${elfs}" ]; then \
 		$(STRIP) -s $${elfs}; \
 	fi
+
+ifneq ($(ENV_BUILD_MODE), yocto)
+
+.PHONY: psysroot
+
+psysroot:
+	@$(MAKE) $(PREPARE_SYSROOT)
+
+endif

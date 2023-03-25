@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) libnl(native cache psysroot): unselect
+#DEPS(mk.deps) libnl(native psysroot): unselect
 
 PACKAGE_NAME     = libnl
 

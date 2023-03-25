@@ -1,1 +1,1 @@
-#DEPS(${ENV_TOP_DIR}/../test-app/test-app3/) test-app3(jobserver native):
+#DEPS(${ENV_TOP_DIR}/../test-app/test-app3/) test-app3(native):

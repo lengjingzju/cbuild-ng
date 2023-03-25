@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) abseil-cpp(native cache psysroot release): unselect
+#DEPS(mk.deps) abseil-cpp(native psysroot norelease): unselect
 
 PACKAGE_NAME     = abseil-cpp
 
@@ -23,6 +23,3 @@ COMPILE_TOOL     = cmake
 CMAKE_FLAGS      = -DCMAKE_CXX_STANDARD=11 -DABSL_PROPAGATE_CXX_STD=ON
 
 include $(ENV_MAKE_DIR)/inc.rule.mk
-
-release:
-	@

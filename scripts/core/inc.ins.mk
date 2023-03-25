@@ -111,14 +111,11 @@ SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
 .PHONY: psysroot isysroot
 
 psysroot:
-	@$(call prepare_sysroot)
+	@$(MAKE) $(PREPARE_SYSROOT)
 
 ifneq ($(filter $(INSTALL_OPTION),link release), )
 
 isysroot:
-ifeq ($(INSTALL_OPTION), release)
-	@echo "    $(PACKAGE_ID)"
-endif
 	@install -d $(INS_PREFIX)
 	@flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
 

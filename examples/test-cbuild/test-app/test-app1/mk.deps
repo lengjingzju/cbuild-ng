@@ -1,4 +1,4 @@
-#DEPS(mk.deps) test-app1(nocache native):
+#DEPS(mk.deps) test-app1(native):
 
 PACKAGE_NAME     = test-app1
 MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-app/test-app1

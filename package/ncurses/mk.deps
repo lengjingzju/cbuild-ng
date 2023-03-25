@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) ncurses(native cache psysroot): ncurses-native unselect
+#DEPS(mk.deps) ncurses(native psysroot): ncurses-native unselect
 
 PACKAGE_NAME     = ncurses
 

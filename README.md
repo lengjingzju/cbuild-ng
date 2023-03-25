@@ -200,27 +200,40 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
                 * Sub-dirs supports environment variable substitution, for example, `${ENV_BUILD_SOC}` will be replaced with the value of the environment variable `ENV_BUILD_SOC`
         * The Makefile name can include environment variables, for examples `${ENV_TOP_DIR}/xxx/Makefile`, there is no need to put the rule file in the source directory at this point
     * Target_Name: The package name ID
-        * The keyword of `ignore` is a special ID that indicates no package, which is used to ignore the search of the current directory (` #DEPS() ignore():`)
-    * Other_Target_Names: Other targets of the current package, multiple targets are separated by space (can be empty)
-        * Ignores the targets of `all` `install` `clean` in the Other_Target_Names
-        * The keyword of `prepare` is a special real target that indicates running `make prepare` before `make`
-            * It is generally used to load the default configuration to .config when .config does not exist
-        * The keyword of `psysroot` is a special real target that indicates running `make psysroot` before `make`
-            * It will use sysroot under WORKDIR instead of ENV_TOP_OUT
-        * The keyword of `release` is a special real target that indicates running `make release` when installing to fakeroot rootfs
-            * This target doesn't need to install headers and static libraries
-            * When the release target is not present, It will run `make install` when installing to fakeroot rootfs
-        * The keyword of `union` is a special virtual target that indicates multiple packages sharing one Makefile
-            * At this point, the targets of `prepare` `all` `install` `clean` `release` ... shound renamed as `<package_name>-xxx`
-        * The keyword of `native` is a special virtual target that indicates both cross-compilation package and native-compilation package are defined at the same time
-        * The keyword of `cache` is a special virtual target that indicates that package supports cache mechanism
-        * The keyword of `nocache` is a special virtual target that indicates that package doesn't support cache mechanism
-            * If neither `cache` nor `nocache` is specified, it means that the target of installation is `isysroot` rather than `install`
-        *  The keyword of `jobserver` is a special virtual target that indicates multi-threaded compilation (`ENV_BUILD_JOBS`)
-            * Makefile which contains `make` command shouldn't add the target, such as driver Makefile, including `inc.rule.mk`
-        * `subtarget1:subtarget2:...::dep1:dep2:...` is a special syntax format that explicitly specifies dependencies for child targets
-            * Double colons separate the list of child targets and the list of dependencies
-            * Single colon separates the child internal targets and the internal dependencies, and the dependencies list can be empty
+        * The keyword of `ignore` is a special ID that indicates no package, which is used to ignore the search of the current directory (`#DEPS() ignore():`)
+    * Other_Target_Names: Other targets of the current package, multiple targets are separated by space (can be empty), there are following keywords:
+        * Package Type Keywords
+            * rule      : Indicates using `inc.rule.mk` to call original compilation
+                * It is automatically appended when matching `include inc.rule.mk`, no manual setting required
+                * `rule` package automatically appends the keywords of `singletask` and `distclean`, and it supports the keyword of `cache`
+            * standard  : Indicates using `inc.ins.mk` to install
+                * It is the default package type, no manual setting required
+                * `standard` automatically appends the keywords of `isysroot`
+            * custom    : Indicates that the package doesn't have the target of `isysroot` to install
+                * This type needs to be specified manually
+        * Package Target Keywords
+            * all install clean: Ignores the necessary targets, adding or not has no effect on the parsing results
+            * distclean : Completely cleans the compile output (including configuration)
+            * prepare   : Indicates running `make prepare` before `make`
+                * It is generally used to load the default configuration to .config when .config does not exist
+            * psysroot  : Indicates preparing sysroot in WORKDIR instead of using global sysroot
+            * isysroot  : Indicates that the top-level Makefile calls `make isysroot` instead of `make install` to install, no manual setting required
+                * At this time, `dis_isysroot` in `gen_build_chain.py` should be set to `False`
+            * release   : Indicates running `make release` when installing to fakeroot
+                * This target doesn't need to install headers and static libraries
+                * When the release target is not present, It will run `make install` when installing to fakeroot rootfs
+        * Package Attributes Keywords
+            * norelease : Indicates that the package has no files installed into fakeroot, e.g. the package only outputs header files and/or static libraries
+            * native    : Indicates both cross-compilation package and native-compilation package are defined at the same time
+            * cache     : Indicates that package supports cache mechanism
+                * It is automatically appended when matching `CACHE_BUIILD=y`, no manual setting required
+            * singletask: Indicates compiling with only a single task
+            * union     : Indicates multiple packages sharing one Makefile
+                * At this point, the targets of `prepare` `all` `install` `clean` `release` ... shound renamed as `<package_name>-xxx`
+        * Special Syntax Format
+            * `subtarget1:subtarget2:...::dep1:dep2:...`: Explicitly specifies dependencies for child targets
+                * Double colons `::` separate the list of child targets and the list of dependencies
+                * Single colon `:` separates the child internal targets and the internal dependencies, and the dependencies list can be empty
     * Depend_Names: The dependency package name ID, and multiple dependencies are separated by space (can be empty)
         * Depend_Names supports multiple lines with using `\` at the end of the line
 
@@ -235,16 +248,28 @@ Note: The IDs (Target_Name / Depend_Names) only can consist of lowercase letters
 Note: The single type commands only exist in the packages with dependencies
 
 * Classic Build has 4 kinds of installations
-    * Installs it into the package's own `$(WORKDIR)/image` directory, usually when this package runs `makes all`
-        * If the Other_Target_Names of the package does not declare `cache` or `nocache`, the target of the top-level Makefile call installation is `make isysroot `, and the following 3 installations are also
-            * In this case, the package Makefile does not contain `inc.rule.mk`, but directly contains `inc.ins.mk`
-    * Copies `$(WORKDIR)/image` to the global dependency directory (actually a symbolic link), usually when this package runs `make install`
-        * This installation can be removed if all package dependencies are prepared under `WORKDIR`
-    * Copies the `$(WORKDIR)/image` of the dependency packages to the dependency directory of the current package (actually a symbolic link), usually when the current package runs `make psysroot`, and the dependency package runs `make install`
-        * This installation is only possible if `psysroot` is declared in the `Other_Target_Names` of the current package
-    * Copies the files under the `$(WORKDIR)/image` of all packages (excluding static libraries and header files) to rootfs, generally the packages installed to rootfs runs "make install"
-        * This installation is only possible if the package is cross-compiled and not the finally package
-        * If the `Other_Target_Names` of the package declares `release`, the package installed to rootfs runs `make release`
+    * Install to the package's own sysroot directory (`$(WORKDIR)/image`)
+        * `rule` package runs `make`
+        * The `standard` package runs `make isysroot` (both `dis_isysroot` and `dis_gsysroot` in `gen_build_chain.py` are `False`)
+        * The `standard` package runs `make install` (`dis_isysroot` in `gen_build_chain.py` is `False` but `dis_gsysroot` is `True`)
+        * Other cases do not have such installation
+    * Install to the global sysroot directory
+        * `dis_gsysroot` in `gen_build_chain.py` needs to be set to `False`, otherwise there is no such installation
+        * The `rule` package links it to its own sysroot directory, the current package runs `make install`
+        * The `standard` package symbol links it to its own sysroot directory, the current package runs `make isysroot` (`dis_isysroot` in `gen_build_chain.py ` is `False`)
+        * In other cases, the actual file is installed, and the current package runs `make install`
+    * Install to the package's own dependent sysroot directory (`$(WORKDIR)/sysroot` / `$(WORKDIR)/sysroot-native`), the current package runs `make psysroot`
+        * If the current package has no dependencies, there is no such installation
+        * The `rule` dependency package links it to its own sysroot directory, the dependency package runs `make install`
+        * The `standard` dependency package links it to its own sysroot directory, the dependency package runs `make isysroot` (`dis_isysroot` in `gen_build_chain.py` is `False`)
+        * In other cases, the dependency package installs the actual file and runs `make install`
+    * Install to the fakeroot directory of rootfs, the rootfs package runs `make packages`
+        * The value of variable `INSTALL_OPTION` is set to `release`
+        * This kind of installation is only available for cross-compilation packages that do not declare `norelease` and `finally`
+        * It installs actual files, do not include header files, static libraries, etc
+        * If `release` is declared, the cross-compilation package runs `make release` (priority rule)
+        * The `standard" cross-compilation package runs `make isysroot` (`dis_isysroot` in `gen_build_chain.py` is `False`)
+        * In other cases, the cross-compilation package runs `make install`
 
 
 ### Dependency of Yocto Build
@@ -469,8 +494,6 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 * `$(call link_hdrs)`       : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
 * `$(call link_libs)`       : Automatically sets CFLAGS that looks for libraries
-* `$(call prepare_sysroot)` : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build
-
 
 
 #### Variables of Environment Template
@@ -510,6 +533,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * NATIVE_BUILD              : When set to y, indicates native-compilation
     * The value is set by top-level Makefile generated by `gen_build_chain.by` or Recipe
 * GLOBAL_SYSROOT            : When set to y, indicates using dependency sysroot in global sysroot `SYS_PREFIX` instead of the directory under WORKDIR
+* PREPARE_SYSROOT           : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build (command is `$(MAKE) $(PREPARE_SYSROOT)`)
 * LOGOUTPUT                 : When set to empty, more compilation messages will be displayed, its default value is `1>/dev/null`
 
 
@@ -886,8 +910,7 @@ Note: The reason for providing the above functions is that multiple libraries or
 ### Compile and Install
 
 * Variables in `inc.rule.mk`
-    * BUILD_JOBS    : Multi-threaded compilation parameter
-        * If `COMPILE_TOOL` is not equal to `kbuild`, its default value is `$(ENV_BUILD_FLAGS)`
+    * BUILD_JOBS    : Multi-threaded compilation parameter, its default value is `$(ENV_BUILD_FLAGS)`
     * MAKES         : Compilation command
         * its default value is `ninja $(BUILD_JOBS) $(MAKES_FLAGS)` for meson, `make $(BUILD_JOBS) $(ENV_BUILD_FLAGS) $(MAKES_FLAGS)` for others
     * COMPILE_TOOL  : It provides the following compilation methods:
@@ -918,9 +941,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * all / clean / install : Necessary targets provided by the template
         * If the variable `USER_DEFINED_TARGET` is not set to y, it will use `all / clean / install` targets provided by the template
     * nocachebuild  : Compiles without cache mechanism
-        * `nocache` must be declared in `Other_Target_Names`
-    * cachebuild    : Compiles with cache mechanism
-        * `cache` must be declared in `Other_Target_Names` and `CACHE_BUIILD=y` must be set
+    * cachebuild    : Compiles with cache mechanism, `CACHE_BUIILD=y` must be set in the `#DEPS` file
 
 
 ### Cache process_cache.sh
@@ -934,7 +955,7 @@ Note: The reason for providing the above functions is that multiple libraries or
 <br>
 
 * Variables in `inc.rule.mk`
-
+    * CACHE_BUILD   : Specifies the package is compiled with cache mechanism when set to `y`
     * CACHE_SRCFILE : Saves filename or dirname for download package, its default value is `$(SRC_NAME)`
         * If the download attributes are set, the default value is space
     * CACHE_OUTPATH : Output root path, its default value is `$(WORKDIR)`

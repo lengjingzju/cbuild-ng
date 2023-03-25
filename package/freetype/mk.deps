@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) freetype(native cache psysroot): unselect libpng zlib bzip2 harfbuzz-without-freetype
+#DEPS(mk.deps) freetype(native psysroot): unselect libpng zlib bzip2 harfbuzz-without-freetype
 
 PACKAGE_NAME     = freetype
 SEARCH_HDRS      = zlib libpng16 bzip2 harfbuzz

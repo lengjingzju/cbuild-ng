@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) isl(native cache psysroot): unselect gmp
+#DEPS(mk.deps) isl(native psysroot): unselect gmp
 
 PACKAGE_NAME     = isl
 

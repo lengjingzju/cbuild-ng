@@ -117,10 +117,8 @@ endif
 
 ifneq ($(ENV_BUILD_MODE), yocto)
 
-define prepare_sysroot
-	make -s PRECMD= NATIVE_BUILD= CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
-		INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_install_depends
-endef
+PREPARE_SYSROOT = -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
+                  PRECMD= NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_install_depends
 
 export PKG_CONFIG_LIBDIR=$(DEP_PREFIX)/usr/lib/pkgconfig
 export PKG_CONFIG_PATH=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib /usr/local/lib))) | sed 's@ @:@g')

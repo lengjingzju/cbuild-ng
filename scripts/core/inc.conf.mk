@@ -59,7 +59,7 @@ define load_specific_config
 	$(call process_config_hash); \
 	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --defconfig $1; \
 	$(call gen_config_header); \
-	echo Load $1 to .config
+	echo Load $1 to $(CONFIG_PATH)
 endef
 
 .PHONY: buildkconfig cleankconfig menuconfig loadconfig defconfig cleanconfig
@@ -122,11 +122,11 @@ endif
 
 %_saveconfig: $(CONFIG_PATH) buildkconfig
 	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
-	@echo Save .config to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
 
 %_savedefconfig: $(CONFIG_PATH) buildkconfig
 	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
-	@echo Save .config to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
 
 cleanconfig: cleankconfig
 	@rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(dir $(AUTOCONFIG_PATH)) $(AUTOHEADER_PATH)

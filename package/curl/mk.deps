@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) curl(native cache psysroot): unselect zlib openssl
+#DEPS(mk.deps) curl(native psysroot): unselect zlib openssl
 
 PACKAGE_NAME     = curl
 SEARCH_HDRS      = zlib openssl

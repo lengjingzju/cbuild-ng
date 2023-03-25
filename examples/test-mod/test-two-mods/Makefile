@@ -20,3 +20,4 @@ endif
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 include $(ENV_MAKE_DIR)/inc.mod.mk
+include $(ENV_MAKE_DIR)/inc.ins.mk

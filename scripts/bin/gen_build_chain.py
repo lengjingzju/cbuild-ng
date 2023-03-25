@@ -8,6 +8,8 @@ import sys, os, re, copy
 from argparse import ArgumentParser
 
 debug_mode = False
+dis_isysroot = False
+dis_gsysroot = False
 
 def escape_toupper(var):
     return var.replace('.', '__dot__').replace('+', '__plus__').replace('-', '_').upper()
@@ -491,6 +493,9 @@ class Deps:
             last_group = ''
             ret = None
 
+            items = []
+            attrs = set()
+
             for per_line in fp.read().splitlines():
                 per_line = per_line.strip()
                 if match_type:
@@ -508,7 +513,8 @@ class Deps:
                             continue
                         else:
                             last_group = ret.groups()[3].strip()
-                    else:
+
+                    if not ret:
                         ret = re.match(r'#INCDEPS\s*:\s*([\s\w\\\-\./${}]+)', per_line)
                         if ret:
                             match_type = 'INCDEPS'
@@ -517,8 +523,18 @@ class Deps:
                                 continue
                             else:
                                 last_group = ret.groups()[0].strip()
-                        else:
-                            continue
+
+                    if not ret:
+                        ret = re.match(r'CACHE_BUILD\s*=\s*y', per_line)
+                        if ret:
+                            attrs.add('cache')
+                    if not ret:
+                        ret = re.match(r'include\s+.*inc\.rule\.mk', per_line)
+                        if ret:
+                            attrs.add('rule')
+
+                    if not ret:
+                        continue
 
                 if match_type == 'DEPS':
                     match_type = ''
@@ -581,6 +597,7 @@ class Deps:
                         else:
                             self.__add_item_to_list(item, refs)
                     self.ActualList.append(item)
+                    items.append(item)
 
                     if 'native' in item['targets']:
                         item['targets'].remove('native')
@@ -591,6 +608,7 @@ class Deps:
                             else:
                                 self.__add_item_to_list(nitem, refs)
                         self.ActualList.append(nitem)
+                        items.append(nitem)
                     continue
 
                 elif match_type == 'INCDEPS':
@@ -617,6 +635,25 @@ class Deps:
                 keys.sort()
                 for key in keys:
                     self.__add_item_to_list(ItemDict[key], refs)
+
+            for item in items:
+                if 'rule' not in item['targets'] and 'standard' not in item['targets'] and 'custom' not in item['targets']:
+                    if 'rule' in attrs:
+                        item['targets'].append('rule')
+                    else:
+                        item['targets'].append('standard')
+                if 'cache' in attrs:
+                    if 'cache' not in item['targets']:
+                        item['targets'].append('cache')
+
+                if 'rule' in item['targets']:
+                    if 'singletask' not in item['targets']:
+                        item['targets'].append('singletask')
+                    if 'distclean' not in item['targets']:
+                        item['targets'].append('distclean')
+                elif 'standard' in item['targets']:
+                    if 'isysroot' not in item['targets']:
+                        item['targets'].append('isysroot')
 
             if debug_mode and not dep_flag:
                 print('WARNING: ignore: %s' % pathpair[0])
@@ -1093,17 +1130,25 @@ class Deps:
 
     def gen_make(self, filename, target_list):
         with open(filename, 'w') as fp:
+            # package types
+            ignore_targets  = ['rule', 'standard', 'custom']
+            # special package targets
+            ignore_targets += ['prepare', 'all', 'clean', 'distclean', 'install', 'release', 'norelease', 'psysroot', 'isysroot']
+            # special package attributes
+            ignore_targets += ['union', 'native', 'cache', 'singletask', 'jobserver']
+
             for item in self.ActualList:
                 phony = []
                 ideps = []
+                real_targets = [t for t in item['targets'] if t not in ignore_targets]
+
                 install_target='install'
+                install_redirect=''
+
                 dep_target_name = '%s_depends' % (item['target'])
                 dep_target_flag = False
                 if item['target'] in self.FinallyList:
                     dep_target_flag = True
-
-                ignore_targets = ['all', 'clean', 'distclean', 'install', 'release', 'psysroot', 'prepare', 'jobserver', 'union', 'cache', 'nocache', 'native']
-                real_targets = [t for t in item['targets'] if t not in ignore_targets]
 
                 dep_targets_name = '%s_targets_depends' % (item['target'])
                 dep_targets_flag = False
@@ -1120,14 +1165,21 @@ class Deps:
                     release_flag = False
 
                 make = '@$(PRECMD)$(MAKE)'
-                if 'jobserver' in item['targets']:
+                if 'singletask' not in item['targets']:
                     make += ' $(ENV_BUILD_JOBS)'
                 make += ' $(ENV_BUILD_FLAGS) -C $(%s-path)' % (item['target'])
                 if item['make']:
                     make += ' -f $(%s-make)' % (item['target'])
 
-                if 'psysroot' not in item['targets']:
-                    make += ' GLOBAL_SYSROOT=y'
+                if item['asdeps'] or item ['awdeps'] or item ['ideps']:
+                    if 'psysroot' not in item['targets']:
+                        if dis_gsysroot:
+                            item['targets'].append('psysroot')
+                        else:
+                            make += ' GLOBAL_SYSROOT=y'
+                else:
+                    if 'psysroot' in item['targets']:
+                        item['targets'].remove('psysroot')
 
                 if item['ideps']:
                     ideps = [re.split(r'@+', dep)[0] for dep in item['ideps']]
@@ -1140,8 +1192,14 @@ class Deps:
                             make += ' NATIVE_DEPEND=y'
                             break
 
-                if 'cache' not in item['targets'] and 'nocache' not in item['targets']:
-                    install_target = 'isysroot'
+                if 'isysroot' in item['targets']:
+                    if not dis_isysroot:
+                        install_target = 'isysroot'
+                    else:
+                        install_redirect = 'CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot'
+                elif 'rule' not in item['targets'] and 'standard' not in item['targets']:
+                    if not dis_isysroot:
+                        install_redirect = 'CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot'
 
                 fp.write('ifeq ($(CONFIG_%s), y)\n\n' % (escape_toupper(item['target'])))
 
@@ -1241,19 +1299,36 @@ class Deps:
                 else:
                     fp.write('%s:\n' % (item['target']))
                 if 'union' in item['targets']:
-                    if item['targets'] and 'psysroot' in item['targets']:
+                    if 'psysroot' in item['targets']:
                         fp.write('\t%s %s-psysroot\n' % (make, item['target']))
-                    if item['targets'] and 'prepare' in item['targets']:
+                    if 'prepare' in item['targets']:
                         fp.write('\t%s %s-prepare\n' % (make, item['target']))
                     fp.write('\t%s %s-all\n' % (make, item['target']))
-                    fp.write('\t%s %s-%s\n\n' % (make, item['target'], install_target))
+                    if dis_gsysroot:
+                        if install_target == 'isysroot':
+                            fp.write('\t%s %s-%s\n' % (make, item['target'], 'install'))
+                    else:
+                        if install_redirect:
+                            fp.write('\t%s %s %s-%s"\n' % (make.replace('$(PRECMD)', '$(PRECMD)flock $(ENV_TOP_DIR) -c "'),
+                                install_redirect, item['target'], install_target))
+                        else:
+                            fp.write('\t%s %s-%s\n' % (make, item['target'], install_target))
                 else:
-                    if item['targets'] and 'psysroot' in item['targets']:
+                    if 'psysroot' in item['targets']:
                         fp.write('\t%s psysroot\n' % (make))
-                    if item['targets'] and 'prepare' in item['targets']:
+                    if 'prepare' in item['targets']:
                         fp.write('\t%s prepare\n' % (make))
                     fp.write('\t%s\n' % (make))
-                    fp.write('\t%s %s\n\n' % (make, install_target))
+                    if dis_gsysroot:
+                        if install_target == 'isysroot':
+                            fp.write('\t%s %s\n' % (make, 'install'))
+                    else:
+                        if install_redirect:
+                            fp.write('\t%s %s %s"\n' % (make.replace('$(PRECMD)', '$(PRECMD)flock $(ENV_TOP_DIR) -c "'),
+                                install_redirect, install_target))
+                        else:
+                            fp.write('\t%s %s\n' % (make, install_target))
+                fp.write('\n')
 
                 phony.append(item['target'] + '_install')
                 fp.write('%s_install: %s\n' % (item['target'], dep_install_name))
@@ -1269,10 +1344,14 @@ class Deps:
                         fp.write('%s_release: %s\n' % (item['target'], dep_release_name))
                     else:
                         fp.write('%s_release:\n' % (item['target']))
-                    if 'union' in item['targets']:
-                        fp.write('\t%s %s-%s\n\n' % (make, item['target'], release))
+                    if 'norelease' in item['targets']:
+                        fp.write('\t@\n\n')
                     else:
-                        fp.write('\t%s %s\n\n' % (make, release))
+                        fp.write('\t@echo "    %s"\n' % (item['target']))
+                        if 'union' in item['targets']:
+                            fp.write('\t%s %s-%s\n\n' % (make, item['target'], release))
+                        else:
+                            fp.write('\t%s %s\n\n' % (make, release))
 
                 phony.append(item['target'] + '_clean')
                 fp.write('%s_clean:\n' % (item['target']))
@@ -1281,7 +1360,7 @@ class Deps:
                 else:
                     fp.write('\t%s clean\n\n' % (make))
 
-                if install_target != 'isysroot' or 'distclean' in item['targets']:
+                if 'distclean' in item['targets']:
                     phony.append(item['target'] + '_distclean')
                     fp.write('%s_distclean:\n' % (item['target']))
                     if 'union' in item['targets']:
