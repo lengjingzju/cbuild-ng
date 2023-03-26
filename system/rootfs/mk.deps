@@ -4,16 +4,19 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) rootfs(custom): finally
+#DEPS(mk.deps) rootfs(custom packages licenses elfs): finally
 
 PACKAGE_NAME     = rootfs
+
+LICENSE          = "MIT"
+DESCRIPTION      = "The rootfs example of the Build-ng compilation system."
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
 FAKEROOT_DIR    ?= $(ENV_CROSS_ROOT)/fakeroot
 
-.PHONY: all clean install packages elfs
+.PHONY: all clean install cleanroot licenses packages elfs
 
 all: elfs
 	@echo "Build $(PACKAGE_NAME) Done."
@@ -24,8 +27,14 @@ clean:
 install:
 	@
 
-packages:
+cleanroot:
 	@rm -rf $(FAKEROOT_DIR)
+
+licenses: cleanroot
+	@mkdir -p $(FAKEROOT_DIR)/usr/share/license
+	@python3 ./scripts/gen_license.py -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt -o $(FAKEROOT_DIR)/usr/share/license/index.lic
+
+packages: cleanroot licenses
 	@echo "Install Packages:"
 	@echo "----------------------------------------"
 	@mkdir -p $(FAKEROOT_DIR)
@@ -39,11 +48,16 @@ endif
 elfs: packages
 	@echo "Strip ELFs ..."
 	@rm -rf $(FAKEROOT_DIR)/include/* $(FAKEROOT_DIR)/usr/include/* $(FAKEROOT_DIR)/usr/local/include/*
-	@libs=$$(find $(FAKEROOT_DIR) -name "*.a" -o -name "*.la"); \
+	@libdirs=$(wildcard $(FAKEROOT_DIR)/lib $(FAKEROOT_DIR)/usr/lib $(FAKEROOT_DIR)/usr/local/lib)
+	@libs=$$(find $(wildcard $(addprefix $(FAKEROOT_DIR),/lib /usr/lib /usr/local/lib)) -name "*.a" -o -name "*.la"); \
 	if [ ! -z "$${libs}" ]; then \
 		rm -rf $${libs}; \
 	fi
-	@elfs=$$(find $(FAKEROOT_DIR) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+	@elfs=$$(find $(wildcard $(addprefix $(FAKEROOT_DIR),/lib /usr/lib /usr/local/lib \
+														 /bin /usr/bin /usr/local/bin \
+														 /sbin /usr/sbin /usr/local/sbin \
+														 /libexec /usr/libexec /usr/local/libexec)) \
+			-type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
 	if [ ! -z "$${elfs}" ]; then \
 		$(STRIP) -s $${elfs}; \
 	fi

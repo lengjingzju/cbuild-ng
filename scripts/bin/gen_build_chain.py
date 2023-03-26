@@ -26,6 +26,7 @@ def re_replace_env(matchobj):
 class Deps:
     def __init__(self):
         self.VarDict = {}
+        self.InfoDict = {}
         self.KconfigDict = {}
         self.PathList = []
         self.PokyList = []
@@ -489,21 +490,23 @@ class Deps:
         with open(dep_path, 'r') as fp:
             dep_flag = False
             ItemDict = {}
+            items = []
+            attrs = set()
+            package = ''
             match_type = ''
             last_group = ''
             ret = None
 
-            items = []
-            attrs = set()
 
             for per_line in fp.read().splitlines():
                 per_line = per_line.strip()
                 if match_type:
+                    split_str = ' ' if match_type == 'DEPS' or match_type == 'INCDEPS' else '\n'
                     if per_line and per_line[-1] == '\\':
-                        last_group = '%s %s' % (last_group, per_line[:-1].strip())
+                        last_group = '%s%s%s' % (last_group, split_str, per_line[:-1].strip())
                         continue
                     else:
-                        last_group = '%s %s' % (last_group, per_line.strip())
+                        last_group = '%s%s%s' % (last_group, split_str, per_line.strip())
                 else:
                     ret = re.match(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)', per_line)
                     if ret:
@@ -525,13 +528,62 @@ class Deps:
                                 last_group = ret.groups()[0].strip()
 
                     if not ret:
-                        ret = re.match(r'CACHE_BUILD\s*=\s*y', per_line)
+                        ret = re.match(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)', per_line)
+                        if ret:
+                            package = ret.groups()[0].strip('"').strip()
+                            if package not in self.InfoDict.keys():
+                                self.InfoDict[package] = {}
+                                self.InfoDict[package]['NAME'] = package
+                            continue
+
+                    if package:
+                        if not ret:
+                            ret = re.match(r'VERSION\s*[\?:]*=\s*(.+)', per_line)
+                            if ret:
+                                match_type = 'VERSION'
+                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
+                                    last_group = ret.groups()[0][:-1].strip()
+                                    continue
+                                else:
+                                    last_group = ret.groups()[0].strip()
+                        if not ret:
+                            ret = re.match(r'LICENSE\s*[\?:]*=\s*(.+)', per_line)
+                            if ret:
+                                match_type = 'LICENSE'
+                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
+                                    last_group = ret.groups()[0][:-1].strip()
+                                    continue
+                                else:
+                                    last_group = ret.groups()[0].strip()
+                        if not ret:
+                            ret = re.match(r'HOMEPAGE\s*[\?:]*=\s*(.+)', per_line)
+                            if ret:
+                                match_type = 'HOMEPAGE'
+                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
+                                    last_group = ret.groups()[0][:-1].strip()
+                                    continue
+                                else:
+                                    last_group = ret.groups()[0].strip()
+                        if not ret:
+                            ret = re.match(r'DESCRIPTION\s*[\?:]*=\s*(.+)', per_line)
+                            if ret:
+                                match_type = 'DESCRIPTION'
+                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
+                                    last_group = ret.groups()[0][:-1].strip()
+                                    continue
+                                else:
+                                    last_group = ret.groups()[0].strip()
+
+                    if not ret:
+                        ret = re.match(r'CACHE_BUILD\s*[\?:]*=\s*y', per_line)
                         if ret:
                             attrs.add('cache')
+                            continue
                     if not ret:
                         ret = re.match(r'include\s+.*inc\.rule\.mk', per_line)
                         if ret:
                             attrs.add('rule')
+                            continue
 
                     if not ret:
                         continue
@@ -630,30 +682,48 @@ class Deps:
                             if debug_mode and '${' not in sub_path:
                                 print('WARNING: ignore: %s' % sub_pathpair[0])
 
+
+                elif match_type == 'VERSION':
+                    match_type = ''
+                    self.InfoDict[package]['VERSION'] = last_group.strip('"').strip()
+                elif match_type == 'LICENSE':
+                    match_type = ''
+                    self.InfoDict[package]['LICENSE'] = last_group.strip('"').strip()
+                elif match_type == 'HOMEPAGE':
+                    match_type = ''
+                    self.InfoDict[package]['HOMEPAGE'] = last_group.strip('"').strip()
+                elif match_type == 'DESCRIPTION':
+                    match_type = ''
+                    self.InfoDict[package]['DESCRIPTION'] = last_group.strip('"').strip()
+
+
             if ItemDict:
                 keys = [t for t in ItemDict.keys()]
                 keys.sort()
                 for key in keys:
                     self.__add_item_to_list(ItemDict[key], refs)
+            if items:
+                if package and 'HOMEPAGE' not in self.InfoDict[package].keys():
+                    self.InfoDict[package]['LOCATION'] = items[0]['mpath'].replace(os.getenv('ENV_TOP_DIR'), 'TOPDIR', 1)
 
-            for item in items:
-                if 'rule' not in item['targets'] and 'standard' not in item['targets'] and 'custom' not in item['targets']:
-                    if 'rule' in attrs:
-                        item['targets'].append('rule')
-                    else:
-                        item['targets'].append('standard')
-                if 'cache' in attrs:
-                    if 'cache' not in item['targets']:
-                        item['targets'].append('cache')
+                for item in items:
+                    if 'rule' not in item['targets'] and 'standard' not in item['targets'] and 'custom' not in item['targets']:
+                        if 'rule' in attrs:
+                            item['targets'].append('rule')
+                        else:
+                            item['targets'].append('standard')
+                    if 'cache' in attrs:
+                        if 'cache' not in item['targets']:
+                            item['targets'].append('cache')
 
-                if 'rule' in item['targets']:
-                    if 'singletask' not in item['targets']:
-                        item['targets'].append('singletask')
-                    if 'distclean' not in item['targets']:
-                        item['targets'].append('distclean')
-                elif 'standard' in item['targets']:
-                    if 'isysroot' not in item['targets']:
-                        item['targets'].append('isysroot')
+                    if 'rule' in item['targets']:
+                        if 'singletask' not in item['targets']:
+                            item['targets'].append('singletask')
+                        if 'distclean' not in item['targets']:
+                            item['targets'].append('distclean')
+                    elif 'standard' in item['targets']:
+                        if 'isysroot' not in item['targets']:
+                            item['targets'].append('isysroot')
 
             if debug_mode and not dep_flag:
                 print('WARNING: ignore: %s' % pathpair[0])
@@ -930,6 +1000,25 @@ class Deps:
         if item['imply']:
             for t in item['imply']:
                 fp.write('\timply %s%s\n' % (config_prepend, escape_toupper(t)))
+
+
+        package = item['target']
+        if '-native' in item['target']:
+            package = item['target'][:-7]
+        if package in self.InfoDict.keys():
+            package_keys = self.InfoDict[package].keys()
+            fp.write('\thelp\n')
+            fp.write('\tName        : %s\n' % (self.InfoDict[package]['NAME']))
+            if 'VERSION' in package_keys:
+                fp.write('\tVersion     : %s\n' % (self.InfoDict[package]['VERSION']))
+            if 'LICENSE' in package_keys:
+                fp.write('\tLicense     : %s\n' % (self.InfoDict[package]['LICENSE']))
+            if 'HOMEPAGE' in package_keys:
+                fp.write('\tHomepage    : %s\n' % (self.InfoDict[package]['HOMEPAGE']))
+            if 'LOCATION' in package_keys:
+                fp.write('\tLocation    : %s\n' % (self.InfoDict[package]['LOCATION']))
+            if 'DESCRIPTION' in package_keys:
+                fp.write('\tDescription : %s\n' % (self.InfoDict[package]['DESCRIPTION'].replace('\n', '\n\t              ')))
         fp.write('\n')
 
         if item['conf']:
@@ -1023,6 +1112,9 @@ class Deps:
             cur_depth -= 1
             fp.write('endmenu\n\n')
 
+    def gen_info(self, filename):
+        with open(filename, 'w') as fp:
+            fp.write(str(self.InfoDict))
 
     def gen_normal_target(self, filename):
         with open(filename, 'w') as fp:
@@ -1509,6 +1601,7 @@ def parse_options():
 
 def do_normal_analysis(args):
     makefile_out = args.makefile_out
+    info_out = os.path.join(os.path.dirname(args.makefile_out), 'info.txt')
     kconfig_out = args.kconfig_out
     target_out = args.target_out
     dep_name = args.dep_name
@@ -1582,6 +1675,9 @@ def do_normal_analysis(args):
 
     deps.gen_make(makefile_out, target_list)
     print('\033[32mGenerate %s OK.\033[0m' % makefile_out)
+
+    deps.gen_info(info_out)
+    print('\033[32mGenerate %s OK.\033[0m' % info_out)
 
 
 def do_yocto_analysis(args):
