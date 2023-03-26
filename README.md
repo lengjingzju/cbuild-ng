@@ -35,7 +35,7 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
     * Provides a template for calling original `Makefile, CMake, Autotools, Meson, ...` compilation (`inc.rule.mk`)
 <br>
 
-* Network and Cache Processing Tools: Handles the download, patching, compilation, and installation of packages, and supports download mirror and cache mirror
+* Network and Cache ... Processing Tools: Handles the download, patching, compilation, and installation of packages, and supports download mirror and cache mirror
     * Provides a convenient and reliable patching mechanism (`exec_patch.sh`)
     * Provides a automatic pull network package tool (`fetch_package.sh`)
         * Supports downloading packages from http (attributes: md5), git (attributes: branch tag rev) and svn (attributes: rev)
@@ -43,6 +43,7 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
     * Provides a compilation cache tool, re-compile doesn't need to compile from code, directly fetch the result from the local area or the mirror server  (`process_cache.sh`)
     * Provides a convenient rule template, it supports caching compilation (`inc.rule.mk`)
     * Provides a rich open source software (OSS) layer, and OSS packages are increasing
+    * Provides a tool to generate a HTML file which contains descriptive information for all packages
 <br>
 
 * Test cases can be viewed in [examples.md](./examples/examples.md)

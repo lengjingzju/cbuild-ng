@@ -30,9 +30,11 @@ install:
 cleanroot:
 	@rm -rf $(FAKEROOT_DIR)
 
+LICENSE_PATH = $(FAKEROOT_DIR)/usr/share/license
 licenses: cleanroot
-	@mkdir -p $(FAKEROOT_DIR)/usr/share/license
-	@python3 ./scripts/gen_license.py -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt -o $(FAKEROOT_DIR)/usr/share/license/index.lic
+	@mkdir -p $(LICENSE_PATH)
+	@python3 ./scripts/gen_license.py -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt \
+		-o $(LICENSE_PATH)/index.txt -w $(LICENSE_PATH)/index.html -f 1
 
 packages: cleanroot licenses
 	@echo "Install Packages:"

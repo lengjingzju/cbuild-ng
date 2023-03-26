@@ -35,13 +35,14 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 提供调用原始的 `Makefile` `CMake` `Autotools` `Meson` 编译的模板 `inc.rule.mk`
 <br>
 
-* 网络和缓存处理工具(Classic Build): 处理包的下载、打补丁、编译、安装，支持源码镜像和缓存镜像
+* 网络和缓存等处理工具(Classic Build): 处理包的下载、打补丁、编译、安装，支持源码镜像和缓存镜像
     * 提供方便可靠的补丁机制 `exec_patch.sh`
     * 提供自动拉取网络包工具，支持从 http(支持 md5)、git(支持 branch tag revision)或 svn(支持 revision) 下载包，支持镜像下载 `fetch_package.sh`
     * 提供编译缓存工具，再次编译不需要从代码编译，直接从本地缓存或网络缓存拉取 `process_cache.sh`
     * 提供简洁的组装模板，且支持缓存编译 `inc.rule.mk`
     * 提供可靠的安装脚本和 sysroot 处理脚本 `process_sysroot.sh`
     * 提供丰富的开源软件层，开源包不断增加中
+    * 提供生成所有包的描述信息的 HTML 文件的脚本
 <br>
 
 * 测试用例可以查看 [examples_zh-cn.md](./examples/examples_zh-cn.md)
