@@ -14,7 +14,7 @@ DESCRIPTION      = "The GNU Binutils are a collection of binary tools. \
                     The main ones are: \
                     * ld - the GNU linker. \
                     * as - the GNU assembler. \
-                    * gold - a new, faster, ELF only linker. \ \
+                    * gold - a new, faster, ELF only linker. \
                     But they also include: \
                     * addr2line - Converts addresses into filenames and line numbers. \
                     * ar - A utility for creating, modifying and extracting from archives. \

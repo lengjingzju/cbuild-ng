@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-import sys, os, re, copy
+import sys, os, re, copy, subprocess
 from argparse import ArgumentParser
 
 debug_mode = False
@@ -685,7 +685,11 @@ class Deps:
 
                 elif match_type == 'VERSION':
                     match_type = ''
-                    self.InfoDict[package]['VERSION'] = last_group.strip('"').strip()
+                    version = last_group.strip('"').strip()
+                    vname = '%s_version' % (package)
+                    if vname in version:
+                        version = subprocess.getoutput('bash %s %s' % (os.path.join(os.getenv('ENV_TOOL_DIR'), 'process_machine.sh'), vname))
+                    self.InfoDict[package]['VERSION'] = version
                 elif match_type == 'LICENSE':
                     match_type = ''
                     self.InfoDict[package]['LICENSE'] = last_group.strip('"').strip()
@@ -1002,9 +1006,7 @@ class Deps:
                 fp.write('\timply %s%s\n' % (config_prepend, escape_toupper(t)))
 
 
-        package = item['target']
-        if '-native' in item['target']:
-            package = item['target'][:-7]
+        package = item['target'].replace('-native', '').replace('prebuild-', '')
         if package in self.InfoDict.keys():
             package_keys = self.InfoDict[package].keys()
             fp.write('\thelp\n')

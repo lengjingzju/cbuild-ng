@@ -14,6 +14,7 @@ DESCRIPTION      = "The rootfs example of the Build-ng compilation system."
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
+PACKAGE_SCRIPT  := $(ENV_TOOL_DIR)/gen_package_infos.py
 FAKEROOT_DIR    ?= $(ENV_CROSS_ROOT)/fakeroot
 
 .PHONY: all clean install cleanroot licenses packages elfs
@@ -33,8 +34,8 @@ cleanroot:
 LICENSE_PATH = $(FAKEROOT_DIR)/usr/share/license
 licenses: cleanroot
 	@mkdir -p $(LICENSE_PATH)
-	@python3 ./scripts/gen_license.py -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt \
-		-o $(LICENSE_PATH)/index.txt -w $(LICENSE_PATH)/index.html -f 1
+	@python3 $(PACKAGE_SCRIPT) -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt \
+		-o $(LICENSE_PATH)/index.txt -w $(LICENSE_PATH)/index.html -f 1:1
 
 packages: cleanroot licenses
 	@echo "Install Packages:"

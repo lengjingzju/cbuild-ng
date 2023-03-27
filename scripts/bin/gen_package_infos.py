@@ -7,6 +7,8 @@
 import sys, os, re
 from argparse import ArgumentParser
 
+use_html_table = True
+
 html_head = r'''<!DOCTYPE html>
 <html>
 
@@ -386,7 +388,7 @@ html_head = r'''<!DOCTYPE html>
       margin: 10px 0 15px 0;
       border-collapse: collapse;
       border-spacing: 0;
-      display: block;
+      display: table;
       width: 100%;
       overflow: auto;
       word-break: normal;
@@ -811,7 +813,7 @@ html_tail = r'''
 
 
 def html_convert(var):
-    return var.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;').replace('\n', ' ')
+    return var.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br>')
 
 
 def html_body(infos):
@@ -842,27 +844,56 @@ def html_body(infos):
 '''  % (letter, letter.upper())
 
         contents += '''    <h2 class="mume-header" id="%s">%s</h2>
-    <ul>
-      <li>Name : %s</li>
-''' % (package, package, infos[package]['NAME'])
-        if 'LICENSE' in package_keys:
-            contents += '''      <li>License : %s</li>
+''' % (package, package)
+
+        if use_html_table:
+            contents += '''    <table border="1">
+'''
+            contents += '''      <tr><td width="20px">Name</td><td>%s</td></tr>
+''' % (infos[package]['NAME'])
+            if 'LICENSE' in package_keys:
+                contents += '''      <tr><td>License</td><td>%s</td></tr>
 ''' % (html_convert(infos[package]['LICENSE']))
-        if 'VERSION' in package_keys:
-            contents += '''      <li>Version : %s</li>
+            if 'VERSION' in package_keys:
+                contents += '''      <tr><td>Version</td><td>%s</td></tr>
 ''' % (infos[package]['VERSION'])
-        if 'HOMEPAGE' in package_keys:
-            contents += '''      <li>Homepage : <a href="%s">%s</a></li>
+            if 'HOMEPAGE' in package_keys:
+                contents += '''      <tr><td>Homepage</td><td><a href="%s" target="_blank">%s</a></td></tr>
 ''' % (infos[package]['HOMEPAGE'], infos[package]['HOMEPAGE'])
-        if 'LOCATION' in package_keys:
-            contents += '''      <li>Location : %s</li>
+            if 'LOCATION' in package_keys:
+                contents += '''      <tr><td>Location</td><td>%s</td></tr>
 ''' % (infos[package]['LOCATION'])
-        if 'DESCRIPTION' in package_keys:
-            contents += '''      <li>Description : %s</li>
+            if 'DESCRIPTION' in package_keys:
+                contents += '''      <tr><td>Description</td><td>%s</td></tr>
 ''' % (html_convert(infos[package]['DESCRIPTION']))
-        contents += '''    </ul>
+            contents += '''    </table>
 
 '''
+        else:
+            contents += '''    <ul>
+'''
+            contents += '''      <li>Name : %s</li>
+''' % (infos[package]['NAME'])
+            if 'LICENSE' in package_keys:
+                contents += '''      <li>License : %s</li>
+''' % (html_convert(infos[package]['LICENSE']))
+            if 'VERSION' in package_keys:
+                contents += '''      <li>Version : %s</li>
+''' % (infos[package]['VERSION'])
+            if 'HOMEPAGE' in package_keys:
+                contents += '''      <li>Homepage : <a href="%s" target="_blank">%s</a></li>
+''' % (infos[package]['HOMEPAGE'], infos[package]['HOMEPAGE'])
+            if 'LOCATION' in package_keys:
+                contents += '''      <li>Location : %s</li>
+''' % (infos[package]['LOCATION'])
+            if 'DESCRIPTION' in package_keys:
+                contents += '''      <li>Description : %s</li>
+''' % (html_convert(infos[package]['DESCRIPTION']))
+            contents += '''    </ul>
+
+'''
+
+
 
         sidebars += '''      <div><div class="md-toc-link-wrapper" style="padding:0;;display:list-item;list-style:square;margin-left:42px">
         <a href="#%s" class="md-toc-link"><p>%s</p></a>
@@ -885,16 +916,16 @@ def escape_tolower(var):
 
 
 def gen_license(args):
-    configs = []
-    filter_flag = 1
+    configs = set()
+    filter_flag = [1, 1]
     if args.filter_flag:
-        filter_flag = int(args.filter_flag)
+        filter_flag = [int(var) for var in args.filter_flag.split(':')]
 
     with open( args.conf_file, 'r') as fp:
         for per_line in fp.read().splitlines():
             ret = re.match(r'CONFIG_(.*)=y', per_line)
             if ret:
-                configs.append(escape_tolower(ret.groups()[0]))
+                configs.add(escape_tolower(ret.groups()[0]).replace('prebuild-', '', 1))
 
     infos = {}
     with open(args.info_file, 'r') as fp:
@@ -906,10 +937,10 @@ def gen_license(args):
     with open(args.out_file, 'w') as fp:
         for package in sorted(infos):
             package_keys = infos[package].keys()
-            if package not in configs:
+            if filter_flag[0] and package not in configs:
                 del infos[package]
                 continue
-            elif filter_flag and 'LICENSE' not in package_keys:
+            elif filter_flag[1] and 'LICENSE' not in package_keys:
                 del infos[package]
                 continue
 
@@ -960,7 +991,7 @@ def parse_options():
 
     parser.add_argument('-f', '--filter',
             dest='filter_flag',
-            help='Filter ackages with licenses')
+            help='Filter ackages with licenses, 0:0 means no filter, 1:1 means filtering packages that are not enabled and not licensed')
 
     args = parser.parse_args()
     if not args.conf_file or not args.info_file or not args.out_file or not args.web_file:
