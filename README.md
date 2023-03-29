@@ -43,7 +43,7 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
     * Provides a compilation cache tool, re-compile doesn't need to compile from code, directly fetch the result from the local area or the mirror server  (`process_cache.sh`)
     * Provides a convenient rule template, it supports caching compilation (`inc.rule.mk`)
     * Provides a rich open source software (OSS) layer, and OSS packages are increasing
-    * Provides a tool to generate a HTML file which contains descriptive information for all packages
+    * Provides a tool to generate a HTML file which contains descriptive information for all packages (`gen_package_infos.py`)
 <br>
 
 * Test cases can be viewed in [examples.md](./examples/examples.md)
@@ -495,6 +495,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 * `$(call link_hdrs)`       : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
 * `$(call link_libs)`       : Automatically sets CFLAGS that looks for libraries
+* `$(call install_lics)`    : Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
 
 
 #### Variables of Environment Template
@@ -989,6 +990,30 @@ Note: The reason for providing the above functions is that multiple libraries or
     * setforce      : Sets force compilation flag
     * set1force     : Sets one-time force compilation flag
     * unsetforce    : Removes force compilation flag
+
+
+### License gen_package_infos.py
+
+* Usage: Runs `gen_package_infos.py -h`
+<br>
+
+* Variables
+    * PACKAGE_NAME: The package name
+    * LICENSE: The package license ID
+    * VERSION: The package version
+    * HOMEPAGE: The package official URL
+        * If HOMEPAGE is not defined, it means it is a local package, and the description information will display the `Location` column
+    * DESCRIPTION: The package description
+    * LICFILE: The license source file, it has 4 kinds of types
+        * undefined: If `LICENSE` is compliant with [SPDX](https://spdx.org/licenses/), it will link to the license description URL in SPDX
+        * `https://xxx` or `http://xxx`: It will link to the specific URL
+        * `common://xxx`: It will link to the shared license installation folder
+        * `file://xxx` or `file:xxx;line=m-n`: It will install the specific files to `/usr/share/license/$(PACKAGE_NAME)`
+            * This type can specify multiple files at the same time
+            * `line=m-n` indicates extracting m to n lines to install instead of installing the entire file
+    * LICPATH: The starting directory of the source file to find for `file://` type, its default value is `$(SRC_PATH)`
+    * LICDEST: The root directory to install licenses, its default value is `$(INS_PREFIX)`
+
 
 ## Classic Build Compile OSS Layer
 

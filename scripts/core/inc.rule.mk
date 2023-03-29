@@ -86,6 +86,7 @@ define do_compile
 		cd $(OBJ_PREFIX); \
 	fi; \
 	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \
+	$(call install_lics); \
 	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
 	$(if $(do_append),$(call do_append),true); \
 	set +e

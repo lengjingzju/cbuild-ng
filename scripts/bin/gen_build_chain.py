@@ -497,11 +497,11 @@ class Deps:
             last_group = ''
             ret = None
 
-
+            LINE_MATCHES = ['DESCRIPTION']
             for per_line in fp.read().splitlines():
                 per_line = per_line.strip()
                 if match_type:
-                    split_str = ' ' if match_type == 'DEPS' or match_type == 'INCDEPS' else '\n'
+                    split_str = '\n' if match_type in LINE_MATCHES else ' '
                     if per_line and per_line[-1] == '\\':
                         last_group = '%s%s%s' % (last_group, split_str, per_line[:-1].strip())
                         continue
@@ -550,6 +550,15 @@ class Deps:
                             ret = re.match(r'LICENSE\s*[\?:]*=\s*(.+)', per_line)
                             if ret:
                                 match_type = 'LICENSE'
+                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
+                                    last_group = ret.groups()[0][:-1].strip()
+                                    continue
+                                else:
+                                    last_group = ret.groups()[0].strip()
+                        if not ret:
+                            ret = re.match(r'LICFILE\s*[\?:]*=\s*(.+)', per_line)
+                            if ret:
+                                match_type = 'LICFILE'
                                 if ret.groups()[0] and ret.groups()[0][-1] == '\\':
                                     last_group = ret.groups()[0][:-1].strip()
                                     continue
@@ -693,6 +702,9 @@ class Deps:
                 elif match_type == 'LICENSE':
                     match_type = ''
                     self.InfoDict[package]['LICENSE'] = last_group.strip('"').strip()
+                elif match_type == 'LICFILE':
+                    match_type = ''
+                    self.InfoDict[package]['LICFILE'] = last_group.strip('"').strip()
                 elif match_type == 'HOMEPAGE':
                     match_type = ''
                     self.InfoDict[package]['HOMEPAGE'] = last_group.strip('"').strip()

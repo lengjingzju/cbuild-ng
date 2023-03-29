@@ -4,10 +4,11 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-import sys, os, re
+import sys, os, re, requests
 from argparse import ArgumentParser
 
 use_html_table = True
+SPDX_URL = 'https://spdx.org/licenses/'
 
 html_head = r'''<!DOCTYPE html>
 <html>
@@ -811,12 +812,108 @@ html_tail = r'''
 </html>
 '''
 
+compatible_licenses = {
+    'AGPL-3'        : 'AGPL-3.0-only',
+    'AGPL-3+'       : 'AGPL-3.0-or-later',
+    'AGPLv3'        : 'AGPL-3.0-only',
+    'AGPLv3+'       : 'AGPL-3.0-or-later',
+    'AGPLv3.0'      : 'AGPL-3.0-only',
+    'AGPLv3.0+'     : 'AGPL-3.0-or-later',
+    'AGPL-3.0'      : 'AGPL-3.0-only',
+    'AGPL-3.0+'     : 'AGPL-3.0-or-later',
+    'BSD-0-Clause'  : '0BSD',
+    'GPL-1'         : 'GPL-1.0-only',
+    'GPL-1+'        : 'GPL-1.0-or-later',
+    'GPLv1'         : 'GPL-1.0-only',
+    'GPLv1+'        : 'GPL-1.0-or-later',
+    'GPLv1.0'       : 'GPL-1.0-only',
+    'GPLv1.0+'      : 'GPL-1.0-or-later',
+    'GPL-1.0'       : 'GPL-1.0-only',
+    'GPL-1.0+'      : 'GPL-1.0-or-later',
+    'GPL-2'         : 'GPL-2.0-only',
+    'GPL-2+'        : 'GPL-2.0-or-later',
+    'GPLv2'         : 'GPL-2.0-only',
+    'GPLv2+'        : 'GPL-2.0-or-later',
+    'GPLv2.0'       : 'GPL-2.0-only',
+    'GPLv2.0+'      : 'GPL-2.0-or-later',
+    'GPL-2.0'       : 'GPL-2.0-only',
+    'GPL-2.0+'      : 'GPL-2.0-or-later',
+    'GPL-3'         : 'GPL-3.0-only',
+    'GPL-3+'        : 'GPL-3.0-or-later',
+    'GPLv3'         : 'GPL-3.0-only',
+    'GPLv3+'        : 'GPL-3.0-or-later',
+    'GPLv3.0'       : 'GPL-3.0-only',
+    'GPLv3.0+'      : 'GPL-3.0-or-later',
+    'GPL-3.0'       : 'GPL-3.0-only',
+    'GPL-3.0+'      : 'GPL-3.0-or-later',
+    'LGPLv2'        : 'LGPL-2.0-only',
+    'LGPLv2+'       : 'LGPL-2.0-or-later',
+    'LGPLv2.0'      : 'LGPL-2.0-only',
+    'LGPLv2.0+'     : 'LGPL-2.0-or-later',
+    'LGPL-2.0'      : 'LGPL-2.0-only',
+    'LGPL-2.0+'     : 'LGPL-2.0-or-later',
+    'LGPL2.1'       : 'LGPL-2.1-only',
+    'LGPL2.1+'      : 'LGPL-2.1-or-later',
+    'LGPLv2.1'      : 'LGPL-2.1-only',
+    'LGPLv2.1+'     : 'LGPL-2.1-or-later',
+    'LGPL-2.1'      : 'LGPL-2.1-only',
+    'LGPL-2.1+'     : 'LGPL-2.1-or-later',
+    'LGPLv3'        : 'LGPL-3.0-only',
+    'LGPLv3+'       : 'LGPL-3.0-or-later',
+    'LGPL-3.0'      : 'LGPL-3.0-only',
+    'LGPL-3.0+'     : 'LGPL-3.0-or-later',
+    'MPL-1'         : 'MPL-1.0',
+    'MPLv1'         : 'MPL-1.0',
+    'MPLv1.1'       : 'MPL-1.1',
+    'MPLv2'         : 'MPL-2.0',
+    'MIT-X'         : 'MIT',
+    'MIT-style'     : 'MIT',
+    'openssl'       : 'OpenSSL',
+    'PSF'           : 'PSF-2.0',
+    'PSFv2'         : 'PSF-2.0',
+    'Python-2'      : 'Python-2.0',
+    'Apachev2'      : 'Apache-2.0',
+    'Apache-2'      : 'Apache-2.0',
+    'Artisticv1'    : 'Artistic-1.0',
+    'Artistic-1'    : 'Artistic-1.0',
+    'AFL-2'         : 'AFL-2.0',
+    'AFL-1'         : 'AFL-1.2',
+    'AFLv2'         : 'AFL-2.0',
+    'AFLv1'         : 'AFL-1.2',
+    'CDDLv1'        : 'CDDL-1.0',
+    'CDDL-1'        : 'CDDL-1.0',
+    'EPLv1.0'       : 'EPL-1.0',
+    'FreeType'      : 'FTL',
+    'Nauman'        : 'Naumen',
+    'tcl'           : 'TCL',
+    'vim'           : 'Vim',
+    'SGIv1'         : 'SGI-1',
+}
+
 
 def html_convert(var):
     return var.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br>')
 
 
-def html_body(infos):
+def get_license(package, spdxs, coms):
+    lic = html_convert(package['LICENSE'])
+    if 'LICFILE' in package.keys():
+        licfile = package['LICFILE']
+        if re.match(r'http[s]?://.*', licfile):
+            lic = '<a href="%s" target="_blank">%s</a>' % (licfile, lic)
+        else:
+            lic = '<a href="./%s" target="_blank">%s</a>' % (package['NAME'], lic)
+    else:
+        if lic in spdxs:
+            lic = '<a href="%s%s.html" target="_blank">%s</a>' % (SPDX_URL, lic, lic)
+        elif lic in coms:
+            lic = '<a href="%s%s.html" target="_blank">%s</a>' % (SPDX_URL, compatible_licenses[lic], lic)
+
+    return lic
+
+
+def html_body(infos, spdxs):
+    coms = compatible_licenses.keys()
     letter   = ''
     contents = '''  <div class="mume markdown-preview">
 '''
@@ -853,7 +950,7 @@ def html_body(infos):
 ''' % (infos[package]['NAME'])
             if 'LICENSE' in package_keys:
                 contents += '''      <tr><td>License</td><td>%s</td></tr>
-''' % (html_convert(infos[package]['LICENSE']))
+''' % (get_license(infos[package], spdxs, coms))
             if 'VERSION' in package_keys:
                 contents += '''      <tr><td>Version</td><td>%s</td></tr>
 ''' % (infos[package]['VERSION'])
@@ -876,7 +973,7 @@ def html_body(infos):
 ''' % (infos[package]['NAME'])
             if 'LICENSE' in package_keys:
                 contents += '''      <li>License : %s</li>
-''' % (html_convert(infos[package]['LICENSE']))
+''' % (get_license(infos[package], spdxs, coms))
             if 'VERSION' in package_keys:
                 contents += '''      <li>Version : %s</li>
 ''' % (infos[package]['VERSION'])
@@ -892,8 +989,6 @@ def html_body(infos):
             contents += '''    </ul>
 
 '''
-
-
 
         sidebars += '''      <div><div class="md-toc-link-wrapper" style="padding:0;;display:list-item;list-style:square;margin-left:42px">
         <a href="#%s" class="md-toc-link"><p>%s</p></a>
@@ -911,56 +1006,75 @@ def html_body(infos):
     return contents,sidebars
 
 
+def parse_spdx(args):
+    spdx_info = ''
+    if args.spdx_file and os.path.exists(args.spdx_file):
+        with open(args.spdx_file , 'r') as fp:
+            spdx_info = fp.read()
+    else:
+        spdx_info = requests.get('https://spdx.org/licenses/').text
+
+    spdx_list = re.findall(r'<tr>\s*<td><a href="./([^"]+)" rel="rdf:[^"]+">([^<]+)</a></td>\s*<td about="[^"]+" typeof="spdx:License">\s*<code property="spdx:licenseId">([^<]+)</code></td>\s*<td style="[^"]+">[^<]*</td>\s*<td style="[^"]+">[^<]*</td>\s*</tr>', spdx_info)
+
+    if not args.info_file:
+        print('%-40s%s' % ('Identifier', 'Full name'))
+        for item in spdx_list:
+             print('%-40s%s' % (item[2], item[1]))
+
+    return [t[2] for t in spdx_list]
+
+
 def escape_tolower(var):
     return var.lower().replace('_', '-').replace('__dot__', '.').replace('__plus__', '+')
 
 
-def gen_license(args):
+def gen_license(args, spdxs):
     configs = set()
     filter_flag = [1, 1]
     if args.filter_flag:
         filter_flag = [int(var) for var in args.filter_flag.split(':')]
 
-    with open( args.conf_file, 'r') as fp:
-        for per_line in fp.read().splitlines():
-            ret = re.match(r'CONFIG_(.*)=y', per_line)
-            if ret:
-                configs.add(escape_tolower(ret.groups()[0]).replace('prebuild-', '', 1))
+    if filter_flag[0]:
+        with open(args.conf_file, 'r') as fp:
+            for per_line in fp.read().splitlines():
+                ret = re.match(r'CONFIG_(.*)=y', per_line)
+                if ret:
+                    configs.add(escape_tolower(ret.groups()[0]).replace('prebuild-', '', 1))
 
     infos = {}
     with open(args.info_file, 'r') as fp:
         infos = eval(fp.read())
-
-    if not configs or not infos:
-        return
-
-    with open(args.out_file, 'w') as fp:
-        for package in sorted(infos):
+        for package in set(infos.keys()):
             package_keys = infos[package].keys()
             if filter_flag[0] and package not in configs:
                 del infos[package]
-                continue
             elif filter_flag[1] and 'LICENSE' not in package_keys:
                 del infos[package]
-                continue
+    if not infos:
+        return
 
-            fp.write('Name        : %s\n' % (infos[package]['NAME']))
-            if 'LICENSE' in package_keys:
-                fp.write('License     : %s\n' % (infos[package]['LICENSE']))
-            if 'VERSION' in package_keys:
-                fp.write('Version     : %s\n' % (infos[package]['VERSION']))
-            if 'HOMEPAGE' in package_keys:
-                fp.write('Homepage    : %s\n' % (infos[package]['HOMEPAGE']))
-            if 'LOCATION' in package_keys:
-                fp.write('Location    : %s\n' % (infos[package]['LOCATION']))
-            if 'DESCRIPTION' in package_keys:
-                fp.write('Description : %s\n' % (infos[package]['DESCRIPTION'].replace('\n', '\n              ')))
-            fp.write('\n')
-    print('\033[32mGenerate %s OK.\033[0m' % args.out_file)
+    if args.out_file:
+        with open(args.out_file, 'w') as fp:
+            for package in sorted(infos):
+                package_keys = infos[package].keys()
 
-    if infos:
+                fp.write('Name        : %s\n' % (infos[package]['NAME']))
+                if 'LICENSE' in package_keys:
+                    fp.write('License     : %s\n' % (infos[package]['LICENSE']))
+                if 'VERSION' in package_keys:
+                    fp.write('Version     : %s\n' % (infos[package]['VERSION']))
+                if 'HOMEPAGE' in package_keys:
+                    fp.write('Homepage    : %s\n' % (infos[package]['HOMEPAGE']))
+                if 'LOCATION' in package_keys:
+                    fp.write('Location    : %s\n' % (infos[package]['LOCATION']))
+                if 'DESCRIPTION' in package_keys:
+                    fp.write('Description : %s\n' % (infos[package]['DESCRIPTION'].replace('\n', '\n              ')))
+                fp.write('\n')
+        print('\033[32mGenerate %s OK.\033[0m' % args.out_file)
+
+    if args.web_file:
         with open(args.web_file, 'w') as fp:
-            contents,sidebars = html_body(infos)
+            contents,sidebars = html_body(infos, spdxs)
             fp.write(html_head)
             fp.write(contents)
             fp.write(sidebars)
@@ -993,8 +1107,12 @@ def parse_options():
             dest='filter_flag',
             help='Filter ackages with licenses, 0:0 means no filter, 1:1 means filtering packages that are not enabled and not licensed')
 
+    parser.add_argument('-s', '--spdx',
+            dest='spdx_file',
+            help='Specify the SPDX html file path.')
+
     args = parser.parse_args()
-    if not args.conf_file or not args.info_file or not args.out_file or not args.web_file:
+    if args.info_file and not args.out_file and not args.web_file:
         print('\033[31mERROR: Invalid parameters.\033[0m\n')
         parser.print_help()
         sys.exit(1)
@@ -1004,4 +1122,6 @@ def parse_options():
 
 if __name__ == '__main__':
     args = parse_options()
-    gen_license(args)
+    spdxs = parse_spdx(args)
+    if args.info_file:
+        gen_license(args, spdxs)

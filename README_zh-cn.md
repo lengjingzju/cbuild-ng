@@ -42,7 +42,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 提供简洁的组装模板，且支持缓存编译 `inc.rule.mk`
     * 提供可靠的安装脚本和 sysroot 处理脚本 `process_sysroot.sh`
     * 提供丰富的开源软件层，开源包不断增加中
-    * 提供生成所有包的描述信息的 HTML 文件的脚本
+    * 提供生成所有包的描述信息的 HTML 文件的脚本 `gen_package_infos.py`
 <br>
 
 * 测试用例可以查看 [examples_zh-cn.md](./examples/examples_zh-cn.md)
@@ -475,6 +475,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 * `$(call link_hdrs)`: 根据 SEARCH_HDRS 变量的值自动生成查找头文件的 CFLAGS
 * `$(call link_libs)`: 自动生成查找库文件的 LDFLAGS
+* `$(call install_lics)`: 安装 license 文件到 `/usr/local/license/$(PACKAGE_NAME)`
 
 
 #### 环境模板的变量说明
@@ -514,7 +515,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * NATIVE_BUILD: 设置为 y 时表示本地编译(native-compilation)，由 `gen_build_chain.by` 自动设置或由 Recipe 导出
 * GLOBAL_SYSROOT: 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
 * PREPARE_SYSROOT: Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
-* LOGOUTPUT: 默认值为 1>/dev/null，置为空时编译输出更多信息
+* LOGOUTPUT: 默认值为 `1>/dev/null`，置为空时编译输出更多信息
 
 
 ### 安装模板 inc.ins.mk
@@ -977,6 +978,29 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * setforce          : 设置强制编译
     * set1force         : 设置强制编译一次
     * unsetforce        : 取消强制编译
+
+
+### 许可证处理 gen_package_infos.py
+
+* `gen_package_infos.py -h` 查看命令帮助
+<br>
+
+* 涉及的变量
+    * PACKAGE_NAME: 包的名字
+    * LICENSE: 包的 license ID
+    * VERSION: 包的版本
+    * HOMEPAGE: 包的官网 URL
+        * 若没有定义 HOMEPAGE，表示是本地包，描述信息将显示 `Location` 栏
+    * DESCRIPTION: 包的描述信息
+    * LICFILE: license 描述文件地址，总共有4种类型
+        * undefined: 若 LICENSE 符合 [SPDX](https://spdx.org/licenses/) 的许可证列表，将链接到 SPDX 对应的 license 描述界面
+        * `https://xxx` or `http://xxx`: 将链接到指定 URL 对应的界面
+        * `common://xxx`: 将链接到安装的共有的 license 文件夹
+        * `file://xxx` or `file:xxx;line=m-n`: 安装源码中的特定文件到 `/usr/share/license/$(PACKAGE_NAME)` 目录
+            * 此种类型可以同时指定多个文件
+            * `line=m-n` 表示提取 m 到 n 行安装而不是安装整个文件
+    * LICPATH: `file` 类型查找的源文件的起始目录，默认取值 `$(SRC_PATH)`
+    * LICDEST: 安装 license 的根目录，默认取值 `$(INS_PREFIX)`
 
 
 ## Classic Build 编译开源软件层

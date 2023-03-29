@@ -108,7 +108,19 @@ install_tofile_%:
 ifneq ($(ENV_BUILD_MODE), yocto)
 
 SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
-.PHONY: psysroot isysroot
+
+ifneq ($(DIS_LICENSE), y)
+
+.PHONY: license
+
+SRC_PATH        ?= .
+install release: license
+license:
+	$(call install_lics)
+
+endif
+
+.PHONY: psysroot isysroot license
 
 psysroot:
 	@$(MAKE) $(PREPARE_SYSROOT)

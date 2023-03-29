@@ -9,13 +9,16 @@
 opt=$1
 src=$2
 dst=$3
+pkg=$4
+lic="$5"
 
 usage() {
-    echo "Usage: $0 <opt> <src> <dst>; and opt can be:"
+    echo "Usage: $0 <opt> <src> <dst> <pkg> <lic>; and opt can be:"
     echo "    link: link all files in src sysroot to dst sysroot"
     echo "    install: copy all files in src sysroot to dst sysroot"
     echo "    release: copy all files except headers and static libraries in src sysroot to dst sysroot"
     echo "    replace: replace \${src} to \${DEP_PREFIX} of all pkgconfig files in src sysroot"
+    echo "    license: cp license files to dst sysroot, <pkg> and <lic> are only for license"
 }
 
 link_sysroot() {
@@ -213,6 +216,44 @@ replace_pkgconfig() {
     fi
 }
 
+install_license() {
+    lic_srcdir=$1
+    lic_dstdir=$2/usr/share/license
+    package=$3
+    license=$(echo "$4" | sed 's/;/@semicolon@/g')
+
+    for item in ${license}; do
+        if [ $(echo "${item}" | grep -c '^file://') -eq 1 ]; then
+            lic_src=''
+            lic_dst=''
+            lic_begin=0
+            lic_end=0
+
+            for slice in $(echo "${item}" | sed 's/@semicolon@/ /g'); do
+                if [ $(echo "${slice}" | grep -c '^file://') -eq 1 ]; then
+                    lic_src=$(echo "${slice}" | sed 's|^file://||g')
+                    lic_dst=$(echo "${slice}" | xargs basename)
+                elif [ $(echo "${slice}" | grep -c '^line=') -eq 1 ]; then
+                    lic_begin=$(echo "${slice}" | sed 's|^line=||g' | cut -d '-' -f 1)
+                    lic_end=$(echo "${slice}" | sed 's|^line=||g' | cut -d '-' -f 2)
+                fi
+            done
+
+            mkdir -p ${lic_dstdir}/${package}
+            if [ ${lic_begin} -eq 0 ] || [ ${lic_end} -eq 0 ]; then
+                cp -df ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}/${lic_dst}
+            else
+                sed -n "${lic_begin},${lic_end} p" ${lic_srcdir}/${lic_src} > ${lic_dstdir}/${package}/${lic_dst}
+            fi
+
+        elif [ $(echo "${item}" | grep -c '^common://') -eq 1 ]; then
+            lic_src=$(echo "${item}" | sed 's|common://||g')
+            mkdir -p ${lic_dstdir}
+            ln -sf common/${lic_src} ${lic_dstdir}/${package}
+        fi
+    done
+}
+
 if [ -z "$src" ]; then
     usage
     exit 1
@@ -227,5 +268,6 @@ case $opt in
     install) install_sysroot $src $dst;;
     release) release_sysroot $src $dst;;
     replace) replace_pkgconfig;;
+    license) install_license $src $dst $pkg "$lic";;
     *) usage; exit 1;;
 esac

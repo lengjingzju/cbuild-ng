@@ -113,6 +113,24 @@ export PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/bin /usr/bin /usr/local/bi
 export LD_LIBRARY_PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/lib /usr/lib /usr/local/lib)$(if $(LD_LIBRARY_PATH),:$(LD_LIBRARY_PATH)) | sed 's/ /:/g')
 endif
 
+ifneq ($(LICFILE), )
+ifneq ($(ENV_BUILD_MODE), yocto)
+ifneq ($(NATIVE_BUILD), y)
+LICPATH        ?= $(SRC_PATH)
+LICDEST        ?= $(INS_PREFIX)
+define install_lics
+	$(ENV_TOOL_DIR)/process_sysroot.sh license $(LICPATH) $(LICDEST) $(PACKAGE_NAME) "$(LICFILE)"
+endef
+endif
+endif
+endif
+
+ifeq ($(install_lics), )
+define install_lics
+	true
+endef
+endif
+
 # yocto envs should be exported by yocto recipe.
 
 ifneq ($(ENV_BUILD_MODE), yocto)
