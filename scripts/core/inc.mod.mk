@@ -25,7 +25,7 @@ endef
 
 ifeq ($(words $(MOD_NAME)), 1)
 
-IGNORE_PATH    ?= .git scripts output
+IGNORE_PATH    ?= .git .pc scripts output
 REG_SUFFIX     ?= c S
 SRCS           ?= $(filter-out %.mod.c,$(shell find $(src) \
                           $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \

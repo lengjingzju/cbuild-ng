@@ -515,6 +515,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * NATIVE_BUILD: 设置为 y 时表示本地编译(native-compilation)，由 `gen_build_chain.by` 自动设置或由 Recipe 导出
 * GLOBAL_SYSROOT: 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
 * PREPARE_SYSROOT: Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
+* DIS_PC_EXPORT: 是否禁止导出 [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html) 的环境变量
 * LOGOUTPUT: 默认值为 `1>/dev/null`，置为空时编译输出更多信息
 
 
@@ -534,6 +535,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 要安装的源文件集的变量名: `INSTALL_<大写ID名>S`
 
 * 已定义的 Makefile 规则
+    * 目录名在 `inc.env.mk` 中定义
 
     | 目录名           | 目录定义(目标文件夹)          | 要安装的源文件集          | Makefile 规则的目标    |
     | ---------------- | ----------------------------- | ------------------------- | ---------------------- |
@@ -914,7 +916,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
             * MESON_FLAGS       : 可设置额外的 `meson` 命令参数
             * do_meson_cfg      : meson 使用 ini 文件配置交叉编译，用户可以定义 do_meson_cfg 函数追加或修改默认的配置
             * MESON_WRAP_MODE   : 设置了默认值 `--wrap-mode=nodownload`，表示禁止 meson 下载依赖包编译
-            * MESON_LIBDIR      : 设置了默认值 `--libdir=$(INS_TOPDIR)$(INS_SUBDIR)/lib`，表示设置安装库文件路径，不然本地编译时会安装到 lib 下的 x86_64-linux-gnu
+    * INS_CHOICE        : `autotools` `cmake` `meson` 的安装目录的配置
+    * INS_FULLER        : 表示是否详细设置 `autotools` `cmake` `meson` 的安装目录，安装的文件有 `/etc` 等时需要设置为 `y`
 <br>
 
 * inc.rule.mk 涉及的函数

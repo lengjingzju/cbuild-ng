@@ -22,19 +22,49 @@ SRC_PATH        ?= $(shell pwd)
 endif
 
 BUILD_JOBS      ?= $(ENV_BUILD_JOBS)
-
 ifneq ($(COMPILE_TOOL), meson)
 MAKES           ?= make $(BUILD_JOBS) $(ENV_BUILD_FLAGS) $(MAKES_FLAGS)
-ifeq ($(COMPILE_TOOL), autotools)
-AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
-endif
-ifeq ($(COMPILE_TOOL), cmake)
-CMAKE_CROSS     ?= $(shell $(MACHINE_SCRIPT) cmake_cross)
-endif
 else
 MAKES           ?= ninja $(BUILD_JOBS) $(MAKES_FLAGS)
+endif
+
+INS_FULLER      ?= n
+ifeq ($(INS_FULLER), y)
+define ins_common_cfg
+--$(1)dir=$(INS_TOPDIR)$(if $(filter $(1),bin sbin lib),$(INS_SUBDIR)$(base_$(1)dir),$($(1)dir))
+endef
+
+define ins_cmake_cfg
+-DCMAKE_INSTALL_FULL_$(shell echo $(1)dir | tr [:lower:] [:upper:])=$(INS_TOPDIR)$(if $(filter $(1),bin sbin lib),$(INS_SUBDIR)$(base_$(1)dir),$($(1)dir))
+endef
+endif
+
+ifeq ($(COMPILE_TOOL), autotools)
+AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
+ifeq ($(INS_FULLER), y)
+INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot runstate,$(call ins_common_cfg,$(v)))
+else
+INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
+endif
+
+else ifeq ($(COMPILE_TOOL), cmake)
+CMAKE_CROSS     ?= $(shell $(MACHINE_SCRIPT) cmake_cross)
+ifeq ($(INS_FULLER), y)
+INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot runstate,$(call ins_cmake_cfg,$(v)))
+else
+INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
+endif
+
+else ifeq ($(COMPILE_TOOL), meson)
 MESON_WRAP_MODE ?= --wrap-mode=nodownload
-MESON_LIBDIR    ?= --libdir=$(INS_TOPDIR)$(INS_SUBDIR)/lib
+ifeq ($(INS_FULLER), y)
+INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include data info locale man,$(call ins_common_cfg,$(v)))
+else
+INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR) --libdir=$(INS_TOPDIR)$(INS_SUBDIR)/lib
+endif
+
+else
+INS_CONFIG      ?=
 endif
 
 ifeq ($(CACHE_BUILD), y)
@@ -73,16 +103,15 @@ define do_compile
 	$(if $(do_prepend),$(call do_prepend),true); \
 	if [ "$(COMPILE_TOOL)" = "cmake" ]; then \
 		cd $(OBJ_PREFIX) && cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) \
-			-DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) $(CMAKE_FLAGS) $(LOGOUTPUT); \
+			$(INS_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT); \
 	elif [ "$(COMPILE_TOOL)" = "autotools" ]; then \
 		cd $(OBJ_PREFIX) && $(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) \
-			--prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT); \
+			$(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT); \
 	elif [ "$(COMPILE_TOOL)" = "meson" ]; then \
 		$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX),true); \
 		$(if $(do_meson_cfg),$(call do_meson_cfg),true); \
 		cd $(SRC_PATH) && meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) \
-			--prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(MESON_LIBDIR) $(MESON_WRAP_MODE) \
-			$(MESON_FLAGS) $(OBJ_PREFIX) $(LOGOUTPUT); \
+			$(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(OBJ_PREFIX) $(LOGOUTPUT); \
 		cd $(OBJ_PREFIX); \
 	fi; \
 	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \

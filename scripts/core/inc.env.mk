@@ -138,8 +138,10 @@ ifneq ($(ENV_BUILD_MODE), yocto)
 PREPARE_SYSROOT = -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
                   PRECMD= NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_install_depends
 
+ifneq ($(DIS_PC_EXPORT), y)
 export PKG_CONFIG_LIBDIR=$(DEP_PREFIX)/usr/lib/pkgconfig
 export PKG_CONFIG_PATH=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib /usr/local/lib))) | sed 's@ @:@g')
+endif
 
 ifneq ($(NATIVE_BUILD), y)
 
@@ -188,4 +190,33 @@ export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
 
 endif # NATIVE_BUILD
 endif # ENV_BUILD_MODE
+
+# Defines the GNU standard installation directories
+# Note: base_*dir and hdrdir are not defined in the GNUInstallDirs
+# GNUInstallDirs/Autotools: https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+# CMake: https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
+# Meson: https://mesonbuild.com/Builtin-options.html#directories
+# Yocto: https://git.yoctoproject.org/poky/tree/meta/conf/bitbake.conf
+
+base_bindir     = /bin
+base_sbindir    = /sbin
+base_libdir     = /lib
+bindir          = /usr/bin
+sbindir         = /usr/sbin
+libdir          = /usr/lib
+libexecdir      = /usr/libexec
+hdrdir          = /usr/include/$(INSTALL_HDR)
+includedir      = /usr/include
+datarootdir     = /usr/share
+datadir         = $(datarootdir)
+infodir         = $(datadir)/info
+localedir       = $(datadir)/locale
+mandir          = $(datadir)/man
+docdir          = $(datadir)/doc
+sysconfdir      = /etc
+servicedir      = /srv
+sharedstatedir  = /com
+localstatedir   = /var
+runstatedir     = /run
+
 endif # KERNELRELEASE

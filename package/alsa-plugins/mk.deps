@@ -32,6 +32,7 @@ SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = http://www.alsa-project.org/files/pub/plugins/$(SRC_NAME)
 SRC_MD5          = 8fb7e05b84c87f30655a8997a9a983d1
 INS_SUBDIR       =
+INS_FULLER       = y
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -39,7 +40,6 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
 AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" CPPFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
-AUTOTOOLS_FLAGS += --libdir=$(INS_TOPDIR)/usr/lib --datarootdir=$(INS_TOPDIR)/usr/share
 
 define do_prepend
 	cd $(SRC_PATH) && autoreconf; \

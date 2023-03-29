@@ -6,34 +6,6 @@
 
 ifeq ($(KERNELRELEASE), )
 
-# Defines the GNU standard installation directories
-# Note: base_*dir and hdrdir are not defined in the GNUInstallDirs
-# GNUInstallDirs/Autotools: https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
-# CMake: https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
-# Meson: https://mesonbuild.com/Builtin-options.html#directories
-# Yocto: https://git.yoctoproject.org/poky/tree/meta/conf/bitbake.conf
-
-base_bindir     = /bin
-base_sbindir    = /sbin
-base_libdir     = /lib
-bindir          = /usr/bin
-sbindir         = /usr/sbin
-libdir          = /usr/lib
-libexecdir      = /usr/libexec
-hdrdir          = /usr/include/$(INSTALL_HDR)
-includedir      = /usr/include
-datarootdir     = /usr/share
-datadir         = $(datarootdir)
-infodir         = $(datadir)/info
-localedir       = $(datadir)/locale
-mandir          = $(datadir)/man
-docdir          = $(datadir)/doc
-sysconfdir      = /etc
-servicedir      = /srv
-sharedstatedir  = /com
-localstatedir   = /var
-runstatedir     = /run
-
 # Defines the compatible variables with previous inc.ins.mk
 
 INSTALL_BASE_BINARIES  ?= $(INSTALL_BINARIES)

@@ -8,7 +8,7 @@ ifeq ($(KERNELRELEASE), )
 
 COLORECHO      ?= $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 SRC_PATH       ?= .
-IGNORE_PATH    ?= .git scripts output
+IGNORE_PATH    ?= .git .pc scripts output
 REG_SUFFIX     ?= c cpp S
 ifeq ($(USING_CXX_BUILD_C), y)
 CPP_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
