@@ -901,6 +901,8 @@ def get_license(package, spdxs, coms):
         licfile = package['LICFILE']
         if re.match(r'http[s]?://.*', licfile):
             lic = '<a href="%s" target="_blank">%s</a>' % (licfile, lic)
+        elif re.match(r'common://.*', licfile):
+            lic = '<a href="./common/%s" target="_blank">%s</a>' % (licfile.replace('common://', ''), lic)
         else:
             lic = '<a href="./%s" target="_blank">%s</a>' % (package['NAME'], lic)
     else:
