@@ -59,7 +59,6 @@ endif
 elfs: packages
 	@echo "Strip ELFs ..."
 	@rm -rf $(FAKEROOT_DIR)/include/* $(FAKEROOT_DIR)/usr/include/* $(FAKEROOT_DIR)/usr/local/include/*
-	@libdirs=$(wildcard $(FAKEROOT_DIR)/lib $(FAKEROOT_DIR)/usr/lib $(FAKEROOT_DIR)/usr/local/lib)
 	@libs=$$(find $(wildcard $(addprefix $(FAKEROOT_DIR),/lib /usr/lib /usr/local/lib)) -name "*.a" -o -name "*.la"); \
 	if [ ! -z "$${libs}" ]; then \
 		rm -rf $${libs}; \
