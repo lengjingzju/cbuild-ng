@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = gcc
 
+LICENSE          = GPL-3.0-only
+HOMEPAGE         = https://gcc.gnu.org/
+DESCRIPTION      = The GNU Compiler Collection includes front ends for C, C++, Objective-C, Fortran, Ada, Go, and D, \
+                   as well as libraries for these languages (libstdc++,...).
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = $(shell $(MACHINE_SCRIPT) gcc_version)
@@ -87,6 +92,8 @@ define do_compile
 	cd $(OBJ_PREFIX) && $(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) \
 		--prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT); \
 	rm -rf $(INS_TOPDIR) && $(MAKES) all-host $(LOGOUTPUT) && $(MAKES) install-host $(LOGOUTPUT); \
+	$(call install_lics); \
+	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
 	$(if $(do_append),$(call do_append),true); \
 	set +e
 endef

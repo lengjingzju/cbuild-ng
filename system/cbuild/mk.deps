@@ -11,9 +11,8 @@ PACKAGE_NAME     = cbuild
 LICENSE          = MIT
 LICFILE          = common://MIT-LENGJING
 HOMEPAGE         = https://github.com/lengjingzju/cbuild-ng
-DESCRIPTION      = The CBuild-ng compilation system is a more powerful and flexible \
-                   build system than Buildroot, and faster and succincter than Yocto. \
-                   It mainly consists: \
+DESCRIPTION      = The CBuild-ng compilation system is a more powerful and flexible build system than Buildroot, and \
+                   faster and succincter than Yocto. It mainly consists: \
                    * a task parsing management executor, configured with menuconfig, run by make \
                    * a compilation tool comparable to CMake / Autotools / Meson ... \
                    * a set of scripts that handle the entire process of software compilation

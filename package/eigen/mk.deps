@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = eigen
 
+LICENSE          = MPL-2.0 & ...
+LICFILE          = file://COPYING.*
+HOMEPAGE         = https://eigen.tuxfamily.org/index.php?title=Main_Page
+DESCRIPTION      = Eigen is a C++ template library for linear algebra: matrices, vectors, numerical solvers, and related algorithms.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 3.4.0

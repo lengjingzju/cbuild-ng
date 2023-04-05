@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = openssl
 
+LICENSE          = Apache-2.0
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://www.openssl.org/
+DESCRIPTION      = A robust, commercial-grade, full-featured toolkit for general-purpose cryptography and secure communication.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.1.1t
@@ -20,11 +25,16 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
 define do_compile
+	set -e; \
 	$(call do_fetch); \
 	cd $(WORKDIR)/$(SRC_DIR) && ./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) \
 		$(if $(CROSS_COMPILE),--cross-compile-prefix='') $(LOGOUTPUT); \
 	sed -i 's/ -m64//g' Makefile; \
-	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT)
+	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \
+	$(call install_lics); \
+	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
+	$(if $(do_append),$(call do_append),true); \
+	set +e
 endef
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -9,6 +9,12 @@
 PACKAGE_NAME     = libpng
 SEARCH_HDRS      = zlib
 
+LICENSE          = libpng
+LICFILE          = file://LICENSE
+HOMEPAGE         = http://www.libpng.org/
+DESCRIPTION      = An open source project to develop and maintain the reference library for use in applications that \
+                   read, create, and manipulate PNG (Portable Network Graphics) raster image files.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.6.39

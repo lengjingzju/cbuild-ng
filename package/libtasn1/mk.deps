@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = libtasn1
 
+LICENSE          = GPL-3.0-or-later & LGPL-2.1-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.gnu.org/software/libtasn1/
+DESCRIPTION      = Libtasn1 is the ASN.1 library used by GnuTLS, p11-kit and some other packages.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 4.19.0

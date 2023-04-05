@@ -8,6 +8,14 @@
 
 PACKAGE_NAME     = libcap-ng
 
+LICENSE          = GPL-2.0-or-later & LGPL-2.1-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://github.com/stevegrubb/libcap-ng
+DESCRIPTION      = Libcap-ng is a library for Linux that makes using posix capabilities easy. \
+                   The library has some utilities to help you analyse a system for apps that may have too much privileges. \
+                   The included utilities are designed to let admins and developers spot apps from various ways that may \
+                   be running with too much privilege.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 0.8.3

@@ -9,6 +9,12 @@
 PACKAGE_NAME     = libnice
 SEARCH_HDRS      = openssl glib-2.0
 
+LICENSE          = MPL-1.1 | LGPL-2.1-only
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://libnice.freedesktop.org/
+DESCRIPTION      = libnice is a library that implements the Interactive Connectivity Establishment (ICE) standard (RFC \
+                   5245 & RFC 8445)! It provides a GLib-based library, libnice, as well as GStreamer elements to use it.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 0.1.21

@@ -8,6 +8,12 @@
 
 PACKAGE_NAME     = libcap
 
+LICENSE          = BSD-3-Clause | GPL-2.0-only
+LICFILE          = file://License
+HOMEPAGE         = https://git.kernel.org/pub/scm/libs/libcap/libcap.git/
+DESCRIPTION      = A library providing the API to access POSIX capabilities. These allow giving various kinds of specific \
+                   privileges to individual users, without giving them full root permissions.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2.67

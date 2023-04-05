@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = libiconv
 
+LICENSE          = GPL-3.0-or-later | LGPL-2.0-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.gnu.org/software/libiconv/
+DESCRIPTION      = This library provides an implementation convert from/to Unicode.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.17

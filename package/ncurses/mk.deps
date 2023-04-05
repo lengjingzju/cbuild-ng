@@ -8,6 +8,14 @@
 
 PACKAGE_NAME     = ncurses
 
+LICENSE          = MIT
+LICFILE          = file://COPYING
+HOMEPAGE         = https://invisible-island.net/ncurses/announce.html
+DESCRIPTION      = The ncurses (new curses) library is a free software emulation of curses in System V Release 4.0 \
+                   (SVr4), and more. It uses terminfo format, supports pads and color and multiple highlights and forms \
+                   characters and function-key mapping, and has all the other SVr4-curses enhancements over BSD curses. \
+                   SVr4 curses became the basis of X/Open Curses.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 6.4

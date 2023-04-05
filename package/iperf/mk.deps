@@ -8,6 +8,14 @@
 
 PACKAGE_NAME     = iperf
 
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://iperf.fr/
+DESCRIPTION      = iPerf3 is a tool for active measurements of the maximum achievable bandwidth on IP networks. \
+                   It supports tuning of various parameters related to timing, buffers and protocols (TCP, UDP, SCTP \
+                   with IPv4 and IPv6). For each test it reports the bandwidth, loss, and other parameters. This is a \
+                   new implementation that shares no code with the original iPerf and also is not backwards compatible.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 3.1.3

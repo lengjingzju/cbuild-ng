@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = uvc-gadget
 
+LICENSE          = LGPL-2.1-or-later
+LICFILE          = file://lib/uvc.c;line=1-8
+HOMEPAGE         = https://git.ideasonboard.org/uvc-gadget.git
+DESCRIPTION      = uvcgadget is a pure C library that implements handling of UVC gadget functions.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git

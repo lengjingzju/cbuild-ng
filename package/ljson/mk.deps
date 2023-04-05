@@ -8,6 +8,10 @@
 
 PACKAGE_NAME     = ljson
 
+LICENSE          = MIT
+HOMEPAGE         = https://github.com/lengjingzju/json
+DESCRIPTION      = Ultralightweight JSON parser in ANSI C.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git

@@ -8,6 +8,17 @@
 
 PACKAGE_NAME     = mpfr
 
+LICENSE          = GPL-3.0-or-later | LGPL-3.0-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.mpfr.org/
+DESCRIPTION      = The MPFR library is a C library for multiple-precision floating-point computations with correct rounding. \
+                   MPFR has continuously been supported by the INRIA and the current main authors come from the Caramba \
+                   and AriC project-teams at Loria (Nancy, France) and LIP (Lyon, France) respectively; see more on the \
+                   credit page. MPFR is based on the GMP multiple-precision library. \
+                   The main goal of MPFR is to provide a library for multiple-precision floating-point computation which \
+                   is both efficient and has a well-defined semantics. It copies the good ideas from the ANSI/IEEE-754 \
+                   standard for double-precision floating-point arithmetic (53-bit significand).
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 4.2.0

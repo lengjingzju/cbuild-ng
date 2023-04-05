@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = x265
 
+LICENSE          = GPL-2.0-only
+LICPATH          = $(WORKDIR)/$(SRC_DIR)
+HOMEPAGE         = https://bitbucket.org/multicoreware/x265_git/wiki/Home
+DESCRIPTION      = x265 is an open source HEVC encoder.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git

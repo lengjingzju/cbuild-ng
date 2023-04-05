@@ -8,6 +8,17 @@
 
 PACKAGE_NAME     = libjpeg-turbo
 
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE.md
+HOMEPAGE         = https://libjpeg-turbo.org/
+DESCRIPTION      = libjpeg-turbo is a JPEG image codec that uses SIMD instructions (MMX, SSE2, AVX2, Neon, AltiVec) \
+                   to accelerate baseline JPEG compression and decompression on x86, x86-64, Arm, and PowerPC systems, \
+                   as well as progressive JPEG compression on x86, x86-64, and Arm systems. On such systems, \
+                   libjpeg-turbo is generally 2-6x as fast as libjpeg, all else being equal. On other types of systems, \
+                   libjpeg-turbo can still outperform libjpeg by a significant amount, by virtue of its highly-optimized \
+                   Huffman coding routines. In many cases, the performance of libjpeg-turbo rivals that of proprietary \
+                   high-speed JPEG codecs.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2.1.5.1

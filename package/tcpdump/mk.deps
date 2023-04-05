@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = tcpdump
 
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://www.tcpdump.org/
+DESCRIPTION      = A tool for network monitoring and data acquisition.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 4.99.3

@@ -13,10 +13,9 @@ LICENSE          = curl
 LICFILE          = file://COPYING
 HOMEPAGE         = https://curl.se
 DESCRIPTION      = Command line tool and library for transferring data with URLs. \
-                   A command line tool and library for transferring data with URL syntax, \
-                   supporting DICT, FILE, FTP, FTPS, GOPHER, GOPHERS, HTTP, HTTPS, IMAP, \
-                   IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S, RTMP, RTMPS, RTSP, SCP, SFTP, \
-                   SMB, SMBS, SMTP, SMTPS, TELNET, TFTP, WS and WSS. \
+                   A command line tool and library for transferring data with URL syntax, supporting DICT, FILE, FTP, \
+                   FTPS, GOPHER, GOPHERS, HTTP, HTTPS, IMAP, IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S, RTMP, RTMPS, RTSP, \
+                   SCP, SFTP, SMB, SMBS, SMTP, SMTPS, TELNET, TFTP, WS and WSS. \
                    libcurl offers a myriad of powerful features.
 
 include $(ENV_MAKE_DIR)/inc.env.mk

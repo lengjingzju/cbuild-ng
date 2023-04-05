@@ -9,6 +9,13 @@
 PACKAGE_NAME     = freetype
 SEARCH_HDRS      = zlib libpng16 bzip2 harfbuzz
 
+LICENSE          = FTL | GPL-2.0-or-later
+LICFILE          = file://LICENSE.TXT
+HOMEPAGE         = https://freetype.org/
+DESCRIPTION      = FreeType is a freely available software library to render fonts. \
+                   It is written in C, designed to be small, efficient, highly customizable, and portable while capable \
+                   of producing high-quality output (glyph images) of most vector and bitmap font formats.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2.13.0

@@ -9,6 +9,13 @@
 PACKAGE_NAME     = iw
 SEARCH_HDRS      = libnl3
 
+LICENSE          = BSD-2-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://wireless.wiki.kernel.org/en/users/documentation/iw
+DESCRIPTION      = iw is a new nl80211 based CLI configuration utility for wireless devices. It supports all new drivers \
+                   that have been added to the kernel recently. The old tool iwconfig, which uses Wireless Extensions \
+                   interface, is deprecated and it's strongly recommended to switch to iw and nl80211.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 5.19

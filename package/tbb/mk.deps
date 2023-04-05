@@ -8,6 +8,16 @@
 
 PACKAGE_NAME     = tbb
 
+LICENSE          = Apache-2.0
+HOMEPAGE         = https://github.com/oneapi-src/oneTBB
+DESCRIPTION      = oneAPI Threading Building Blocks (oneTBB). \
+                   oneTBB is a flexible C++ library that simplifies the work of adding parallelism to complex \
+                   applications, even if you are not a threading expert. \
+                   The library lets you easily write parallel programs that take full advantage of the multi-core \
+                   performance. Such programs are portable, composable and have a future-proof scalability. oneTBB \
+                   provides you with functions, interfaces, and classes to parallelize and scale the code. All you \
+                   have to do is to use the templates.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2021.8.0

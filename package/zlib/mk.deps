@@ -8,13 +8,18 @@
 
 PACKAGE_NAME     = zlib
 
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = http://www.zlib.net/
+DESCRIPTION      = Zlib is a general-purpose, patent-free, lossless data compression library which is used by many different programs.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = zip
 VERSION          = 1.2.13
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).zip
-SRC_URL          = http://www.zlib.net/zlib1213.zip
+SRC_URL          = http://www.zlib.net/zlib$(subst .,,$(VERSION)).zip
 SRC_MD5          = 9cb22b7d2aa208b61f5850c04bebda58
 
 CACHE_BUILD      = y

@@ -8,6 +8,13 @@
 
 PACKAGE_NAME     = libidn2
 
+LICENSE          = GPL-2.0-or-later | LGPL-3.0-or-later | Unicode-DFS-2016
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.gnu.org/software/libidn/
+DESCRIPTION      = GNU Libidn is a fully documented implementation of the Stringprep, Punycode and IDNA 2003 specifications. \
+                   Libidn's purpose is to encode and decode internationalized domain names. The native C, C# and Java \
+                   libraries are available under the GNU Lesser General Public License version 2.1 or later.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2.3.4

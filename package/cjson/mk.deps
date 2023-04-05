@@ -8,6 +8,11 @@
 
 PACKAGE_NAME     = cjson
 
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/DaveGamble/cJSON
+DESCRIPTION      = Ultralightweight JSON parser in ANSI C.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.7.15

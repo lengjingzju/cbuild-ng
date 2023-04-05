@@ -8,6 +8,13 @@
 
 PACKAGE_NAME     = libpcap
 
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://www.tcpdump.org/
+DESCRIPTION      = A system-independent interface for user-level packet capture. \
+                   libpcap provides a portable framework for low-level network monitoring. \
+                   Applications include network statistics collection, security monitoring, network debugging, etc.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.10.3

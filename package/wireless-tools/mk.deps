@@ -8,6 +8,10 @@
 
 PACKAGE_NAME     = wireless-tools
 
+LICENSE          = GPL-2.0-only
+HOMEPAGE         = https://hewlettpackard.github.io/wireless-tools/
+DESCRIPTION      = Wireless LAN resources for Linux
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 29

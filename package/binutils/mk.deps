@@ -8,7 +8,8 @@
 
 PACKAGE_NAME     = binutils
 
-LICENSE          = GPL-3.0-only
+LICENSE          = GPL-3.0-or-later | LGPL-3.0-or-later
+LICFILE          = file://COPYING*
 HOMEPAGE         = https://www.gnu.org/software/binutils/
 DESCRIPTION      = The GNU Binutils are a collection of binary tools. \
                    The main ones are: \

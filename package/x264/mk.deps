@@ -8,6 +8,10 @@
 
 PACKAGE_NAME     = x264
 
+LICENSE          = GPL-2.0-only
+HOMEPAGE         = https://code.videolan.org/videolan/x264
+DESCRIPTION      = x264, the best and fastest H.264 encoder
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git

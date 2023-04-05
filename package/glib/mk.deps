@@ -9,6 +9,12 @@
 PACKAGE_NAME     = glib
 SEARCH_HDRS      = libffi zlib pcre2
 
+LICENSE          = LGPL-2.1-or-later
+LICFILE          = file://COPYING
+HOMEPAGE         = https://developer.gnome.org/glib/
+DESCRIPTION      = GLib is a general-purpose, portable utility library, which provides many useful data types, macros, \
+                   type conversions, string utilities, file utilities, a mainloop abstraction, and so on.
+
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2.75.3
