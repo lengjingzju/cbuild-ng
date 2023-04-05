@@ -977,9 +977,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
         * undefined: 若 LICENSE 符合 [SPDX](https://spdx.org/licenses/) 的许可证列表，将链接到 SPDX 对应的 license 描述界面
         * `https://xxx` or `http://xxx`: 将链接到指定 URL 对应的界面
         * `common://xxx`: 将链接到安装的共有的 license 文件夹
-        * `file://xxx` or `file:xxx;line=m-n`: 安装源码中的特定文件到 `/usr/share/license/$(PACKAGE_NAME)` 目录
+        * `file://xxx` or `file:xxx;line=m-n;dst=xxx`: 安装源码中的特定文件到 `/usr/share/license/$(PACKAGE_NAME)` 目录
             * 此种类型可以同时指定多个文件
-            * `line=m-n` 表示提取 m 到 n 行安装而不是安装整个文件
+            * `line=m-n` 表示提取 m 到 n 行安装而不是安装整个文件 (可选)
+            * `dst=xxx` 表示将安装的 license 文件重命名为 xxx (可选)
     * LICPATH: `file` 类型查找的源文件的起始目录，默认取值 `$(SRC_PATH)`
     * LICDEST: 安装 license 的根目录，默认取值 `$(INS_PREFIX)`
 

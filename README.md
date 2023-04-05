@@ -987,9 +987,10 @@ Note: The reason for providing the above functions is that multiple libraries or
         * undefined: If `LICENSE` is compliant with [SPDX](https://spdx.org/licenses/), it will link to the license description URL in SPDX
         * `https://xxx` or `http://xxx`: It will link to the specific URL
         * `common://xxx`: It will link to the shared license installation folder
-        * `file://xxx` or `file:xxx;line=m-n`: It will install the specific files to `/usr/share/license/$(PACKAGE_NAME)`
+        * `file://xxx` or `file:xxx;line=m-n;dst=xxx`: It will install the specific files to `/usr/share/license/$(PACKAGE_NAME)`
             * This type can specify multiple files at the same time
-            * `line=m-n` indicates extracting m to n lines to install instead of installing the entire file
+            * `line=m-n`: Indicates extracting m to n lines to install instead of installing the entire file (optional)
+            * `dst=xxx`: Indicates renaming the installed license file (optional)
     * LICPATH: The starting directory of the source file to find for `file://` type, its default value is `$(SRC_PATH)`
     * LICDEST: The root directory to install licenses, its default value is `$(INS_PREFIX)`
 

@@ -11,7 +11,7 @@ PACKAGE_NAME     = rootfs
 LICENSE          = MIT
 LICPATH          = .
 LICDEST          = $(FAKEROOT_DIR)
-LICFILE          = file://mk.deps;line=1-5
+LICFILE          = file://mk.deps;line=1-5;dst=LICENSE
 DESCRIPTION      = The rootfs example of the Build-ng compilation system.
 
 include $(ENV_MAKE_DIR)/inc.env.mk

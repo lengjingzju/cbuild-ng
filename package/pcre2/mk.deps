@@ -9,7 +9,7 @@
 PACKAGE_NAME     = pcre2
 
 LICENSE          = BSD-3-Clause
-LICFILE          = file://LICENSE
+LICFILE          = file://LICENCE
 HOMEPAGE         = https://github.com/PCRE2Project/pcre2
 DESCRIPTION      = Perl-Compatible Regular Expressions. \
                    The PCRE2 library is a set of C functions that implement regular expression pattern matching using \

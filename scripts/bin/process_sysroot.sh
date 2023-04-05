@@ -30,7 +30,7 @@ link_sysroot() {
     for v in $(ls $s); do
         if [ -d $s/$v ] && [ ! -L $s/$v ]; then
             case $v in
-                locale|man|info|doc)
+                locale|man|info|doc|license)
                     if [ $(echo $s | grep -c '/share$') -eq 1 ]; then
                         continue
                     fi
@@ -79,7 +79,7 @@ install_sysroot() {
                         install_sysroot $s/$v $d/$v
                     fi
                     ;;
-                locale|man|info|doc)
+                locale|man|info|doc|license)
                     if [ $(echo $s | grep -c '/share$') -eq 1 ]; then
                         mkdir -p $d/$v
                         cp -drf $s/$v/* $d/$v
@@ -228,6 +228,7 @@ install_license() {
             lic_dst=''
             lic_begin=0
             lic_end=0
+            rename_flag=0
 
             for slice in $(echo "${item}" | sed 's/@semicolon@/ /g'); do
                 if [ $(echo "${slice}" | grep -c '^file://') -eq 1 ]; then
@@ -236,12 +237,19 @@ install_license() {
                 elif [ $(echo "${slice}" | grep -c '^line=') -eq 1 ]; then
                     lic_begin=$(echo "${slice}" | sed 's|^line=||g' | cut -d '-' -f 1)
                     lic_end=$(echo "${slice}" | sed 's|^line=||g' | cut -d '-' -f 2)
+                elif [ $(echo "${slice}" | grep -c '^dst=') -eq 1 ]; then
+                    rename_flag=1
+                    lic_dst=$(echo "${slice}" | sed 's|^dst=||g')
                 fi
             done
 
             mkdir -p ${lic_dstdir}/${package}
             if [ ${lic_begin} -eq 0 ] || [ ${lic_end} -eq 0 ]; then
-                cp -df ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}/${lic_dst}
+                if [ ${rename_flag} -eq 0 ]; then
+                    cp -drf ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}
+                else
+                    cp -drf ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}/${lic_dst}
+                fi
             else
                 sed -n "${lic_begin},${lic_end} p" ${lic_srcdir}/${lic_src} > ${lic_dstdir}/${package}/${lic_dst}
             fi
