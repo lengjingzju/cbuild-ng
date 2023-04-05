@@ -21,62 +21,64 @@ gcc_arch_option=
 linux_version=5.15.88
 gcc_version=12.2.0
 
-case $soc in
-    'cortex-a78')
-        machine=qemuarm64
-        cpu=cortex-a78
-        arch=armv8.2-a
-        cpu_family=aarch64
-        endian=little
-        linux_arch=arm64
-        cross_target=aarch64-linux-gnu
-        gcc_arch_option="--with-arch=armv8.2-a --with-tune=cortex-a78 --with-cpu=cortex-a78+crypto+dotprod+fp16+rcpc"
-        ;;
-    'cortex-a76')
-        machine=qemuarm64
-        cpu=cortex-a76
-        arch=armv8.2-a
-        cpu_family=aarch64
-        endian=little
-        linux_arch=arm64
-        cross_target=aarch64-linux-gnu
-        gcc_arch_option="--with-arch=armv8.2-a --with-tune=cortex-a76 --with-cpu=cortex-a76+crypto+dotprod+fp16+rcpc"
-        ;;
-    'cortex-a53+crypto')
-        machine=qemuarm64
-        cpu=cortex-a53+crypto
-        arch=armv8-a
-        cpu_family=aarch64
-        endian=little
-        linux_arch=arm64
-        cross_target=aarch64-linux-gnu
-        gcc_arch_option="--with-arch=armv8-a --with-cpu=cortex-a53+crypto"
-        ;;
-    'cortex-a53')
-        machine=qemuarm64
-        cpu=cortex-a53
-        arch=armv8-a
-        cpu_family=aarch64
-        endian=little
-        linux_arch=arm64
-        cross_target=aarch64-linux-gnu
-        gcc_arch_option="--with-arch=armv8-a --with-cpu=cortex-a53"
-        ;;
-    'cortex-a9')
-        machine=qemuarm
-        cpu=cortex-a9
-        arch=armv7-a
-        cpu_family=arm
-        endian=little
-        linux_arch=arm
-        cross_target=arm-linux-gnueabihf
-        gcc_arch_option="--with-arch=armv7-a --with-tune=cortex-a9"
-        ;;
-    *)
-        echo "ERROR: $0: Invalid soc $soc"
-        exit 1;
-        ;;
-esac
+if [ ! -z $soc ]; then
+    case $soc in
+        'cortex-a78')
+            machine=qemuarm64
+            cpu=cortex-a78
+            arch=armv8.2-a
+            cpu_family=aarch64
+            endian=little
+            linux_arch=arm64
+            cross_target=aarch64-linux-gnu
+            gcc_arch_option="--with-arch=armv8.2-a --with-tune=cortex-a78 --with-cpu=cortex-a78+crypto+dotprod+fp16+rcpc"
+            ;;
+        'cortex-a76')
+            machine=qemuarm64
+            cpu=cortex-a76
+            arch=armv8.2-a
+            cpu_family=aarch64
+            endian=little
+            linux_arch=arm64
+            cross_target=aarch64-linux-gnu
+            gcc_arch_option="--with-arch=armv8.2-a --with-tune=cortex-a76 --with-cpu=cortex-a76+crypto+dotprod+fp16+rcpc"
+            ;;
+        'cortex-a53+crypto')
+            machine=qemuarm64
+            cpu=cortex-a53+crypto
+            arch=armv8-a
+            cpu_family=aarch64
+            endian=little
+            linux_arch=arm64
+            cross_target=aarch64-linux-gnu
+            gcc_arch_option="--with-arch=armv8-a --with-cpu=cortex-a53+crypto"
+            ;;
+        'cortex-a53')
+            machine=qemuarm64
+            cpu=cortex-a53
+            arch=armv8-a
+            cpu_family=aarch64
+            endian=little
+            linux_arch=arm64
+            cross_target=aarch64-linux-gnu
+            gcc_arch_option="--with-arch=armv8-a --with-cpu=cortex-a53"
+            ;;
+        'cortex-a9')
+            machine=qemuarm
+            cpu=cortex-a9
+            arch=armv7-a
+            cpu_family=arm
+            endian=little
+            linux_arch=arm
+            cross_target=arm-linux-gnueabihf
+            gcc_arch_option="--with-arch=armv7-a --with-tune=cortex-a9"
+            ;;
+        *)
+            echo "ERROR: $0: Invalid soc $soc"
+            exit 1;
+            ;;
+    esac
+fi
 
 case $choice in
     machine)

@@ -78,40 +78,15 @@ install_tofile_%:
 	install -d $$(dirname $${idst}) && cp $${iopt} $${isrc} $${idst}
 
 ifneq ($(ENV_BUILD_MODE), yocto)
-
-SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
-
 ifneq ($(DIS_LICENSE), y)
-
 .PHONY: license
-
+SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
 SRC_PATH        ?= .
+
 install release: license
 license:
 	$(call install_lics)
-
 endif
-
-.PHONY: psysroot isysroot license
-
-psysroot:
-	@$(MAKE) $(PREPARE_SYSROOT)
-
-ifneq ($(filter $(INSTALL_OPTION),link release), )
-
-isysroot:
-	@install -d $(INS_PREFIX)
-	@flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
-
-else # INSTALL_OPTION
-
-isysroot: install
-	@$(SYSROOT_SCRIPT) replace $(INS_TOPDIR)
-	@install -d $(SYS_PREFIX)
-	@flock $(SYS_PREFIX) -c "bash $(SYSROOT_SCRIPT) link $(INS_TOPDIR) $(SYS_PREFIX)"
-
-endif # INSTALL_OPTION
-
-endif # ENV_BUILD_MODE
+endif
 
 endif # KERNELRELEASE

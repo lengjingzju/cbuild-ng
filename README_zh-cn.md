@@ -198,23 +198,26 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
         * `ignore` 关键字是特殊的ID，表示此包不是一个包，用来屏蔽当前目录的搜索，一般写成 `#DEPS() ignore():`
     * Other_Target_Names: 当前包的其它目标，多个目标使用空格隔开 (可以为空)，有如下特殊的关键字:
         * 包类型关键字
-            * rule      : 表明包使用 `inc.rule.mk` 调用原始的编译方式，解析到 `include inc.rule.mk` 自动添加，无需手动设置
-                * rule 包自动添加 `singletask` 和 `distclean` 关键字，且支持 `cache` 关键字
-            * standard  : 表明包使用 `inc.ins.mk` 模板安装，默认包类型，无需手动设置
-                * standard 包自动添加 `isysroot` 关键字
-            * custom    : 表明包没有 `isysroot` 目标用于安装，需要手动指明此类型
+            * unified   : 主要特征是包的 `all` 目标同时进行了编译和安装
+                * 解析到 `include inc.rule.mk` 自动添加，一般无需手动设置
+                * `unified` 包自动添加 `singletask` 和 `distclean` 关键字，且支持 `cache` 关键字
+            * direct    : 主要特征是包的 `all` 目标只进行了编译
+                * 默认包类型，一般无需手动设置
+                * 如果未声明 `noisysroot`，`direct` 包默认自动添加 `isysroot` 关键字
         * 包目标关键字
             * all install clean: 忽略必需的目标，加不加对解析结果没有任何影响
             * distclean : 完全清理编译输出(包含配置)
             * prepare   : 表示 make 前运行 make prepare，一般用于当 .config 不存在时加载默认配置到 .config
-            * psysroot  : 表示在 WORKDIR 准备 sysroot 而不是使用全局的 sysroot
-            * isysroot  : 表示在顶层 Makefile 调用 `make isysroot` 安装而不是 `make install` 安装，一般无需手动设置
-                * 此时 `gen_build_chain.py` 中的 `dis_isysroot` 要设置为 False
             * release   : 表示安装进 fakeroot 时运行 `make release`
                 * 此目标不需要安装头文件和静态库文件等
                 * release 目标不存在时，安装到 fakeroot rootfs 时运行 `make install`
         * 包属性关键字
             * norelease : 表示该包没有文件安装到 fakeroot，例如包只输出头文件 和/或 静态库
+            * psysroot  : 表示在 WORKDIR 准备依赖的 sysroot 而不是使用全局的 sysroot
+            * isysroot  : 表示在顶层 Makefile 运行编译任务时进行了编译，同时安装到 `$(WORKDIR)/image`
+                * 此时 `gen_build_chain.py` 中的 `dis_isysroot` 要设置为 False
+            * noisysroot: 表示在顶层 Makefile 运行编译任务时只进行了编译，没有安装到 `$(WORKDIR)/image`
+            * finally   : 表示此包编译顺序在所有其它包之后，一般用于最后生成文件系统和系统镜像
             * native    : 表示同时定义了包的交叉编译包和本地编译包
             * cache     : 表明该包支持缓存机制，解析到 `CACHE_BUIILD=y` 时自动添加，无需手动设置
             * singletask: 表示单线程编译
@@ -233,30 +236,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 可以 `make 包名_single` 有依赖时才有这类目标，仅仅编译这个包
     * 可以 `make 包名_目标名` 先编译某个包的依赖包(有依赖时)再编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
     * 可以 `make 包名_目标名_single` 有依赖时才有这类目标，仅仅编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
-<br>
-
-* Classic Build 有 4 种安装
-    * 安装到包自己的 sysroot 目录 (`$(WORKDIR)/image`)
-        * `rule` 包运行 `make`
-        * `standard` 包运行 `make isysroot` (`gen_build_chain.py` 中的 `dis_isysroot` 和 `dis_gsysroot` 都是 `False`)
-        * `standard` 包运行 `make install` (`gen_build_chain.py` 中的 `dis_isysroot` 是 `False` 但 `dis_gsysroot` 是 `True`)
-        * 其他情况其他情况无此安装
-    * 安装到全局 sysroot 目录
-        * `gen_build_chain.py` 中的 `dis_gsysroot` 需要设置为 `False`，否则无此安装
-        * `rule` 包符号链接到到他自己的 sysroot 目录，当前包运行 `make install`
-        * `standard` 包符号链接到到他自己的 sysroot 目录，当前包运行 `make isysroot` (`gen_build_chain.py` 中的 `dis_isysroot` 是 `False`)
-        * 其他情况是安装实际文件，当前包运行 `make install`
-    * 安装到包自己的依赖 sysroot 目录 (`$(WORKDIR)/sysroot` / `$(WORKDIR)/sysroot-native`)，当前包运行 `make psysroot`
-        * 当前包没有依赖就无此安装
-        * `rule` 依赖包符号链接到到他自己的 sysroot 目录，依赖包运行 `make install`
-        * `standard` 依赖包符号链接到到他自己的 sysroot 目录，依赖包运行 `make isysroot` (`gen_build_chain.py` 中的 `dis_isysroot` 是 `False`)
-        * 其他情况是安装实际文件，依赖包运行 `make install`
-    * 安装到 rootfs 的 fakeroot 目录，rootfs 包运行 `make packages`
-        * 变量 `INSTALL_OPTION` 的值会被设置为 `release`
-        * 未声明 `norelease` 和 `finally` 的交叉编译包才有此种安装，安装实际文件，不含头文件静态库等
-        * 声明了 `release`，交叉编译包运行 `make release` (优先规则)
-        * `standard` 交叉编译包运行 `make isysroot` (`gen_build_chain.py` 中的 `dis_isysroot` 是 `False`)
-        * 其他情况交叉编译包运行 `make install`
 
 
 ### Yocto Build 实依赖规则
@@ -302,7 +281,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 <br>
 
 * 特殊依赖(关键字)
-    * `finally`     : 表示此包编译顺序在所有其它包之后，一般用于最后生成文件系统和系统镜像，只用在 Classic Build 的强依赖中
     * `unselect`    : 表示此包默认不编译，即 `default n`，否则此包默认编译，即 `default y`
     * `nokconfig`   : 表示此包不含 Kconfig 配置。同一目录有多个包时，此包无需设置 `nokconfig`，而其它包也有配置可以将配置的文件名设为 **包名.配置的后缀** ，否则需要设置 nokconfig
     * `kconfig`     : 表示多个包共享相同的 Kconfig，一般是同一个软件的交叉编译包和本地编译包共享
@@ -1014,7 +992,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * `make time_statistics` 是一个一个包编译过去(包内可能是多线程编译)，获取每个包的编译时间
         * 每个开源软件包有三行: 第1行是准备依赖的 sysroot，第2行是编译，第3行是安装到全局 sysroot
     * `make` 是不仅是包内可能是多线程编译，多个包也是同时编译，不统计编译时间
-    * `make all_fetchs` 只下载所有选中的支持缓存的包的源码
+    * `make all_fetches` 只下载所有选中的支持缓存的包的源码
         *
 注: 第一次编译前最好选中支持缓存的包后下载所有的源码 `make all_fetchs`，防止源码无法一次下载成功导致其它问题
     * `make all_caches` 下载并编译所有选中的支持缓存的包的源码

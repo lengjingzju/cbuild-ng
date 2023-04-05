@@ -136,7 +136,7 @@ endif
 ifneq ($(ENV_BUILD_MODE), yocto)
 
 PREPARE_SYSROOT = -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
-                  PRECMD= NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_install_depends
+                  NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
 
 ifneq ($(DIS_PC_EXPORT), y)
 export PKG_CONFIG_LIBDIR=$(DEP_PREFIX)/usr/lib/pkgconfig

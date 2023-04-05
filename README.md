@@ -204,27 +204,27 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
         * The keyword of `ignore` is a special ID that indicates no package, which is used to ignore the search of the current directory (`#DEPS() ignore():`)
     * Other_Target_Names: Other targets of the current package, multiple targets are separated by space (can be empty), there are following keywords:
         * Package Type Keywords
-            * rule      : Indicates using `inc.rule.mk` to call original compilation
+            * unified   : The main feature is that the `all` target of the package calls both compilation and installation
                 * It is automatically appended when matching `include inc.rule.mk`, no manual setting required
-                * `rule` package automatically appends the keywords of `singletask` and `distclean`, and it supports the keyword of `cache`
-            * standard  : Indicates using `inc.ins.mk` to install
+                * `unified` package automatically appends the keywords of `singletask` and `distclean`, and it supports the keyword of `cache`
+            * direct    : The main feature is that the `all` target of the package only calls compilation
                 * It is the default package type, no manual setting required
-                * `standard` automatically appends the keywords of `isysroot`
-            * custom    : Indicates that the package doesn't have the target of `isysroot` to install
-                * This type needs to be specified manually
+                * `direct` package automatically appends the keyword of `isysroot` if the keyword of `noisysroot` is not specified
         * Package Target Keywords
             * all install clean: Ignores the necessary targets, adding or not has no effect on the parsing results
             * distclean : Completely cleans the compile output (including configuration)
             * prepare   : Indicates running `make prepare` before `make`
                 * It is generally used to load the default configuration to .config when .config does not exist
-            * psysroot  : Indicates preparing sysroot in WORKDIR instead of using global sysroot
-            * isysroot  : Indicates that the top-level Makefile calls `make isysroot` instead of `make install` to install, no manual setting required
-                * At this time, `dis_isysroot` in `gen_build_chain.py` should be set to `False`
             * release   : Indicates running `make release` when installing to fakeroot
                 * This target doesn't need to install headers and static libraries
                 * When the release target is not present, It will run `make install` when installing to fakeroot rootfs
         * Package Attributes Keywords
             * norelease : Indicates that the package has no files installed into fakeroot, e.g. the package only outputs header files and/or static libraries
+            * psysroot  : Indicates preparing sysroot in WORKDIR instead of using global sysroot
+            * isysroot  : Indicates that the top-level Makefile installs installations to `$(WORKDIR)/image` at the same time when it runs the compilation task
+                * At this time, `dis_isysroot` in `gen_build_chain.py` should be set to `False`
+            * noisysroot: Indicates that the top-level Makefile doesn't install installations to `$(WORKDIR)/image` at the same time when it runs the compilation task
+            * finally   : Indicates that this package compilation is after all other packages, it is generally used to generate rootfs
             * native    : Indicates both cross-compilation package and native-compilation package are defined at the same time
             * cache     : Indicates that package supports cache mechanism
                 * It is automatically appended when matching `CACHE_BUIILD=y`, no manual setting required
@@ -247,30 +247,6 @@ Note: The IDs (Target_Name / Depend_Names) only can consist of lowercase letters
     * `make <package>_<target>_single`: Only compiles the target of the given package without dependency packages compiled
 
 Note: The single type commands only exist in the packages with dependencies
-
-* Classic Build has 4 kinds of installations
-    * Install to the package's own sysroot directory (`$(WORKDIR)/image`)
-        * `rule` package runs `make`
-        * The `standard` package runs `make isysroot` (both `dis_isysroot` and `dis_gsysroot` in `gen_build_chain.py` are `False`)
-        * The `standard` package runs `make install` (`dis_isysroot` in `gen_build_chain.py` is `False` but `dis_gsysroot` is `True`)
-        * Other cases do not have such installation
-    * Install to the global sysroot directory
-        * `dis_gsysroot` in `gen_build_chain.py` needs to be set to `False`, otherwise there is no such installation
-        * The `rule` package links it to its own sysroot directory, the current package runs `make install`
-        * The `standard` package symbol links it to its own sysroot directory, the current package runs `make isysroot` (`dis_isysroot` in `gen_build_chain.py ` is `False`)
-        * In other cases, the actual file is installed, and the current package runs `make install`
-    * Install to the package's own dependent sysroot directory (`$(WORKDIR)/sysroot` / `$(WORKDIR)/sysroot-native`), the current package runs `make psysroot`
-        * If the current package has no dependencies, there is no such installation
-        * The `rule` dependency package links it to its own sysroot directory, the dependency package runs `make install`
-        * The `standard` dependency package links it to its own sysroot directory, the dependency package runs `make isysroot` (`dis_isysroot` in `gen_build_chain.py` is `False`)
-        * In other cases, the dependency package installs the actual file and runs `make install`
-    * Install to the fakeroot directory of rootfs, the rootfs package runs `make packages`
-        * The value of variable `INSTALL_OPTION` is set to `release`
-        * This kind of installation is only available for cross-compilation packages that do not declare `norelease` and `finally`
-        * It installs actual files, do not include header files, static libraries, etc
-        * If `release` is declared, the cross-compilation package runs `make release` (priority rule)
-        * The `standard" cross-compilation package runs `make isysroot` (`dis_isysroot` in `gen_build_chain.py` is `False`)
-        * In other cases, the cross-compilation package runs `make install`
 
 
 ### Dependency of Yocto Build
@@ -318,7 +294,6 @@ Note: The virtual packages will not participate in compilation, but is used to o
 <br>
 
 * Keyword
-    * `finally`     : Indicates that this package compilation is after all other packages, it is generally used to generate rootfs (Classic Build)
     * `unselect`    : Indicates that this package is not compiled by default (`default n`), otherwise it is compiled by default (`default y`)
     * `nokconfig`   : Indicates that this package doesn't contain Kconfig
         * When there are multiple packages in the same directory, and only one package has Kconfig, then this package doesn't need to set `nokconfig`, and other packages should set it
@@ -1026,7 +1001,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * `make time_statistics`: Compiles all packages one by one, and counts the compilation time of each package
         * Each OSS package in the time statistics file has three lines: line 1 is to prepare the sysroot for dependencies, line 2 is to compile, and line 3 is to install to the global sysroot
     * `make`: Multi-threadedly compiles all packages
-    * `make all_fetchs`: Only downloads source code of all cache packages one by one
+    * `make all_fetches`: Only downloads source code of all cache packages one by one
     * `make all_caches`: Downloads and compiles all cache packages one by one
 <br>
 

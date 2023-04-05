@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) rootfs(custom singletask packages licenses spdx_list:: elfs): finally
+#DEPS(mk.deps) rootfs(finally noisysroot singletask packages licenses spdxlist:: elfs):
 
 PACKAGE_NAME     = rootfs
 
@@ -20,7 +20,7 @@ SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
 PACKAGE_SCRIPT  := $(ENV_TOOL_DIR)/gen_package_infos.py
 FAKEROOT_DIR    ?= $(ENV_CROSS_ROOT)/fakeroot
 
-.PHONY: all clean install cleanroot licenses packages elfs spdx_list
+.PHONY: all clean install cleanroot licenses packages elfs spdxlist
 
 all: elfs
 	@echo "Build $(PACKAGE_NAME) Done."
@@ -42,14 +42,14 @@ licenses: cleanroot
 	@python3 $(PACKAGE_SCRIPT) -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt \
 		-o $(LICENSE_PATH)/index.txt -w $(LICENSE_PATH)/index.html -f 1:1
 
-spdx_list:
+spdxlist:
 	@python3 $(PACKAGE_SCRIPT)
 
 packages: cleanroot licenses
 	@echo "Install Packages:"
 	@echo "----------------------------------------"
 	@mkdir -p $(FAKEROOT_DIR)
-	@make -s -C $(ENV_TOP_DIR) PRECMD= CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_release_targets
+	@make -s -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_releases
 ifneq ($(ENV_BUILD_TOOL), )
 	@echo "    glibc from $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot)"
 	@$(SYSROOT_SCRIPT) release $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot) $(FAKEROOT_DIR)
@@ -71,12 +71,3 @@ elfs: packages
 	if [ ! -z "$${elfs}" ]; then \
 		$(STRIP) -s $${elfs}; \
 	fi
-
-ifneq ($(ENV_BUILD_MODE), yocto)
-
-.PHONY: psysroot
-
-psysroot:
-	@$(MAKE) $(PREPARE_SYSROOT)
-
-endif

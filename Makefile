@@ -16,7 +16,8 @@ DEF_CONFIG     := def_config
 IGNORE_DIRS    := .git:.svn:scripts:output:build:configs:examples:notes
 KEYWORDS       := none
 MAXLEVEL       := 3
-TIME_FORMAT    := /usr/bin/time -a -o $(WORKDIR)/time_statistics -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
+TIME_OUTPUT    := $(WORKDIR)/time_statistics.$(shell date +"%Y-%m-%d.%H-%M-%S.%N")
+TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
 
 .PHONY: all clean distclean toolchain deps all-deps total_time time_statistics
 
@@ -61,6 +62,7 @@ time_statistics:
 	@mkdir -p $(WORKDIR)
 	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
 	@make $(ENV_BUILD_FLAGS) PRECMD="$(TIME_FORMAT) " total_time
+	@echo "time statistics file is $(TIME_OUTPUT)"
 
 else # ENV_BUILD_MODE=yocto
 

@@ -30,5 +30,3 @@ clean: clean_objs
 	@echo "Clean $(PACKAGE_NAME) Done."
 
 install: install_hdrs install_libs install_bins
-
-

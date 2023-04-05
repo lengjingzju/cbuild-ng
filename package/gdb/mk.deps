@@ -33,10 +33,13 @@ AUTOTOOLS_FLAGS += --disable-bootstrap \
 
 ifeq ($(CROSS_COMPILE), )
 
-.PHONY: all clean install psysroot
+.PHONY: all clean install
 
-all clean install psysroot:
+all clean install:
 	@
+
+USER_DEFINED_TARGET = y
+include $(ENV_MAKE_DIR)/inc.rule.mk
 
 else
 

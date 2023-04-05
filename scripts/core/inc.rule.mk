@@ -135,17 +135,9 @@ endef
 endif
 
 ifeq ($(do_install), )
-ifneq ($(filter $(INSTALL_OPTION),link release), )
 define do_install
-	install -d $(INS_PREFIX); \
-	flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
+	$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
 endef
-else
-define do_install
-	install -d $(SYS_PREFIX); \
-	flock $(SYS_PREFIX) -c "bash $(SYSROOT_SCRIPT) link $(INS_TOPDIR) $(SYS_PREFIX)"
-endef
-endif
 endif
 
 ifeq ($(CACHE_BUILD), y)
