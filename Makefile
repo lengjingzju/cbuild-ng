@@ -18,11 +18,14 @@ KEYWORDS       := none
 MAXLEVEL       := 3
 TIME_OUTPUT    := $(WORKDIR)/time_statistics.$(shell date +"%Y-%m-%d.%H-%M-%S.%N")
 TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
+PROGRESS_SCRIPT:= python3 $(ENV_TOOL_DIR)/show_progress.py
 
-.PHONY: all clean distclean toolchain deps all-deps total_time time_statistics
+.PHONY: all clean distclean toolchain deps all-deps total_time time_statistics progress_init
 
 all: loadconfig
-	@make $(ENV_BUILD_JOBS) $(ENV_BUILD_FLAGS) MAKEFLAGS= all_targets
+	@$(PROGRESS_SCRIPT) start &
+	@sleep 1
+	@make $(ENV_BUILD_JOBS) $(ENV_BUILD_FLAGS) MAKEFLAGS= progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
 	@echo "Build done!"
 
 -include $(WORKDIR)/.config
@@ -55,7 +58,9 @@ all-deps:
 	done
 
 total_time: loadconfig
-	@$(PRECMD)make $(ENV_BUILD_FLAGS) all_targets
+	@$(PROGRESS_SCRIPT) start &
+	@sleep 1
+	@$(PRECMD)make $(ENV_BUILD_FLAGS) progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
 	@echo "Build done!"
 
 time_statistics:
@@ -63,6 +68,18 @@ time_statistics:
 	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
 	@make $(ENV_BUILD_FLAGS) PRECMD="$(TIME_FORMAT) " total_time
 	@echo "time statistics file is $(TIME_OUTPUT)"
+
+ifneq ($(progress_cmd), )
+
+progress_init:
+	@$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) total=$(words $(ALL_TARGETS))
+
+$(ALL_TARGETS): progress_init
+
+all_targets: 
+	@$(PROGRESS_SCRIPT) stop
+
+endif
 
 else # ENV_BUILD_MODE=yocto
 

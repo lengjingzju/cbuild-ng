@@ -228,7 +228,6 @@ cachebuild:
 		$(call do_compile); \
 		$(call do_push); \
 	fi
-	@echo "Build $(PACKAGE_ID) Done."
 
 psysroot:
 	@checksum=$$($(call do_check)); \
@@ -256,7 +255,6 @@ else
 
 nocachebuild:
 	@$(call do_compile)
-	@echo "Build $(PACKAGE_ID) Done."
 
 psysroot:
 	@$(MAKE) $(PREPARE_SYSROOT)

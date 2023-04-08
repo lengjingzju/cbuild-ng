@@ -1344,6 +1344,7 @@ class Deps:
                 if pkg_flags['isysroot']:
                     compile_str += '\t@install -d %s\n' % (isys_dir)
                     compile_str += '\t%s %s%s\n' % (make, unionstr, 'install')
+                compile_str += '\t@$(progress_cmd)\n'
 
                 phony.append(item['target'])
                 if pkg_flags['deps']:
