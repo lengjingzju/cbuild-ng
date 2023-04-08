@@ -36,9 +36,10 @@ SEARCH_HDRS     += freetype2 libpng16
 AUTOTOOLS_FLAGS += --with-freetype=yes
 else
 AUTOTOOLS_FLAGS += --with-freetype=no
-define do_append
-	cp -fp $(SRC_PATH)/src/hb-ft.h $(INS_TOPDIR)$(INS_SUBDIR)/include/harfbuzz
-endef
 endif
 
+USER_TARGET_FOR_APPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@cp -fp $(SRC_PATH)/src/hb-ft.h $(INS_TOPDIR)$(INS_SUBDIR)/include/harfbuzz

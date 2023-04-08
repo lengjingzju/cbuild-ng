@@ -8,6 +8,9 @@
 
 choice=$1
 soc=${ENV_BUILD_SOC}
+if [ -z "$soc" ]; then
+    soc="$2"
+fi
 
 cpu=
 machine=
@@ -80,6 +83,23 @@ if [ ! -z $soc ]; then
     esac
 fi
 
+get_build_jobs() {
+    build_jobs=1
+    total_cpus=`nproc`
+
+    if [ ${total_cpus} -ge 32 ]; then
+        build_jobs=$(( (${total_cpus} + 3) / 4 ))
+    elif [ ${total_cpus} -ge 16 ]; then
+        build_jobs=$(( (${total_cpus} + 1) / 2 ))
+    elif [ ${total_cpus} -ge 8 ]; then
+        build_jobs=8
+    else
+        build_jobs=${total_cpus}
+    fi
+
+    echo $build_jobs
+}
+
 case $choice in
     machine)
         echo "$machine"
@@ -134,6 +154,9 @@ case $choice in
         ;;
     cache_grades)
         echo "$soc $cpu $arch $cpu_family"
+        ;;
+    build_jobs)
+        get_build_jobs
         ;;
     *)
         echo "ERROR: $0: Invalid choice $choice"

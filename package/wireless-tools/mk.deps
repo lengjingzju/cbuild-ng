@@ -25,11 +25,11 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 CACHE_CHECKSUM  += $(PATCH_FOLDER)
 
-MAKES_FLAGS      = PREFIX=$(INS_TOPDIR) INSTALL_INC=$(INS_TOPDIR)/usr/include INSTALL_MAN=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
-MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
+MAKE_FLAGS       = PREFIX=$(INS_TOPDIR) INSTALL_INC=$(INS_TOPDIR)/usr/include INSTALL_MAN=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
+MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
 
-define do_prepend
-	sed -i '/ldconfig/ d' $(SRC_PATH)/Makefile
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i '/ldconfig/ d' $(SRC_PATH)/Makefile

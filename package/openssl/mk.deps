@@ -24,17 +24,14 @@ SRC_MD5          = 1cfee919e0eac6be62c88c5ae8bcd91e
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-define do_compile
-	set -e; \
-	$(call do_fetch); \
-	cd $(WORKDIR)/$(SRC_DIR) && ./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) \
-		$(if $(CROSS_COMPILE),--cross-compile-prefix='') $(LOGOUTPUT); \
-	sed -i 's/ -m64//g' Makefile; \
-	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \
-	$(call install_lics); \
-	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
-	$(if $(do_append),$(call do_append),true); \
-	set +e
-endef
-
+USER_TARGET_FOR_PREPEND = y
+USER_TARGET_FOR_COMPILE = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && \
+		./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(if $(CROSS_COMPILE),--cross-compile-prefix='') $(LOGOUTPUT)
+	@sed -i 's/ -m64//g' $(SRC_PATH)/Makefile
+
+compile:
+	@cd $(SRC_PATH) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)

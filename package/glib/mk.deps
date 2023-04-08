@@ -28,8 +28,8 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = meson
 
-define do_prepend
-	sed -i "s@^gdb_install_dir = join_paths.*@gdb_install_dir = join_paths(glib_datadir, 'gdb', 'auto-load')@g" $(SRC_PATH)/glib/meson.build
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i "s@^gdb_install_dir = join_paths.*@gdb_install_dir = join_paths(glib_datadir, 'gdb', 'auto-load')@g" $(SRC_PATH)/glib/meson.build

@@ -25,7 +25,7 @@ SRC_MD5          = 06333f4301657298890fd8d6f1fb4793
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-MAKES_FLAGS      = -C $(SRC_PATH) FAKEROOT=$(INS_TOPDIR) lib=lib
-MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) BUILD_CC=gcc)
+MAKE_FLAGS       = -C $(SRC_PATH) FAKEROOT=$(INS_TOPDIR) lib=lib
+MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) BUILD_CC=gcc)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

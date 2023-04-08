@@ -5,7 +5,7 @@
 ############################################
 
 COLORECHO      ?= $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
-LOGOUTPUT      ?= $(if $(filter -s,$(ENV_BUILD_FLAGS)),1>/dev/null)
+LOGOUTPUT      ?= $(if $(filter y,$(BUILDVERBOSE)),,1>/dev/null)
 
 INSTALL_HDR    ?= $(PACKAGE_NAME)
 SEARCH_HDRS    ?= $(PACKAGE_DEPS)

@@ -32,13 +32,13 @@ SRC_MD5          = d26797fcb002898d4ee989179346e1cc
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
-MAKES_FLAGS      = EXTRA_CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
-MAKES_FLAGS     += LIBDIR=$(INS_TOPDIR)/lib BINDIR=$(INS_TOPDIR)/sbin INCDIR=$(INS_TOPDIR)$(INS_SUBDIR)/include
-MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CROSS_COMPILE)gcc AR=$(CROSS_COMPILE)ar)
-MAKES_FLAGS     += -C $(WORKDIR)/$(SRC_DIR)/wpa_supplicant
+MAKE_FLAGS       = EXTRA_CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+MAKE_FLAGS      += LIBDIR=$(INS_TOPDIR)/lib BINDIR=$(INS_TOPDIR)/sbin INCDIR=$(INS_TOPDIR)$(INS_SUBDIR)/include
+MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CROSS_COMPILE)gcc AR=$(CROSS_COMPILE)ar)
+MAKE_FLAGS      += -C $(SRC_PATH)/wpa_supplicant
 
-define do_prepend
-	cp -f $(WORKDIR)/$(SRC_DIR)/wpa_supplicant/defconfig $(WORKDIR)/$(SRC_DIR)/wpa_supplicant/.config
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cp -f $(SRC_PATH)/wpa_supplicant/defconfig $(SRC_PATH)/wpa_supplicant/.config

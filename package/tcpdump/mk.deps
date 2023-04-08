@@ -27,9 +27,9 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
 
-define do_append
-	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION); \
-	ln -sf tcpdump $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)
-endef
-
+USER_TARGET_FOR_APPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)
+	@ln -sf tcpdump $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)

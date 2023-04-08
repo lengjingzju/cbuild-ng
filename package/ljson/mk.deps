@@ -26,10 +26,10 @@ CACHE_BUILD      = y
 CACHE_CHECKSUM  += $(MAKE_FILE)
 CACHE_DEPENDS    = none
 
-MAKES_FLAGS      = INS_PREFIX=$(INS_PREFIX) OBJ_PREFIX=$(OBJ_PREFIX) -C $(SRC_PATH)
+MAKE_FLAGS       = INS_PREFIX=$(INS_PREFIX) OBJ_PREFIX=$(OBJ_PREFIX) -C $(SRC_PATH)
 
-define do_prepend
-	cp -f $(MAKE_FILE) $(SRC_PATH)
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cp -f $(MAKE_FILE) $(SRC_PATH)

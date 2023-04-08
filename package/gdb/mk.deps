@@ -46,27 +46,22 @@ AUTOTOOLS_FLAGS += --disable-bootstrap \
 
 ifeq ($(CROSS_COMPILE), )
 
-.PHONY: all clean install
+USER_TARGET_FOR_BUILD = y
+include $(ENV_MAKE_DIR)/inc.rule.mk
 
-all clean install:
+build:
 	@
 
-USER_DEFINED_TARGET = y
-include $(ENV_MAKE_DIR)/inc.rule.mk
-
 else
 
-ifeq ($(INSTALL_OPTION), release)
-define do_install
-	install -d $(INS_PREFIX); \
-	flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
-endef
-else
-define do_install
-	true
-endef
+ifneq ($(INSTALL_OPTION), release)
+USER_TARGET_FOR_INSTALL = y
 endif
-
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+ifneq ($(INSTALL_OPTION), release)
+install:
+	@
+endif
 
 endif

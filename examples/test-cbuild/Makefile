@@ -17,11 +17,12 @@ IGNORE_DIRS    := .git:.svn:scripts:output:configs
 KEYWORDS       := none
 MAXLEVEL       := 2
 TIME_FORMAT    := /usr/bin/time -a -o $(WORKDIR)/time_statistics -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
+MAKESILENT     ?= $(if $(filter y,$(BUILDVERBOSE)),,-s)
 
-.PHONY: all clean distclean toolchain deps all-deps total_time time_statistics
+.PHONY: all clean distclean deps all-deps total_time time_statistics
 
 all: loadconfig
-	@make $(ENV_BUILD_JOBS) $(ENV_BUILD_FLAGS) MAKEFLAGS= all_targets
+	@make $(MAKESILENT) $(ENV_BUILD_JOBS) MAKEFLAGS= all_targets
 	@echo "Build done!"
 
 -include $(WORKDIR)/.config
@@ -51,10 +52,10 @@ all-deps:
 	done
 
 total_time: loadconfig
-	@$(PRECMD)make $(ENV_BUILD_FLAGS) all_targets
+	@$(PRECMD)make $(MAKESILENT) all_targets
 	@echo "Build done!"
 
 time_statistics:
 	@mkdir -p $(WORKDIR)
 	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
-	@make $(ENV_BUILD_FLAGS) PRECMD="$(TIME_FORMAT) " total_time
+	@make $(MAKESILENT) PRECMD="$(TIME_FORMAT) " total_time

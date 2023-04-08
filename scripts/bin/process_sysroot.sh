@@ -202,11 +202,7 @@ release_sysroot_without_check() {
 }
 
 release_sysroot() {
-    if [ -z "${ENV_BUILD_FLAGS}" ]; then
-        release_sysroot_with_check $1 $2
-    else
-        release_sysroot_without_check $1 $2
-    fi
+    release_sysroot_without_check $1 $2
 }
 
 replace_pkgconfig() {

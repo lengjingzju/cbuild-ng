@@ -34,21 +34,21 @@ CACHE_CHECKSUM  += $(shell pwd)/config/$(CFG_NAME)
 CACHE_DEPENDS    = none
 
 CFG_NAME         = default_defconfig
-MAKES_FLAGS      = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
+MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 
-define do_prepend
-	if [ ! -f $(OBJ_PREFIX)/.config ]; then \
+USER_TARGET_FOR_PREPEND = y
+USER_TARGET_FOR_APPEND = y
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@if [ ! -f $(OBJ_PREFIX)/.config ]; then \
 		cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME); \
 		mkdir -p $(OBJ_PREFIX); \
-		$(MAKES) $(CFG_NAME) $(LOGOUTPUT); \
+		$(MAKE) $(MAKE_FLAGS) $(CFG_NAME) $(LOGOUTPUT); \
 	fi
-endef
 
-define do_append
-	rm -f $(INS_TOPDIR)/linuxrc $(INS_TOPDIR)/sbin/init
-endef
-
-include $(ENV_MAKE_DIR)/inc.rule.mk
+append:
+	@rm -f $(INS_TOPDIR)/linuxrc $(INS_TOPDIR)/sbin/init
 
 .PHONY: defconfig menuconfig
 
@@ -56,11 +56,11 @@ defconfig:
 	@$(call do_fetch)
 	@cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME)
 	@mkdir -p $(OBJ_PREFIX)
-	@$(MAKES) $(CFG_NAME)
+	@$(MAKE) $(MAKE_FLAGS) $(CFG_NAME)
 	@$(call do_unsetforce)
 
 menuconfig:
 	@$(call do_fetch)
 	@$(call do_prepend)
-	@$(MAKES) menuconfig
+	@$(MAKE) $(MAKE_FLAGS) menuconfig
 	@$(call do_setforce)

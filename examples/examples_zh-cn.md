@@ -450,7 +450,6 @@
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
-    ENV_BUILD_FLAGS  : -s
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng/examples/test-cbuild
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
     ENV_TOOL_DIR     : /home/lengjing/data/cbuild-ng/scripts/bin

@@ -21,12 +21,9 @@ else
 SRC_PATH        ?= $(shell pwd)
 endif
 
-BUILD_JOBS      ?= $(ENV_BUILD_JOBS)
-ifneq ($(COMPILE_TOOL), meson)
-MAKES           ?= make $(BUILD_JOBS) $(ENV_BUILD_FLAGS) $(MAKES_FLAGS)
-else
-MAKES           ?= ninja $(BUILD_JOBS) $(MAKES_FLAGS)
-endif
+UNPACKFLAG      ?= $(BUILDVERBOSE)
+BUILD_JOBS      ?= $(shell echo $(MAKEFLAGS) | grep -E '\-j[0-9]+' | sed -E 's/.*(-j[0-9]+).*/\1/g')
+MAKE_FNAME      ?= mk.deps
 
 INS_FULLER      ?= n
 INS_HASRUN      ?= n
@@ -71,8 +68,9 @@ endif
 ifeq ($(CACHE_BUILD), y)
 CACHE_OUTPATH   ?= $(WORKDIR)
 CACHE_INSPATH   ?= $(INS_TOPDIR)
+CACHE_STATUS    ?= $(WORKDIR)/MATCH.status
 CACHE_GRADE     ?= 2
-CACHE_CHECKSUM  += $(wildcard $(shell pwd)/mk.deps)
+CACHE_CHECKSUM  += $(wildcard $(shell pwd)/$(MAKE_FNAME))
 CACHE_DEPENDS   ?=
 ifneq ($(SRC_MD5)$(SRC_TAG)$(SRC_REV), )
 CACHE_APPENDS   += $(SRC_MD5)$(SRC_TAG)$(SRC_REV)
@@ -95,183 +93,135 @@ define do_patch
 	$(PATCH_SCRIPT) patch $(PATCH_FOLDER) $(SRC_PATH)
 endef
 
-ifeq ($(do_compile), )
-define do_compile
-	set -e; \
-	$(if $(SRC_URLS),$(call do_fetch),true); \
-	$(if $(PATCH_FOLDER),$(call do_patch),true); \
-	mkdir -p $(OBJ_PREFIX); \
-	$(if $(do_prepend),$(call do_prepend),true); \
-	if [ "$(COMPILE_TOOL)" = "cmake" ]; then \
-		cd $(OBJ_PREFIX) && cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) \
-			$(INS_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT); \
-	elif [ "$(COMPILE_TOOL)" = "autotools" ]; then \
-		cd $(OBJ_PREFIX) && $(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) \
-			$(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT); \
-	elif [ "$(COMPILE_TOOL)" = "meson" ]; then \
-		$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX),true); \
-		$(if $(do_meson_cfg),$(call do_meson_cfg),true); \
-		cd $(SRC_PATH) && meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) \
-			$(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(OBJ_PREFIX) $(LOGOUTPUT); \
-		cd $(OBJ_PREFIX); \
-	fi; \
-	rm -rf $(INS_TOPDIR) && $(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \
-	$(call install_lics); \
-	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
-	$(if $(do_append),$(call do_append),true); \
-	set +e
-endef
+.PHONY: all build prepend compile append install clean distclean
+
+all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
+
+ifneq ($(USER_TARGET_FOR_BUILD), y)
+build:
+	@mkdir -p $(OBJ_PREFIX)
+	@$(if $(SRC_URLS),$(call do_fetch))
+	@$(if $(PATCH_FOLDER),$(call do_patch))
+ifeq ($(USER_TARGET_FOR_PREPEND), y)
+	@$(MAKE) -f $(MAKE_FNAME) prepend
+endif
+ifeq ($(COMPILE_TOOL), autotools)
+	@cd $(OBJ_PREFIX) && \
+		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT)
+else ifeq ($(COMPILE_TOOL), cmake)
+	@cd $(OBJ_PREFIX) && \
+		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT)
+else ifeq ($(COMPILE_TOOL), meson)
+	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
+	@$(if $(do_meson_cfg),$(call do_meson_cfg))
+	@cd $(SRC_PATH) && \
+		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(OBJ_PREFIX) $(LOGOUTPUT)
+endif
+	@rm -rf $(INS_TOPDIR)
+ifeq ($(USER_TARGET_FOR_COMPILE), y)
+	@$(MAKE) -f $(MAKE_FNAME) compile
+else
+ifeq ($(COMPILE_TOOL), autotools)
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+else ifeq ($(COMPILE_TOOL), cmake)
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+else ifeq ($(COMPILE_TOOL), meson)
+	@cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(LOGOUTPUT) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(LOGOUTPUT)
+else
+	@$(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+endif
+endif
+	@$(call install_lics)
+	@$(SYSROOT_SCRIPT) replace $(INS_TOPDIR)
+ifeq ($(USER_TARGET_FOR_APPEND), y)
+	@$(MAKE) -f $(MAKE_FNAME) append
+endif
 endif
 
-ifeq ($(do_clean), )
-define do_clean
-	$(MAKES) clean && rm -rf $(INS_TOPDIR)
-endef
+ifneq ($(USER_TARGET_FOR_CLEAN), y)
+clean:
+	@rm -rf $(OBJ_PREFIX)
+	@echo "Clean $(PACKAGE_ID) Done."
 endif
 
-ifeq ($(do_distclean), )
-define do_distclean
-	rm -rf $(WORKDIR)
-endef
+ifneq ($(USER_TARGET_FOR_DISTCLEAN), y)
+distclean:
+	@rm -rf $(WORKDIR)
+	@echo "Distclean $(PACKAGE_ID) Done."
 endif
 
-ifeq ($(do_install), )
-define do_install
-	$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
-endef
+ifneq ($(USER_TARGET_FOR_INSTALL), y)
+install:
+	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
 endif
 
 ifeq ($(CACHE_BUILD), y)
 
-define do_check
-	$(CACHE_SCRIPT) -m check -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+.PHONY: checksum psysroot cachebuild setforce set1force unsetforce
+
+checksum:
+	@$(CACHE_SCRIPT) -m check -r $(CACHE_STATUS) -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
 		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
 		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
 		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)') \
 		$(if $(CACHE_URL),-u '$(CACHE_URL)')
-endef
-
-define do_pull
-	$(CACHE_SCRIPT) -m pull  -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) && \
-	$(COLORECHO) "\033[33mUse $(PACKAGE_ID) Cache in $(ENV_CACHE_DIR).\033[0m"
-endef
-
-define do_push
-	$(CACHE_SCRIPT) -m push  -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
-		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
-		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)') && \
-	$(COLORECHO) "\033[33mPush $(PACKAGE_ID) Cache to $(ENV_CACHE_DIR).\033[0m"
-endef
-
-define do_setforce
-	$(CACHE_SCRIPT) -m setforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE) && \
-	echo "Set $(PACKAGE_ID) Force Build."
-endef
-
-define do_set1force
-	$(CACHE_SCRIPT) -m set1force -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE) && \
-	echo "Set $(PACKAGE_ID) Force Build."
-endef
-
-define do_unsetforce
-	$(CACHE_SCRIPT) -m unsetforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -v $(CACHE_VERBOSE) && \
-	echo "Unset $(PACKAGE_ID) Force Build."
-endef
-
-endif
-
-ifneq ($(USER_DEFINED_TARGET), y)
-
-.PHONY: all install clean distclean
-
-ifeq ($(CACHE_BUILD), y)
-all: cachebuild
-else
-all: nocachebuild
-endif
-
-clean:
-	@$(call do_clean)
-	@echo "Clean $(PACKAGE_ID) Done."
-
-distclean:
-	@$(call do_distclean)
-	@echo "Distclean $(PACKAGE_ID) Done."
-
-install:
-	@$(call do_install)
-
-endif # USER_DEFINED_TARGET
-
-ifeq ($(CACHE_BUILD), y)
-
-.PHONY: cachebuild psysroot setforce set1force unsetforce
-
-cachebuild:
-	@checksum=$$($(call do_check)); \
-	matchflag=$$(echo "$${checksum}" | grep -wc MATCH); \
-	errorflag=$$(echo "$${checksum}" | grep -c ERROR); \
-	checkinfo=$$(echo "$${checksum}" | sed '/MATCH/ d'); \
-	if [ ! -z "$${checkinfo}" ]; then \
-		echo "$${checkinfo}"; \
-	fi; \
-	if [ $${matchflag} -ne 0 ]; then \
-		$(call do_pull); \
-	elif [ $${errorflag} -ne 0 ]; then \
-		exit 1; \
-	else \
-		$(call do_compile); \
-		$(call do_push); \
-	fi
 
 psysroot:
-	@checksum=$$($(call do_check)); \
-	matchflag=$$(echo "$${checksum}" | grep -wc MATCH); \
-	checkinfo=$$(echo "$${checksum}" | sed '/MATCH/ d'); \
-	if [ ! -z "$${checkinfo}" ]; then \
-		echo "$${checkinfo}"; \
-	fi; \
-	if [ $${matchflag} -eq 0 ]; then \
-		$(MAKE) $(PREPARE_SYSROOT); \
-	fi
+	@$(if $(wildcard $(CACHE_STATUS)),,$(MAKE) $(PREPARE_SYSROOT))
+
+cachebuild:
+ifeq ($(wildcard $(CACHE_STATUS)), )
+	@$(MAKE) -f $(MAKE_FNAME) build
+	@$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
+		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
+		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)')
+	@$(COLORECHO) "\033[33mUpdate $(PACKAGE_ID) Cache.\033[0m"
+else
+	@$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE)
+	@$(COLORECHO) "\033[33mMatch $(PACKAGE_ID) Cache.\033[0m"
+endif
+	rm -f $(CACHE_STATUS)
 
 setforce:
-	@$(call do_setforce)
+	@$(CACHE_SCRIPT) -m setforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build.\033[0m"
 
 set1force:
-	@$(call do_set1force)
+	@$(CACHE_SCRIPT) -m set1force -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build Once.\033[0m"
 
 unsetforce:
-	@$(call do_unsetforce)
+	@$(CACHE_SCRIPT) -m unsetforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -v $(CACHE_VERBOSE)
+	@$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Force Build.\033[0m"
 
-else
+else # CACHE_BUILD
 
 .PHONY: nocachebuild psysroot
 
 nocachebuild:
-	@$(call do_compile)
+	@$(MAKE) -f $(MAKE_FNAME) build
 
 psysroot:
 	@$(MAKE) $(PREPARE_SYSROOT)
 
-endif
+endif # CACHE_BUILD
 
 .PHONY: dofetch
 
 dofetch:
 ifneq ($(SRC_URLS), )
 	@mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
-	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(if $(filter -s,$(ENV_BUILD_FLAGS)),,$(WORKDIR) $(SRC_DIR))"
+	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(if $(filter y,$(UNPACKFLAG)),$(WORKDIR) $(SRC_DIR))"
 else
 	@
 endif
 
 %:
-	@$(MAKES) $@
+	@$(MAKE) $(MAKE_FLAGS) $@
 
 endif

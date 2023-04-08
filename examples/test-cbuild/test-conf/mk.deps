@@ -1,7 +1,7 @@
 #DEPS(mk.deps) test-conf(menuconfig %_config %_saveconfig):
 
 PACKAGE_NAME     = test-conf
-MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-conf
+MAKE_FLAGS       = -C ${ENV_TOP_DIR}/../test-conf
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 include $(ENV_MAKE_DIR)/inc.rule.mk

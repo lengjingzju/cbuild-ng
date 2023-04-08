@@ -25,9 +25,12 @@ SRC_MD5          = 9cb22b7d2aa208b61f5850c04bebda58
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-define do_prepend
-cd $(OBJ_PREFIX) && \
-	$(SRC_PATH)/configure --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(LOGOUTPUT)
-endef
-
+USER_TARGET_FOR_PREPEND = y
+USER_TARGET_FOR_COMPILE = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(OBJ_PREFIX) && $(SRC_PATH)/configure --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(LOGOUTPUT)
+
+compile:
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)

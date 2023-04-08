@@ -1,7 +1,7 @@
 #DEPS(mk.deps) test-hello(psysroot): ?linux test-hello-add test-hello-sub
 
 PACKAGE_NAME     = test-hello
-MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-mod/test-hello
+MAKE_FLAGS       = -C ${ENV_TOP_DIR}/../test-mod/test-hello
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 include $(ENV_MAKE_DIR)/inc.rule.mk

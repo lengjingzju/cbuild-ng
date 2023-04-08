@@ -26,8 +26,8 @@ CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = cmake
 
-define do_prepend
-	sed -i 's@\$${CMAKE_INSTALL_DATADIR}/pkgconfig@$${CMAKE_INSTALL_LIBDIR}/pkgconfig@g' $(SRC_PATH)/CMakeLists.txt
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's@\$${CMAKE_INSTALL_DATADIR}/pkgconfig@$${CMAKE_INSTALL_LIBDIR}/pkgconfig@g' $(SRC_PATH)/CMakeLists.txt

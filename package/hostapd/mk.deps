@@ -31,13 +31,13 @@ SRC_MD5          = 0be43e9e09ab94a7ebf82de0d1c57761
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
-MAKES_FLAGS      = EXTRA_CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
-MAKES_FLAGS     += BINDIR=$(INS_TOPDIR)/sbin
-MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CROSS_COMPILE)gcc AR=$(CROSS_COMPILE)ar)
-MAKES_FLAGS     += -C $(WORKDIR)/$(SRC_DIR)/hostapd
+MAKE_FLAGS       = EXTRA_CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+MAKE_FLAGS      += BINDIR=$(INS_TOPDIR)/sbin
+MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CROSS_COMPILE)gcc AR=$(CROSS_COMPILE)ar)
+MAKE_FLAGS      += -C $(SRC_PATH)/hostapd
 
-define do_prepend
-	cp -f $(WORKDIR)/$(SRC_DIR)/hostapd/defconfig $(WORKDIR)/$(SRC_DIR)/hostapd/.config
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cp -f $(SRC_PATH)/hostapd/defconfig $(SRC_PATH)/hostapd/.config

@@ -8,11 +8,11 @@
 
 usage() {
     echo "========================================"
-    echo -e "\033[34mUsage: '$0 -m method -p package -n -s srcfile -o outdir -i insdir -g grade -c checksum -d depends -a appends -u url -v verbose\033[0m"
+    echo -e "\033[34mUsage: '$0 -m method -r result -p package -n -s srcfile -o outdir -i insdir -g grade -c checksum -d depends -a appends -u url -v verbose\033[0m"
     echo -e "\033[34moptions:\033[0m"
     echo -e "\033[34m-m method\033[0m       : Specify the method: check pull push force cache"
-    echo                   "    check       : Check if cache is available, return 'MATCH' if it is available"
-    echo                   "                  Necessary options are '-m -p -o -i -g'; Optional options are '-s -c -d -u'"
+    echo                   "    check       : Check if cache is available, create result file if it is matched"
+    echo                   "                  Necessary options are '-m -p -o -i -g -r'; Optional options are '-s -c -d -u'"
     echo                   "    pull        : Decompress the image package to outdir"
     echo                   "                  Necessary options are '-m -p -o -i -g'"
     echo                   "    push        : Compress the image dir in outdir to image package"
@@ -23,6 +23,7 @@ usage() {
     echo                   "                  Necessary options are '-m -p -o'"
     echo                   "    unsetforce  : Unset force build from source code"
     echo                   "                  Necessary options are '-m -p -o -i'"
+    echo -e "\033[34m-r result\033[0m       : Specify the result file to indicate MATCH status"
     echo -e "\033[34m-p package\033[0m      : Specify the package name in DEPS statement"
     echo -e "\033[34m-n\033[0m              : Specify the package is native package"
     echo -e "\033[34m-s srcname\033[0m      : Specify the download package name"
@@ -46,6 +47,7 @@ machinetool=${ENV_TOOL_DIR}/process_machine.sh
 
 cmd="$0 $*"
 method=
+matchfile=
 package=
 packname=
 cache_grades=noarch
@@ -61,9 +63,10 @@ appends=
 url=
 verbose=1
 
-while getopts "m:p:ns:o:i:g:c:d:a:u:v:h" opt; do
+while getopts "m:r:p:ns:o:i:g:c:d:a:u:v:h" opt; do
     case $opt in
         m) method=$OPTARG;;
+        r) matchfile=$OPTARG;;
         p) package=$OPTARG;;
         n) native=$(uname -m);;
         s) srcname=$OPTARG;;
@@ -127,6 +130,7 @@ echo_params() {
     wlog "==================== $(date '+%Y-%m-%d %H:%M:%S') ===================="
     wlog "INFO: cmd: ${cmd}"
     wlog "method   = ${method}"
+    wlog "matchfile= ${matchfile}"
     wlog "package  = ${package}"
     wlog "native   = ${native}"
     wlog "srcname  = ${srcname}"
@@ -175,7 +179,7 @@ check_env() {
     ret="ok"
     case ${method} in
         check)
-            if [ -z "${package}" ] || [ -z "${outdir}" ] || [ -z "${insdir}" ] || [ -z "${grade}" ]; then
+            if [ -z "${package}" ] || [ -z "${outdir}" ] || [ -z "${insdir}" ] || [ -z "${grade}" ] || [ -z "${matchfile}" ]; then
                 ret="fail"
             fi
             ;;
@@ -381,6 +385,7 @@ get_extra_checksum() {
 }
 
 get_checksum() {
+    rm -f ${matchfile}
     rm -f ${checktmp1} ${checktmp2} ${checkfile}
     if [ "$1" = "check" ] && [ -e "${forcefile}" ]; then
         wlog "WARNING: Force Build ${package}."
@@ -436,17 +441,17 @@ check_cache() {
         wlog "INFO: cachefile: ${cachefile}"
 
         if [ -e "${ENV_CACHE_DIR}/${cachefile}" ]; then
-            echo "MATCH"
             wlog "INFO: cachefile: MATCH"
+            echo > ${matchfile}
         elif [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(curl -I -m 5 -s -w %{http_code} -o /dev/null ${ENV_MIRROR_URL}/build-cache/${cachefile})" = "200" ]; then
             del_cache
             rm -rf ${insdir}
             mkdir -p ${ENV_CACHE_DIR}
             curl -s ${ENV_MIRROR_URL}/build-cache/${cachefile} -o ${ENV_CACHE_DIR}/${cachefile} || exit 1
-            echo "MATCH"
             echo -e "\033[32mcurl ${ENV_MIRROR_URL}/build-cache/${cachefile} to ${ENV_CACHE_DIR}/${cachefile}\033[0m"
             wlog "INFO: fetchcmd: curl -s ${ENV_MIRROR_URL}/build-cache/${cachefile} -o ${ENV_CACHE_DIR}/${cachefile}"
             wlog "INFO: cachefile: MATCH"
+            echo > ${matchfile}
         else
             wlog "INFO: cachefile: UNMATCH, ${ENV_CACHE_DIR}/${cachefile} isn't existed."
         fi

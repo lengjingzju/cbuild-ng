@@ -29,20 +29,12 @@ CACHE_BUILD      = y
 CACHE_CHECKSUM  += $(PATCH_FOLDER)
 CACHE_DEPENDS    = none
 
-MAKES_FLAGS      = -C $(WORKDIR)/$(SRC_DIR) PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
-MAKES_FLAGS     += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
-PMAKES           = $(MAKES) -f Makefile-libbz2_so
+MAKE_FLAGS       = -C $(SRC_PATH) PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
+MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
 
-define do_compile
-	set -e; \
-	$(call do_fetch); \
-	$(if $(PATCH_FOLDER),$(call do_patch),true); \
-	rm -rf $(INS_TOPDIR) && $(PMAKES) $(LOGOUTPUT) && $(PMAKES) $(LOGOUTPUT) install && \
-		$(MAKES) $(LOGOUTPUT) && $(MAKES) install $(LOGOUTPUT); \
-	$(call install_lics); \
-	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
-	$(if $(do_append),$(call do_append),true); \
-	set +e
-endef
-
+USER_TARGET_FOR_COMPILE = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+compile:
+	@$(MAKE) $(MAKE_FLAGS) -f Makefile-libbz2_so $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) -f Makefile-libbz2_so install $(LOGOUTPUT)
+	@$(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)

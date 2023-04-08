@@ -17,7 +17,6 @@ FETCH_SCRIPT    := $(ENV_TOOL_DIR)/fetch_package.sh
 PATCH_SCRIPT    := $(ENV_TOOL_DIR)/exec_patch.sh
 CACHE_SCRIPT    := $(ENV_TOOL_DIR)/process_cache.sh
 MACHINE_SCRIPT  := $(ENV_TOOL_DIR)/process_machine.sh
-MAKES           := make $(ENV_BUILD_JOBS)
 
 GMP_VER         ?= 6.2.1
 MPFR_VER        ?= 4.2.0
@@ -58,13 +57,14 @@ CACHE_APPENDS    = \
 	$(BINUTILS_COMMON_OPTIONS) $(BINUTILS_EXTRA_OPTIONS) \
 	$(GLIBC_COMMON_OPTIONS) $(GLIBC_EXTRA_OPTIONS) \
 	$(GDB_COMMON_OPTIONS) $(GDB_EXTRA_OPTIONS)
+CACHE_STATUS     = $(CROSS_OUTPATH)/MATCH.status
 
 define do_cache
-	$(CACHE_SCRIPT) -m $1 -p $(CROSS_DIR) -n -o $(CROSS_OUTPATH) -i $(CROSS_SYSROOT) -g 2 -v 0 -d none \
+	$(CACHE_SCRIPT) -m $1 -r $(CACHE_STATUS) -p $(CROSS_DIR) -n -o $(CROSS_OUTPATH) -i $(CROSS_SYSROOT) -g 2 -v 0 -d none \
 		-c $(shell pwd)/Makefile -a '$(CACHE_APPENDS)'
 endef
 
-.PHONY: all clean build-all build-depends fetch-all \
+.PHONY: all cachebuild clean fetch-all \
 	fetch-gmp fetch-mpfr fetch-mpc fetch-isl \
 	fetch-linux fetch-binutils fetch-gcc fetch-glibc fetch-gdb \
 	build-gmp build-mpfr build-mpc build-isl \
@@ -74,36 +74,36 @@ endef
 	install-append
 
 all:
-	@set -e
-	@checksum=$$($(call do_cache,check)); \
-	matchflag=$$(echo "$${checksum}" | grep -wc MATCH); \
-	errorflag=$$(echo "$${checksum}" | grep -c ERROR); \
-	checkinfo=$$(echo "$${checksum}" | sed '/MATCH/ d'); \
-	if [ ! -z "$${checkinfo}" ]; then \
-		echo "$${checkinfo}"; \
-	fi; \
-	if [ $${matchflag} -ne 0 ]; then \
-		$(call do_cache,pull); \
-		echo "Use $(CROSS_DIR) Cache in $(ENV_CACHE_DIR)."; \
-	elif [ $${errorflag} -ne 0 ]; then \
-		exit 1; \
-	else \
-		make build-all && \
-		$(call do_cache,push); \
-		echo "Push $(CROSS_DIR) Cache to $(ENV_CACHE_DIR)."; \
-	fi
+	@$(call do_cache,check)
+	@$(MAKE) cachebuild
+
+cachebuild:
+ifeq ($(wildcard $(CACHE_STATUS)), )
+	@$(MAKE) fetch-all
+	@$(MAKE) build-gmp
+	@$(MAKE) build-mpfr
+	@$(MAKE) build-mpc
+	@$(MAKE) build-isl
+	@$(MAKE) build-binutils-initial
+	@$(MAKE) build-gcc-initial
+	@$(MAKE) build-linux-headers
+	@$(MAKE) build-glibc
+	@$(MAKE) build-binutils
+	@$(MAKE) build-gcc
+	@$(MAKE) build-gdb
+	@$(MAKE) install-append
+	@$(call do_cache,push)
+	@echo "Update $(CROSS_DIR) Cache."
+else
+	@$(call do_cache,pull)
+	@echo "Match $(CROSS_DIR) Cache."
+endif
+	rm -f $(CACHE_STATUS)
 	@echo "Build $(CROSS_DIR) Done."
-	@set +e
 
 clean:
 	@rm -rf $(CROSS_SYSROOT) $(OUT_PATH)
 	@echo "Clean $(CROSS_DIR) Done."
-
-build-all: | fetch-all build-depends \
-	build-binutils-initial build-gcc-initial \
-	build-linux-headers build-glibc \
-	build-binutils build-gcc build-gdb \
-	install-append
 
 ########## Fetch packages ##########
 
@@ -142,30 +142,28 @@ fetch-gdb:
 
 ########## Build dependency libraries ##########
 
-build-depends: | build-gmp build-mpfr build-mpc build-isl
-
 build-gmp:
 	mkdir -p $(OBJS_PATH)/gmp && cd $(OBJS_PATH)/gmp; \
 		$(SRCS_PATH)/gmp-$(GMP_VER)/configure --prefix=$(HOST_SYSROOT) --disable-shared && \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 build-mpfr:
 	mkdir -p $(OBJS_PATH)/mpfr && cd $(OBJS_PATH)/mpfr; \
 		$(SRCS_PATH)/mpfr-$(MPFR_VER)/configure --prefix=$(HOST_SYSROOT) --disable-shared \
 			--with-gmp=$(HOST_SYSROOT) && \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 build-mpc:
 	mkdir -p $(OBJS_PATH)/mpc && cd $(OBJS_PATH)/mpc; \
 		$(SRCS_PATH)/mpc-$(MPC_VER)/configure --prefix=$(HOST_SYSROOT) --disable-shared \
 			--with-gmp=$(HOST_SYSROOT) --with-mpfr=$(HOST_SYSROOT) && \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 build-isl:
 	mkdir -p $(OBJS_PATH)/isl && cd $(OBJS_PATH)/isl; \
 		$(SRCS_PATH)/isl-$(ISL_VER)/configure --prefix=$(HOST_SYSROOT) --disable-shared \
 			--with-gmp-prefix=$(HOST_SYSROOT) && \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 ########## Configure toolchain  ##########
 
@@ -235,7 +233,7 @@ build-binutils-initial:
 			$(TOOLCHAIN_COMMON_OPTIONS) \
 			$(BINUTILS_COMMON_OPTIONS) \
 			&& \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 build-gcc-initial:
 	mkdir -p $(OBJS_PATH)/gcc-initial && cd $(OBJS_PATH)/gcc-initial; \
@@ -251,13 +249,13 @@ build-gcc-initial:
 			--disable-libatomic \
 			$(GCC_COMMON_OPTIONS) \
 			&& \
-		$(MAKES) all-gcc all-target-libgcc && $(MAKES) install-gcc install-target-libgcc
+		$(MAKE) all-gcc all-target-libgcc && $(MAKE) install-gcc install-target-libgcc
 	cd $(CROSS_SYSROOT)/lib/gcc/$(CROSS_TARGET)/$(GCC_VER) && rm -f libgcc_eh.a && ln -sf libgcc.a libgcc_eh.a
 
 ########## Build glibc  ##########
 
 build-linux-headers:
-	$(MAKES) ARCH=$(LINUX_ARCH) INSTALL_HDR_PATH=$(GLIBC_SYSROOT)/usr -C $(SRCS_PATH)/linux-$(LINUX_VER) headers_install
+	$(MAKE) ARCH=$(LINUX_ARCH) INSTALL_HDR_PATH=$(GLIBC_SYSROOT)/usr -C $(SRCS_PATH)/linux-$(LINUX_VER) headers_install
 
 build-glibc:
 	mkdir -p $(OBJS_PATH)/glibc && cd $(OBJS_PATH)/glibc; \
@@ -273,7 +271,7 @@ build-glibc:
 			$(GLIBC_COMMON_OPTIONS) \
 			$(GLIBC_EXTRA_OPTIONS) \
 			&& \
-		$(MAKES) && $(MAKES) install_root=$(GLIBC_SYSROOT) install
+		$(MAKE) && $(MAKE) install_root=$(GLIBC_SYSROOT) install
 
 ########## Build binutils / gcc with glibc and gdb ##########
 
@@ -288,7 +286,7 @@ build-binutils:
 			$(BINUTILS_COMMON_OPTIONS) \
 			$(BINUTILS_EXTRA_OPTIONS) \
 			&& \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 build-gcc:
 	mkdir -p $(OBJS_PATH)/gcc && cd $(OBJS_PATH)/gcc; \
@@ -306,7 +304,7 @@ build-gcc:
 			$(GCC_COMMON_OPTIONS) \
 			$(GCC_EXTRA_OPTIONS) \
 			&& \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 build-gdb:
 	mkdir -p $(OBJS_PATH)/gdb && cd $(OBJS_PATH)/gdb; \
@@ -318,7 +316,7 @@ build-gdb:
 			$(GDB_COMMON_OPTIONS) \
 			$(GDB_EXTRA_OPTIONS) \
 			&& \
-		$(MAKES) && $(MAKES) install
+		$(MAKE) && $(MAKE) install
 
 install-append:
 	rm -rf $(HOST_SYSROOT)

@@ -65,24 +65,29 @@ AUTOTOOLS_FLAGS += --disable-bootstrap \
 
 ifeq ($(CROSS_COMPILE), )
 
-.PHONY: all clean install
-
-all clean install:
-	@
-
-USER_DEFINED_TARGET = y
+USER_TARGET_FOR_BUILD = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
+build:
+	@
 else
 
-define do_append
-	mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc; \
-	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd; \
-	ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd; \
-	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd; \
-	ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
-endef
-
+USER_TARGET_FOR_APPEND = y
+ifneq ($(INSTALL_OPTION), release)
+USER_TARGET_FOR_INSTALL = y
+endif
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc
+	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
+	@ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
+	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
+	@ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
+
+ifneq ($(INSTALL_OPTION), release)
+install:
+	@
+endif
 
 endif

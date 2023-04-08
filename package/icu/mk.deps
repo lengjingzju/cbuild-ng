@@ -54,8 +54,9 @@ COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = --disable-samples --disable-tests
 AUTOTOOLS_FLAGS += --with-cross-build=$(CFG_PATH) PKG_CONFIG=pkg-config
 
-define do_prepend
-	mkdir -p $(CFG_PATH) && cd $(CFG_PATH) && $(SRC_PATH)/runConfigureICU Linux/gcc $(LOGOUTPUT) && make $(LOGOUTPUT)
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@mkdir -p $(CFG_PATH)
+	@cd $(CFG_PATH) && $(SRC_PATH)/runConfigureICU Linux/gcc $(LOGOUTPUT) && $(MAKE) $(LOGOUTPUT)

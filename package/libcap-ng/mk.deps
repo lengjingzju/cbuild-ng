@@ -29,8 +29,8 @@ CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = autotools
 
-define do_prepend
-	cd $(SRC_PATH) && ./autogen.sh
-endef
-
+USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && ./autogen.sh

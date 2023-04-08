@@ -10,8 +10,6 @@ from argparse import ArgumentParser
 debug_mode = False
 dis_isysroot = True
 dis_gsysroot = False
-make_cmd = '$(MAKE)'
-make_cmd = 'make'
 
 def escape_toupper(var):
     return var.replace('.', '__dot__').replace('+', '__plus__').replace('-', '_').upper()
@@ -639,20 +637,18 @@ class Deps:
                             self.FinallyList.append(item['target'])
 
                     depends = last_group.strip().split()
-                    conf_pri_path = ''
-                    conf_pub_path = ''
 
                     if self.conf_name and 'nokconfig' not in depends:
-                        if '.' in self.conf_name:
-                            conf_pri_path = os.path.join(item['path'], '%s.%s' % (item['target'], self.conf_name.split('.')[-1]))
-                        conf_pub_path = os.path.join(item['path'], self.conf_name)
-
-                    if conf_pri_path and os.path.exists(conf_pri_path):
-                        item['conf'] = conf_pri_path
-                    elif conf_pub_path and os.path.exists(conf_pub_path):
-                        item['conf'] = conf_pub_path
-                    else:
-                        item['conf'] = ''
+                        conf_paths = []
+                        conf_paths.append(os.path.join(item['path'], '%s.%s' % (item['target'], self.conf_name.split('.')[-1])))
+                        conf_paths.append(os.path.join(item['path'], self.conf_name))
+                        if item['mpath'] != item['path']:
+                            conf_paths.append(os.path.join(item['mpath'], '%s.%s' % (item['target'], self.conf_name.split('.')[-1])))
+                            conf_paths.append(os.path.join(item['mpath'], self.conf_name))
+                        for conf_path in conf_paths:
+                            if os.path.exists(conf_path):
+                                item['conf'] = conf_path
+                                break
 
                     if self.__set_item_deps(depends, item, True):
                         if makestr and '/' in makestr:
@@ -735,8 +731,6 @@ class Deps:
                             item['targets'].append('cache')
 
                     if 'unified' in item['targets']:
-                        if 'singletask' not in item['targets']:
-                            item['targets'].append('singletask')
                         if 'distclean' not in item['targets']:
                             item['targets'].append('distclean')
                     else:
@@ -1221,19 +1215,22 @@ class Deps:
                 real_targets = [t for t in item['targets'] if t not in ignore_targets]
                 ideps = [re.split(r'@+', dep)[0] for dep in item['ideps']]
 
-                make = '@%s' % (make_cmd)
+                MAKEA = '@make $(MAKESILENT)'
                 if 'singletask' not in item['targets']:
-                    make += ' $(ENV_BUILD_JOBS)'
-                make += ' $(ENV_BUILD_FLAGS) -C $(%s-path)' % (item['target'])
+                    MAKEA += ' $(ENV_BUILD_JOBS)'
+                MAKEB = '@$(MAKE) $(MAKESILENT)'
+
+                makes = ''
+                makes += ' -C $(%s-path)' % (item['target'])
                 if item['make']:
-                    make += ' -f $(%s-make)' % (item['target'])
+                    makes += ' -f $(%s-make)' % (item['target'])
 
                 if item['asdeps'] or item ['awdeps'] or item ['ideps']:
                     if 'psysroot' not in item['targets']:
                         if dis_gsysroot:
                             item['targets'].append('psysroot')
                         else:
-                            make += ' GLOBAL_SYSROOT=y'
+                            makes += ' GLOBAL_SYSROOT=y'
                 else:
                     if 'psysroot' in item['targets']:
                         item['targets'].remove('psysroot')
@@ -1243,11 +1240,11 @@ class Deps:
                         item['targets'].remove('isysroot')
 
                 if item['target'].endswith('-native'):
-                    make += ' NATIVE_BUILD=y'
+                    makes += ' NATIVE_BUILD=y'
                 elif item['asdeps'] or item['awdeps'] or item ['ideps']:
                     for dep in item['asdeps'] + item['awdeps'] + ideps:
                         if dep.endswith('-native'):
-                            make += ' NATIVE_DEPEND=y'
+                            makes += ' NATIVE_DEPEND=y'
                             break
 
                 pkg_flags = {}
@@ -1266,7 +1263,7 @@ class Deps:
 
                 psysroot_target = '%s_psysroot'  % (item['target'])
                 psys_make = '@%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
-                            % (make_cmd, item['target'], item['target'])
+                            % ('$(MAKE)', item['target'], item['target'])
 
                 gsys_dir = ''
                 isys_dir = ''
@@ -1280,9 +1277,9 @@ class Deps:
                     isys_dir = '$(ENV_CROSS_ROOT)/objects/%s/image' % (item['target'])
                     isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(CROSS_DESTDIR)' % (isys_dir)
 
-                gsys_make = '@flock %s -c "%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
-                            % (gsys_dir, make[1:], unionstr, 'install')
-                gsys_cmd = '@flock %s -c "bash $(SYSROOT_SCRIPT) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
+                gsys_make = '@flock %s -c "%s%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
+                            % (gsys_dir, MAKEA[1:], makes, unionstr, 'install')
+                gsys_cmd = '@flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
 
                 #### process dependencies #####
                 fp.write('ifeq ($(CONFIG_%s), y)\n\n' % (escape_toupper(item['target'])))
@@ -1337,26 +1334,32 @@ class Deps:
                     fp.write('%s:\n\t@\n\n' % (psysroot_target))
 
                 # all
+                cache_str = ''
+                if pkg_flags['cache']:
+                    cache_str = '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'checksum')
+
                 compile_str = ''
                 if 'prepare' in item['targets']:
-                    compile_str += '\t%s %s%s\n' % (make, unionstr, 'prepare')
-                compile_str += '\t%s%s\n' % (make.replace('@', '@$(PRECMD)', 1), ' %s%s' % (unionstr, 'all') if unionstr else '')
+                    compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'prepare')
+                compile_str += '\t%s%s%s\n' % (MAKEA.replace('@', '@$(PRECMD)', 1), makes, ' %s%s' % (unionstr, 'all') if unionstr else '')
                 if pkg_flags['isysroot']:
                     compile_str += '\t@install -d %s\n' % (isys_dir)
-                    compile_str += '\t%s %s%s\n' % (make, unionstr, 'install')
-                compile_str += '\t@$(progress_cmd)\n'
+                    compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'install')
+                compile_str += '\t@$(if $(progress_cmd),$(progress_cmd),echo "Build %s Done.")\n' % (item['target'])
 
                 phony.append(item['target'])
                 if pkg_flags['deps']:
                     if pkg_flags['psysroot']:
                         fp.write('%s: $(%s-deps)\n' % (item['target'], item['target']))
                         if pkg_flags['unified'] and pkg_flags['cache']:
-                            fp.write('\t%s %s%s\n' % (make, unionstr, 'psysroot'))
+                            fp.write('%s\t%s%s %s%s\n' % (cache_str, MAKEA, makes, unionstr, 'psysroot'))
                         else:
-                            fp.write('\t%s %s\n' % (psys_make, psysroot_target))
+                            fp.write('%s\t%s %s\n' % (cache_str, psys_make, psysroot_target))
+                        fp.write('%s\n' % (compile_str))
                     else:
                         fp.write('%s: $(addsuffix _install,$(%s-deps))\n' % (item['target'], item['target']))
-                    fp.write('%s\n' % (compile_str))
+                        fp.write('%s%s\n' % (cache_str, compile_str))
+
                     phony.append('%s_single' % (item['target']))
                     fp.write('%s_single:\n' % (item['target']))
                 elif pkg_flags['finally']:
@@ -1364,7 +1367,7 @@ class Deps:
                     fp.write('%s %s_single:\n' % (item['target'], item['target']))
                 else:
                     fp.write('%s:\n' % (item['target']))
-                fp.write('%s\n' % (compile_str))
+                fp.write('%s%s\n' % (cache_str, compile_str))
 
                 # install
                 phony.append(item['target'] + '_install')
@@ -1384,7 +1387,7 @@ class Deps:
                 if pkg_flags['isysroot']:
                     fp.write('\t%s\n\n' % (isys_cmd))
                 else:
-                    fp.write('\t%s %s%s\n\n' % (make, unionstr, 'install'))
+                    fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'install'))
 
                 # release
                 if pkg_flags['release']:
@@ -1401,16 +1404,16 @@ class Deps:
                         if pkg_flags['isysroot']:
                             fp.write('\t%s\n\n' % (isys_cmd.replace('$(INSTALL_OPTION)', 'release', 1)))
                         else:
-                            fp.write('\t%s %s%s\n\n' % (make, unionstr, release))
+                            fp.write('\t%s%s %s%s\n\n' % (MAKEA, makes, unionstr, release))
 
                 # clean distclean
                 phony.append(item['target'] + '_clean')
                 fp.write('%s_clean:\n' % (item['target']))
-                fp.write('\t%s %s%s\n\n' % (make, unionstr, 'clean'))
+                fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'clean'))
                 if 'distclean' in item['targets']:
                     phony.append(item['target'] + '_distclean')
                     fp.write('%s_distclean:\n' % (item['target']))
-                    fp.write('\t%s %s%s\n\n' % (make, unionstr, 'distclean'))
+                    fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'distclean'))
 
                 # cache
                 if 'cache' in item['targets']:
@@ -1420,7 +1423,7 @@ class Deps:
                     phony.append(item['target'] + '_unsetforce')
                     fp.write('%s_dofetch %s_setforce %s_set1force %s_unsetforce:\n' % \
                             (item['target'], item['target'], item['target'], item['target']))
-                    fp.write('\t%s $(patsubst %s_%%,%%,$@)\n\n' % (make, item['target']))
+                    fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEB, makes, item['target']))
 
                 #### process other targets #####
                 other_targets = []
@@ -1470,10 +1473,10 @@ class Deps:
                                 fp.write('%s: %s\n' % (tmp_targets, targets_depstr))
                             if pkg_flags['psysroot']:
                                 if pkg_flags['unified'] and pkg_flags['cache'] and isinstance(targets[1], bool):
-                                    fp.write('\t%s %s%s\n' % (make, unionstr, 'psysroot'))
+                                    fp.write('\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'psysroot'))
                                 else:
                                     fp.write('\t%s %s\n' % (psys_make, targets_psysroot))
-                            fp.write('\t%s $(patsubst %s_%%,%%,$@)\n\n' % (make, item['target']))
+                            fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEA, makes, item['target']))
 
                             if isinstance(tmp_targets, list):
                                 single_targets = ['%s_single' % (t) for t in tmp_targets]
@@ -1481,13 +1484,13 @@ class Deps:
                                 fp.write('%s:\n' % (' '.join(single_targets)))
                             else:
                                 fp.write('%s_single:\n' % (tmp_targets))
-                            fp.write('\t%s $(patsubst %s_%%,%%,$(patsubst %%_single,%%,$@))\n\n' % (make, item['target']))
+                            fp.write('\t%s%s $(patsubst %s_%%,%%,$(patsubst %%_single,%%,$@))\n\n' % (MAKEA, makes, item['target']))
                         else:
                             if isinstance(tmp_targets, list):
                                 fp.write('%s:\n' % (' '.join(tmp_targets)))
                             else:
                                 fp.write('%s:\n' % (tmp_targets))
-                            fp.write('\t%s $(patsubst %s_%%,%%,$@)\n\n' % (make, item['target']))
+                            fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEA, makes, item['target']))
 
                 #### system level variables #####
                 if pkg_flags['finally']:

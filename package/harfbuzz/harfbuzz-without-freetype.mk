@@ -5,5 +5,7 @@
 ############################################
 
 PACKAGE_NAME     = harfbuzz-without-freetype
+MAKE_FNAME       = harfbuzz-without-freetype.mk
 
+CACHE_CHECKSUM  += $(wildcard $(shell pwd)/mk.deps)
 include mk.deps

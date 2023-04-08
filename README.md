@@ -132,7 +132,7 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
 
 * Command Options of Classic Build
     * `-m <Makefile Path>`: Specifies the auto-generated Makefile pathname
-        * Users can use a top-level Makefile to contain the auto-generated Makefile, and set all target call `make $(ENV_BUILD_JOBS) $(ENV_BUILD_FLAGS) MAKEFLAGS= all_targets`   to multi-threaded compilation of all packages
+        * Users can use a top-level Makefile to contain the auto-generated Makefile, and set all target call `make $(ENV_BUILD_JOBS) MAKEFLAGS= all_targets`   to multi-threaded compilation of all packages
         * The compilation time of each package can be counted `make time_statistics`
     * `-k <Kconfig Path>`: Specifies the auto-generated Kconfig pathname
     * `-t <Target Path>`: Specifies the auto-generated target pathname which stores package name , dependencies and source path list
@@ -373,7 +373,6 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
-    ENV_BUILD_FLAGS  : -s
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
     ENV_TOOL_DIR     : /home/lengjing/data/cbuild-ng/scripts/bin
@@ -394,7 +393,6 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
-    ENV_BUILD_FLAGS  : -s
     ENV_BUILD_SOC    : cortex-a53
     ENV_BUILD_ARCH   : arm64
     ENV_BUILD_TOOL   : /home/lengjing/data/cbuild-ng/output/toolchain/cortex-a53-toolchain-gcc12.2.0-linux5.15/bin/aarch64-linux-gnu-
@@ -428,8 +426,6 @@ Note: Users need to fill in the SOC-related parameters in the `process_machine.s
 
 * ENV_BUILD_MODE    : Specifies the build mode: `classic`, Classic Build, separate source code and compilation output; `yocto`, Yocto Build
 * ENV_BUILD_JOBS    : Specifies the number of compilation threads
-* ENV_BUILD_FLAGS    : Global flags for `make` command，its default value is `-s`
-    * `export ENV_BUILD_FLAGS=`: When it is set to space, the compilation will output more detailed information
 * ENV_BUILD_SOC     : Specifies the cross-compilation SOC, build system obtains a series of parameters related to the SOC through the `process_machine.sh` script
 * ENV_BUILD_ARCH    : Specifies the ARCH for cross-compilation of linux modules
 * ENV_BUILD_TOOL    : Specifies the cross-compiler prefix
@@ -456,6 +452,14 @@ Note: Users need to fill in the SOC-related parameters in the `process_machine.s
 
 Note: bitbake cann't directly use the environment variables of the current shell in Yocto Build, so the custom environment variables should be exported from the recipe
 
+* BUILDVERBOSE      : Whether to build with more details output
+    * When it is set to `y`, the default values of `MAKESILENT` and `LOGOUTPUT` are empty
+* MAKESILENT        : Silent make mode, its default value is `-s`
+    * When it is set to empty, more compilation messages will be displayed
+* LOGOUTPUT         : Compilation output redirection, its default value is `1>/dev/null`
+    * When it is set to empty, more messages will be displayed
+* UNPACKFLAG        : Whether to unpack source code when doing `make all_fetches`, its default value is equal to `BUILDVERBOSE`
+
 
 ## Compilation Template
 
@@ -468,51 +472,50 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 #### Functions of Environment Template
 
-* `$(call link_hdrs)`       : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
-* `$(call link_libs)`       : Automatically sets CFLAGS that looks for libraries
-* `$(call install_lics)`    : Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
+* `$(call link_hdrs)`   : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
+* `$(call link_libs)`   : Automatically sets CFLAGS that looks for libraries
+* `$(call install_lics)`: Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
 
 
 #### Variables of Environment Template
 
-* PACKAGE_NAME              : Package name (consistent with `Target_Name` in the DEPS-statement, without `-native`)
-* PACKAGE_ID                : Read-only, the actual package name, its value is equal to `PACKAGE_NAME` of cross-compilation package or `$(PACKAGE_NAME)-native` of native-compilation package
-* INSTALL_HDR               : Headers installation sub-folder, its default value is equal to `PACKAGE_NAME`
-* PACKAGE_DEPS              : The package's dependency list, which may be removed in the future
-* SEARCH_HDRS               : Sub-folders to search headers, its default value is equal to `PACKAGE_DEPS`
+* PACKAGE_NAME      : Package name (consistent with `Target_Name` in the DEPS-statement, without `-native`)
+* PACKAGE_ID        : Read-only, the actual package name, its value is equal to `PACKAGE_NAME` of cross-compilation package or `$(PACKAGE_NAME)-native` of native-compilation package
+* INSTALL_HDR       : Headers installation sub-folder, its default value is equal to `PACKAGE_NAME`
+* PACKAGE_DEPS      : The package's dependency list, which may be removed in the future
+* SEARCH_HDRS       : Sub-folders to search headers, its default value is equal to `PACKAGE_DEPS`
 <br>
 
-* CC_OPT_OPTION: CC optimization option, it has three options:
-    * release: the default value od CC_OPT_VALUE is `-O2`
-    * speed: the default value od CC_OPT_VALUE is `-O3`
-    * debug: the default value od CC_OPT_VALUE is `-O0 -g -ggdb`
-* CC_OPT_VALUE: CC optimization value
+* CC_OPT_OPTION     : CC optimization option, it has three options:
+    * release       : the default value od CC_OPT_VALUE is `-O2`
+    * speed         : the default value od CC_OPT_VALUE is `-O3`
+    * debug         : the default value od CC_OPT_VALUE is `-O0 -g -ggdb`
+* CC_OPT_VALUE      : CC optimization value
 <br>
 
-* WORKDIR                   : Top-level work directory
+* WORKDIR           : Top-level work directory
     * Its default value is equal to `$(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)` in the cross-compilation or `$(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)` in the native-compilation
     * The default values of OBJ_PREFIX / INS_PREFIX / DEP_PREFIX / PATH_PREFIX are defined under WORKDIR
-* OBJ_PREFIX                : Top-level compilation output directory
+* OBJ_PREFIX        : Top-level compilation output directory
     * Its default value can be changed by `make O=xxx`
-* INS_PREFIX                : Top-level installation directory
+* INS_PREFIX        : Top-level installation directory
     * Its default value can be changed by `make DESTDIR=xxx`
     * Its default value will be changed When installing to global sysroot, preparing dependencies, and installing to rootfs by top-level Makefile in Classic Build
-* INS_TOPDIR                : Classic Build installs to INS_TOPDIR for the first time, and installs again from INS_TOPDIR to the changed INS_PREFIX
-* INS_SUBDIR                : The installation subdirectory when Classic Build compiles with `CMake` `Autotools` and `Meson`, the default value is `/usr`, then the real installation directory is `$(INS_TOPDIR)$(INS_SUBDIR)`
-* DEP_PREFIX                : Top-level dependency lookup directory
+* INS_TOPDIR        : Classic Build installs to INS_TOPDIR for the first time, and installs again from INS_TOPDIR to the changed INS_PREFIX
+* INS_SUBDIR        : The installation subdirectory when Classic Build compiles with `CMake` `Autotools` and `Meson`, the default value is `/usr`, then the real installation directory is `$(INS_TOPDIR)$(INS_SUBDIR)`
+* DEP_PREFIX        : Top-level dependency lookup directory
     * Its default value can be changed by `make DEPDIR=xxx`
-* PATH_PREFIX               : Top-level tool lookup directory
-* SYS_PREFIX                : Global top-level compilation output and installation directory, only for Classic Build
+* PATH_PREFIX       : Top-level tool lookup directory
+* SYS_PREFIX        : Global top-level compilation output and installation directory, only for Classic Build
 <br>
 
-* NATIVE_DEPEND             : Sets it to y when cross-compilation package depends on native-compilation packages
+* NATIVE_DEPEND     : Sets it to y when cross-compilation package depends on native-compilation packages
     * The value is set by top-level Makefile generated by `gen_build_chain.by` or Recipe(`cbuild.bbclass`)
-* NATIVE_BUILD              : When set to y, indicates native-compilation
+* NATIVE_BUILD      : When set to y, indicates native-compilation
     * The value is set by top-level Makefile generated by `gen_build_chain.by` or Recipe
-* GLOBAL_SYSROOT            : When set to y, indicates using dependency sysroot in global sysroot `SYS_PREFIX` instead of the directory under WORKDIR
-* PREPARE_SYSROOT           : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build (command is `$(MAKE) $(PREPARE_SYSROOT)`)
-* DIS_PC_EXPORT             : Whether to disable exporting the environment of the [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html)
-* LOGOUTPUT                 : When set to empty, more compilation messages will be displayed, its default value is `1>/dev/null`
+* GLOBAL_SYSROOT    : When set to y, indicates using dependency sysroot in global sysroot `SYS_PREFIX` instead of the directory under WORKDIR
+* PREPARE_SYSROOT   : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build (command is `$(MAKE) $(PREPARE_SYSROOT)`)
+* DIS_PC_EXPORT     : Whether to disable exporting the environment of the [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html)
 
 
 ### Installation Template inc.ins.mk
@@ -889,9 +892,9 @@ Note: The reason for providing the above functions is that multiple libraries or
 ### Compile and Install
 
 * Variables in `inc.rule.mk`
-    * BUILD_JOBS    : Multi-threaded compilation parameter, its default value is `$(ENV_BUILD_FLAGS)`
-    * MAKES         : Compilation command
-        * its default value is `ninja $(BUILD_JOBS) $(MAKES_FLAGS)` for meson, `make $(BUILD_JOBS) $(ENV_BUILD_FLAGS) $(MAKES_FLAGS)` for others
+    * BUILD_JOBS    : Multi-threaded compilation parameter, its default value is `$(ENV_BUILD_JOBS)`
+    * MAKE_FNAME    : Current Makefile name, its default value is `mk.deps`
+    * MAKE_FLAGS    : The extra flags for `make` / `ninja` command (meson compiles with ninja)
     * COMPILE_TOOL  : It provides the following compilation methods:
         * autotools : `configure` command will run before `MAKES` command, related variables:
             * AUTOTOOLS_FLAGS   : Users can set extra flags for `configure` compilation
@@ -909,21 +912,27 @@ Note: The reason for providing the above functions is that multiple libraries or
     * INS_FULLER    : Indicates whether to set the run installation directory
 <br>
 
-* Functions in `inc.rule.mk`
-    * do_compile    : If user doesn't set the function, the default function will do Compilation
-    * do_prepend    : If user sets the function, it will run when starting compilation
-    * do_append     : If user sets the function, it will run when finishing compilation
-    * do_clean      : Executes cleanup
-    * do_distclean  : Executes complete cleanup
-    * do_install    : Executes installation
-<br>
-
 * Targets in in `inc.rule.mk`
     * psysroot      : Prepares dependencies under WORKDIR
-    * all / clean / install : Necessary targets provided by the template
-        * If the variable `USER_DEFINED_TARGET` is not set to y, it will use `all / clean / install` targets provided by the template
+    * all           : The default target
+        * `all` calls `cachebuild` or `nocachebuild`, then they call `build`
     * nocachebuild  : Compiles without cache mechanism
     * cachebuild    : Compiles with cache mechanism, `CACHE_BUIILD=y` must be set in the `#DEPS` file
+    * build         : Performs the entire process of downloading, patching, configuring, compiling, and installing to `$(WORKDIR)/image` ...
+        * `prepend` `compile` `append` are sub-targets of `build`
+        * If `USER_TARGET_FOR_BUILD` is set to y, it will run user's `build` target
+    * prepend       : Executes operations before compilation
+        * If `USER_TARGET_FOR_PREPEND` is set to y, it will run user's `prepend` target
+    * compile       : Executes compilation
+        * If `USER_TARGET_FOR_COMPILE` is set to y, it will run user's `compile` target
+    * append        : Executes operations after compilation
+        * If `USER_TARGET_FOR_APPEND` is set to y, it will run user's `append` target
+    * clean         : Executes cleanup
+        * If `USER_TARGET_FOR_CLEAN` is set to y, it will run user's `clean` target
+    * distclean     : Executes complete cleanup
+        * If `USER_TARGET_FOR_DISTCLEAN` is set to y, it will run user's `distclean` target
+    * install       : Executes installation
+        * If `USER_TARGET_FOR_INSTALL` is set to y, it will run user's `install` target
 
 
 ### Cache process_cache.sh
@@ -942,6 +951,7 @@ Note: The reason for providing the above functions is that multiple libraries or
         * If the download attributes are set, the default value is space
     * CACHE_OUTPATH : Output root path, its default value is `$(WORKDIR)`
     * CACHE_INSPATH : Installation root path, its default value is `$(INS_TOPDIR)`
+    * CACHE_STATUS  : The file to create when the cache is matched
     * CACHE_GRADE   : Cache grade number, which determines the prefix of the compilation cache file, its default value is 2
         * There are generally four levels of cache grades: `soc_name` `cpu_name` `arch_name` `cpu_family`
             * For example: If the soc is v9 (cortex-a55), then the cache grades are `v9 cortex-a55 armv8-a aarch64`
@@ -955,18 +965,8 @@ Note: The reason for providing the above functions is that multiple libraries or
     * CACHE_VERBOSE : Whether to generate log file, its default value is `1`(Generates log), the log file is `$(CACHE_OUTPATH)/$(CACHE_PACKAGE)-cache.log`
 <br>
 
-* Functions in `inc.rule.mk`
-    * do_check      : Checks whether the cache is matched
-        * If the returned string has `MATCH`, it means that the cache is matched
-        * If the returned string has `ERROR`, it means that the function runs failed
-    * do_pull       : Pulls the cache to `$(ENV_CACHE_DIR)` and extracts the cache to `$(WORKDIR)` if `$(INS_TOPDIR)` is not existed
-    * do_push       : Pushes the cache to `$(ENV_CACHE_DIR)`
-    * do_setforce   : Sets force compilation flag
-    * do_set1force  : Sets one-time force compilation flag, the next compilation is normal
-    * do_unsetforce : Removes force compilation flag
-<br>
-
 * Targets in in `inc.rule.mk`
+    * checksum      : Checks whether cache is matched
     * setforce      : Sets force compilation flag
     * set1force     : Sets one-time force compilation flag
     * unsetforce    : Removes force compilation flag

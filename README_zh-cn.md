@@ -136,7 +136,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 * Classic Build 命令选项
     * `-m <Makefile Path>`: 指定自动生成的 Makefile 文件路径名
-        * 可以使用一个顶层 Makefile 包含自动生成的 Makefile，all 目标调用 `make $(ENV_BUILD_JOBS) $(ENV_BUILD_FLAGS) MAKEFLAGS= all_targets` 多线程编译所有包
+        * 可以使用一个顶层 Makefile 包含自动生成的 Makefile，all 目标调用 `make $(ENV_BUILD_JOBS) MAKEFLAGS= all_targets` 多线程编译所有包
         * 可以统计各个包的编译时间 `make time_statistics`
     * `-k <Kconfig Path>`: 指定自动生成的 Kconfig 文件路径名
     * `-t <Target Path>`: 指定自动生成的存储包名、依赖和源码路径列表的文件路径名
@@ -357,7 +357,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
-    ENV_BUILD_FLAGS  : -s
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
     ENV_TOOL_DIR     : /home/lengjing/data/cbuild-ng/scripts/bin
@@ -378,7 +377,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
-    ENV_BUILD_FLAGS  : -s
     ENV_BUILD_SOC    : cortex-a53
     ENV_BUILD_ARCH   : arm64
     ENV_BUILD_TOOL   : /home/lengjing/data/cbuild-ng/output/toolchain/cortex-a53-toolchain-gcc12.2.0-linux5.15/bin/aarch64-linux-gnu-
@@ -410,34 +408,37 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 ### 环境变量说明
 
-* ENV_BUILD_MODE: 设置编译模式: `classic`, Classic Build，源码和编译输出分离; `yocto`, Yocto Build
-* ENV_BUILD_JOBS: 指定编译线程数
-* ENV_BUILD_FLAGS: 设置 make 命令的全局参数标记，默认设置了 `-s`
-    * `export ENV_BUILD_FLAGS=`: 设为空时将输出详细的编译信息
-* ENV_BUILD_SOC: 指定交叉编译的 SOC，根据 SOC 和 process_machine.sh 脚本得到和 SOC 相关的一系列参数
-* ENV_BUILD_ARCH: 指定交叉编译 linux 模块的 ARCH
-* ENV_BUILD_TOOL: 指定交叉编译器前缀
+* ENV_BUILD_MODE    : 设置编译模式: `classic`, Classic Build，源码和编译输出分离; `yocto`, Yocto Build
+* ENV_BUILD_JOBS    : 指定编译线程数
+* ENV_BUILD_SOC     : 指定交叉编译的 SOC，根据 SOC 和 process_machine.sh 脚本得到和 SOC 相关的一系列参数
+* ENV_BUILD_ARCH    : 指定交叉编译 linux 模块的 ARCH
+* ENV_BUILD_TOOL    : 指定交叉编译器前缀
 <br>
 
-* KERNEL_VER: Linux 内核版本
-* KERNEL_SRC: Linux 内核解压后的目录路径名
-* KERNEL_OUT: Linux 内核编译输出的目录路径名
+* KERNEL_VER        : Linux 内核版本
+* KERNEL_SRC        : Linux 内核解压后的目录路径名
+* KERNEL_OUT        : Linux 内核编译输出的目录路径名
 <br>
 
-* ENV_TOP_DIR: 工程的根目录
-* ENV_MAKE_DIR: 工程的编译模板目录
-* ENV_TOOL_DIR: 工程的脚本工具目录
-* ENV_DOWN_DIR: 下载包的保存路径
-* ENV_CACHE_DIR: 包的编译缓存保存路径
-* ENV_MIRROR_URL: 下载包的 http 镜像，可用命令 `python -m http.server 端口号` 快速创建 http 服务器
+* ENV_TOP_DIR       : 工程的根目录
+* ENV_MAKE_DIR      : 工程的编译模板目录
+* ENV_TOOL_DIR      : 工程的脚本工具目录
+* ENV_DOWN_DIR      : 下载包的保存路径
+* ENV_CACHE_DIR     : 包的编译缓存保存路径
+* ENV_MIRROR_URL    : 下载包的 http 镜像，可用命令 `python -m http.server 端口号` 快速创建 http 服务器
 <br>
 
-* ENV_TOP_OUT: 工程的输出根目录
-* ENV_CFG_ROOT: 工程自动生成文件的保存路径，例如全局 Kconfig 和 Makefile，各种统计文件等
-* ENV_CROSS_ROOT: 交叉编译输出根目录
-* ENV_NATIVE_ROOT: 本地编译输出根目录
+* ENV_TOP_OUT       : 工程的输出根目录
+* ENV_CFG_ROOT      : 工程自动生成文件的保存路径，例如全局 Kconfig 和 Makefile，各种统计文件等
+* ENV_CROSS_ROOT    : 交叉编译输出根目录
+* ENV_NATIVE_ROOT   : 本地编译输出根目录
 
 注: Yocto Build 时，由于 BitBake 任务无法直接使用当前 shell 的环境变量，所以自定义环境变量应由配方文件导出，不需要 source 这个环境脚本
+
+* BUILDVERBOSE      : 是否编译启用详细信息编译模式，设为 y 时 MAKESILENT 和 LOGOUTPUT 的值会设置为空
+* MAKESILENT        : make 时安静模式，默认值为 `-s`，置为空时编译输出更多信息
+* LOGOUTPUT         : 编译输出信息重定向，默认值为 `1>/dev/null`，置为空时输出更多信息
+* UNPACKFLAG        : 默认值等于 BUILDVERBOSE 的值，置为 y 时 `make all_fetches` 会解压源码
 
 
 ## 编译模板
@@ -451,50 +452,49 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 #### 环境模板的函数说明
 
-* `$(call link_hdrs)`: 根据 SEARCH_HDRS 变量的值自动生成查找头文件的 CFLAGS
-* `$(call link_libs)`: 自动生成查找库文件的 LDFLAGS
+* `$(call link_hdrs)`   : 根据 SEARCH_HDRS 变量的值自动生成查找头文件的 CFLAGS
+* `$(call link_libs)`   : 自动生成查找库文件的 LDFLAGS
 * `$(call install_lics)`: 安装 license 文件到 `/usr/local/license/$(PACKAGE_NAME)`
 
 
 #### 环境模板的变量说明
 
-* PACKAGE_NAME: 包的名称 (要和 DEPS语句的包名一致，本地编译的 PACKAGE_NAME 不需要加后缀 `-native`)
-* PACKAGE_ID: 只读，包的实际名称，交叉编译时等于 PACKAGE_NAME 的值，本地编译时会加上后缀 `-native`
-* INSTALL_HDR: 头文件安装的子文件夹，默认值等于 PACKAGE_NAME 的值
-* PACKAGE_DEPS: 包的依赖列表，未来可能会删除
-* SEARCH_HDRS: 查找头文件子目录列表，默认值等于 PACKAGE_DEPS 的值
+* PACKAGE_NAME      : 包的名称 (要和 DEPS语句的包名一致，本地编译的 PACKAGE_NAME 不需要加后缀 `-native`)
+* PACKAGE_ID        : 只读，包的实际名称，交叉编译时等于 PACKAGE_NAME 的值，本地编译时会加上后缀 `-native`
+* INSTALL_HDR       : 头文件安装的子文件夹，默认值等于 PACKAGE_NAME 的值
+* PACKAGE_DEPS      : 包的依赖列表，未来可能会删除
+* SEARCH_HDRS       : 查找头文件子目录列表，默认值等于 PACKAGE_DEPS 的值
 <br>
 
-* CC_OPT_OPTION: CC 优化等级选项，总共3个选项:
-    * release: CC_OPT_VALUE 默认取值 `-O2`
-    * speed: CC_OPT_VALUE 默认取值 `-O3`
-    * debug: CC_OPT_VALUE 默认取值 `-O0 -g -ggdb`
-* CC_OPT_VALUE: CC优化等级值
+* CC_OPT_OPTION     : CC 优化等级选项，总共3个选项:
+    * release       : CC_OPT_VALUE 默认取值 `-O2`
+    * speed         : CC_OPT_VALUE 默认取值 `-O3`
+    * debug         : CC_OPT_VALUE 默认取值 `-O0 -g -ggdb`
+* CC_OPT_VALUE      : CC优化等级值
 <br>
 
-* WORKDIR    : 工作目录
+* WORKDIR           : 工作目录
     * 交叉编译默认值为 `$(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)`，本地编译默认值为 `$(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)`
     * OBJ_PREFIX / INS_PREFIX / DEP_PREFIX / PATH_PREFIX 的默认定义都在此目录下
-* OBJ_PREFIX : 顶层编译输出目录
+* OBJ_PREFIX        : 顶层编译输出目录
     * 可以使用 `make O=xxx` 改变默认值
-* INS_PREFIX : 顶层编译安装目录，默认取值 `$(WORKDIR)/image`
+* INS_PREFIX        : 顶层编译安装目录，默认取值 `$(WORKDIR)/image`
     * 可以使用 `make DESTDIR=xxx` 改变默认值
     * Classic Build 时自动生成的顶层 Makefile 执行安装到全局 sysroot、准备依赖和安装到 rootfs 时，会改变此值
-* INS_TOPDIR : Classic Build 的首次安装目录，默认取值 `$(WORKDIR)/image`
+* INS_TOPDIR        : Classic Build 的首次安装目录，默认取值 `$(WORKDIR)/image`
     * Classic Build 时第一次安装到 `INS_TOPDIR`，再次安装时(安装到全局 sysroot、准备依赖和安装到 rootfs 时)从 `INS_TOPDIR` 安装到改变后的 `INS_PREFIX`
-* INS_SUBDIR : Classic Build 使用 `CMake` `Autotools` `Meson` 编译时的安装子目录，默认值为 `/usr`，则真正的安装目录为 `$(INS_TOPDIR)$(INS_SUBDIR)`
-* DEP_PREFIX : 顶层依赖查找目录
+* INS_SUBDIR        : Classic Build 使用 `CMake` `Autotools` `Meson` 编译时的安装子目录，默认值为 `/usr`，则真正的安装目录为 `$(INS_TOPDIR)$(INS_SUBDIR)`
+* DEP_PREFIX        : 顶层依赖查找目录
     * 可以使用 `make DEPDIR=xxx` 改变默认值
-* PATH_PREFIX: 顶层本地工具查找目录
-* SYS_PREFIX : Classic Build 全局的顶层编译输出和安装的目录
+* PATH_PREFIX       : 顶层本地工具查找目录
+* SYS_PREFIX        : Classic Build 全局的顶层编译输出和安装的目录
 <br>
 
-* NATIVE_DEPEND: 交叉编译包依赖本地编译包时需要设置为 y，由 `gen_build_chain.by` 自动设置或由 Recipe (`cbuild.bbclass`) 导出
-* NATIVE_BUILD: 设置为 y 时表示本地编译(native-compilation)，由 `gen_build_chain.by` 自动设置或由 Recipe 导出
-* GLOBAL_SYSROOT: 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
-* PREPARE_SYSROOT: Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
-* DIS_PC_EXPORT: 是否禁止导出 [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html) 的环境变量
-* LOGOUTPUT: 默认值为 `1>/dev/null`，置为空时编译输出更多信息
+* NATIVE_DEPEND     : 交叉编译包依赖本地编译包时需要设置为 y，由 `gen_build_chain.by` 自动设置或由 Recipe (`cbuild.bbclass`) 导出
+* NATIVE_BUILD      : 设置为 y 时表示本地编译(native-compilation)，由 `gen_build_chain.by` 自动设置或由 Recipe 导出
+* GLOBAL_SYSROOT    : 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
+* PREPARE_SYSROOT   : Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
+* DIS_PC_EXPORT     : 是否禁止导出 [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html) 的环境变量
 
 
 ### 安装模板 inc.ins.mk
@@ -879,10 +879,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 * inc.rule.mk 涉及的变量
     * BUILD_JOBS        : 多线程编译参数，默认值为 `$(ENV_BUILD_JOBS)`
-    * MAKES             : make 命令及默认参数
-        * 非 meson 编译时的默认值为 `make $(BUILD_JOBS) $(ENV_BUILD_FLAGS) $(MAKES_FLAGS)`
-        * meson 编译时默认值为 `ninja $(BUILD_JOBS) $(MAKES_FLAGS)`
-        * `MAKES_FLAGS` : 可设置额外的 `make` / `ninja` 命令参数
+    * MAKE_FNAME        : 当前 Makefile 的名字，默认值为 `mk.deps`
+    * MAKE_FLAGS        : 可设置额外的 `make` / `ninja` 命令参数(meson 编译使用 ninja)
     * COMPILE_TOOL      : 编译方式，可选值为: `autotools` `cmake` `meson` 或 空
         * autotools     :  make 命令前运行 `configure` 命令，有如下相关变量:
             * AUTOTOOLS_FLAGS   : 可设置额外的 `configure` 命令参数
@@ -899,22 +897,28 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * INS_HASRUN        : 表示是否设置 run 的安装目录，安装的文件有 `/run` 时需要设置为 `y`
 <br>
 
-* inc.rule.mk 涉及的函数
-    * do_compile        : 用户如果没有设置此函数，将采用模板中的默认 do_compile 函数
-    * do_prepend        : 用户如果设置了此函数，会在 do_compile 开始时运行此函数
-    * do_append         : 用户如果设置了此函数，会在 do_compile 结束时运行此函数
-    * do_clean          : 用户如果没有设置此函数，将采用模板中的默认 do_clean 函数
-    * do_distclean      : 用户如果没有设置此函数，将采用模板中的默认 do_distclean 函数
-    * do_install        : 用户如果没有设置此函数，将采用模板中的默认 do_install 函数
-<br>
-
 * inc.rule.mk 涉及的目标
     * psysroot          : 在 WORKDIR 目录准备 sysroot
         * 当前包的 `Other_Target_Names` 中声明了 `psysroot` 才会在 `make all` 前运行此目标
-    * all / clean / install : 必要目标
-        * 如果用户没有设置 `USER_DEFINED_TARGET` 为 y，采用模板默认提供的 `all clean install` 目标
-    * nocachebuild: 没有缓存机制的编译
-    * cachebuild: 有缓存机制的编译，当前包必须设置 `CACHE_BUIILD=y`
+    * all               : 默认目标
+        * all 调用 cachebuild 或 nocachebuild，然后他们再调用 build
+    * nocachebuild      : 没有缓存机制的编译
+    * cachebuild        : 有缓存机制的编译，当前包必须设置 `CACHE_BUIILD=y`
+    * build             : 下载、补丁、配置、编译、安装到 `$(WORKDIR)/image` 等全过程
+        * `prepend` `compile` `append` 是它的子项目
+        * 如果 `USER_TARGET_FOR_BUILD` 被设为 y，将运行用户定义的 build 目标
+    * prepend           : 编译前置操作
+        * 如果 `USER_TARGET_FOR_PREPEND` 被设为 y，将运行用户定义的 prepend 目标
+    * compile           : 编译安装操作
+        * 如果 `USER_TARGET_FOR_COMPILE` 被设为 y，将运行用户定义的 compile 目标
+    * append            : 编译追加操作
+        * 如果 `USER_TARGET_FOR_APPEND` 被设为 y，将运行用户定义的 append 目标
+    * clean             : 清除操作
+        * 如果 `USER_TARGET_FOR_CLEAN` 被设为 y，将运行用户定义的 build 目标
+    * distclean         : 完全清除操作
+        * 如果 `USER_TARGET_FOR_DISTCLEAN` 被设为 y，将运行用户定义的 distclean 目标
+    * install           : 安装操作
+        * 如果 `USER_TARGET_FOR_INSTALL` 被设为 y，将运行用户定义的 install 目标
 
 
 ### 缓存处理 process_cache.sh
@@ -932,6 +936,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
         * 指定了此变量会自动对下载的文件校验，指定了下载文件的校验属性也不会设置此变量
     * CACHE_OUTPATH     : 包的输出目录，会在此目录生成校验文件和 log 文件等，默认取变量 `$(WORKDIR)` 设置的值
     * CACHE_INSPATH     : 包的安装目录，默认取变量 `$(INS_TOPDIR)` 设置的值
+    * CACHE_STATUS      : 缓存匹配时新建的文件名
     * CACHE_GRADE       : 缓存级别，默认取 2，决定了编译缓存文件的前缀
         * 缓存一般有4个级别, 分别是 `soc_name` `cpu_name` `arch_name` `cpu_family`
             * 例如: 我有一颗 cortex-a55 的 soc 名字叫做 v9，那么缓存级别数组为 `v9 cortex-a55 armv8-a aarch64`
@@ -947,16 +952,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * CACHE_VERBOSE     : 是否生成 log 文件，默认取 1， 生成 log 文件是 `$(CACHE_OUTPATH)/$(CACHE_PACKAGE)-cache.log`
 <br>
 
-* inc.rule.mk 涉及的函数
-    * do_check          : 检查是否匹配 cache，返回的字符串有 MATCH 表示匹配，ERROR 表示错误
-    * do_pull           : 如果 INS_TOPDIR 目录不存在，将 cache 解压的输出目录
-    * do_push           : 将 cache 加入到全局缓存目录
-    * do_setforce       : 设置强制编译，用户某些操作后需要重新编译的操作需要调用此函数，例如用户修改 config
-    * do_set1force      : 设置强制编译一次，下次编译就是正常编译
-    * do_unsetforce     : 取消强制编译，例如用户还原默认 config
-<br>
-
 * inc.rule.mk 涉及的目标
+    * checksum          : 检查缓存是否匹配，匹配则新建文件 `$(CACHE_STATUS)`
     * setforce          : 设置强制编译
     * set1force         : 设置强制编译一次
     * unsetforce        : 取消强制编译

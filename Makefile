@@ -19,13 +19,14 @@ MAXLEVEL       := 3
 TIME_OUTPUT    := $(WORKDIR)/time_statistics.$(shell date +"%Y-%m-%d.%H-%M-%S.%N")
 TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
 PROGRESS_SCRIPT:= python3 $(ENV_TOOL_DIR)/show_progress.py
+MAKESILENT     ?= $(if $(filter y,$(BUILDVERBOSE)),,-s)
 
 .PHONY: all clean distclean toolchain deps all-deps total_time time_statistics progress_init
 
 all: loadconfig
 	@$(PROGRESS_SCRIPT) start &
 	@sleep 1
-	@make $(ENV_BUILD_JOBS) $(ENV_BUILD_FLAGS) MAKEFLAGS= progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
+	@make $(MAKESILENT) $(ENV_BUILD_JOBS) MAKEFLAGS= progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
 	@echo "Build done!"
 
 -include $(WORKDIR)/.config
@@ -41,7 +42,7 @@ distclean:
 	@echo "Distclean Done."
 
 toolchain:
-	@$(PRECMD)make -C $(ENV_TOP_DIR)/scripts/toolchain
+	@$(PRECMD)make $(MAKESILENT) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain
 
 buildkconfig: deps
 deps:
@@ -60,13 +61,13 @@ all-deps:
 total_time: loadconfig
 	@$(PROGRESS_SCRIPT) start &
 	@sleep 1
-	@$(PRECMD)make $(ENV_BUILD_FLAGS) progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
+	@$(PRECMD)make $(MAKESILENT) progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
 	@echo "Build done!"
 
 time_statistics:
 	@mkdir -p $(WORKDIR)
 	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
-	@make $(ENV_BUILD_FLAGS) PRECMD="$(TIME_FORMAT) " total_time
+	@make $(MAKESILENT) PRECMD="$(TIME_FORMAT) " total_time
 	@echo "time statistics file is $(TIME_OUTPUT)"
 
 ifneq ($(progress_cmd), )
@@ -76,7 +77,7 @@ progress_init:
 
 $(ALL_TARGETS): progress_init
 
-all_targets: 
+all_targets:
 	@$(PROGRESS_SCRIPT) stop
 
 endif

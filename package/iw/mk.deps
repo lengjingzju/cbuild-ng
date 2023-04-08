@@ -27,6 +27,6 @@ SRC_MD5          = fd17ca2dd5f160a5d9e5fd3f8a69f416
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
-MAKES_FLAGS      = PREFIX=$(INS_TOPDIR) MANDIR=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
+MAKE_FLAGS       = PREFIX=$(INS_TOPDIR) MANDIR=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

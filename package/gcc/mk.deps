@@ -57,59 +57,44 @@ AUTOTOOLS_FLAGS += --enable-nls \
                    --enable-libstdcxx-debug \
                    --enable-libstdcxx-time=yes
 
+
 ifeq ($(CROSS_COMPILE), )
 
-.PHONY: all clean install
-
-all clean install:
-	@
-
-USER_DEFINED_TARGET = y
+USER_TARGET_FOR_BUILD = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+build:
+	@
 
 else
 
-define do_prepend
-	sed -i 's@print-multi-os-directory@print-multi-directory@g' \
-		`find $(SRC_PATH) -name configure -o -name configure.ac -o -name Makefile.in | xargs`
-endef
+USER_TARGET_FOR_PREPEND = y
+USER_TARGET_FOR_COMPILE = y
+USER_TARGET_FOR_APPEND = y
+ifneq ($(INSTALL_OPTION), release)
+USER_TARGET_FOR_INSTALL = y
+endif
+include $(ENV_MAKE_DIR)/inc.rule.mk
 
-define do_append
-	rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/cpp $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)*; \
-	ln -sf g++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++; \
-	for bin in c++ g++ gcc gcc-ar gcc-nm gcc-ranlib; do \
+prepend:
+	@sed -i 's@print-multi-os-directory@print-multi-directory@g' `find $(SRC_PATH) -name configure -o -name configure.ac -o -name Makefile.in | xargs`
+
+compile:
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) all-host $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install-host $(LOGOUTPUT)
+
+append:
+	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/cpp $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)*
+	@ln -sf g++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++
+	@for bin in c++ g++ gcc gcc-ar gcc-nm gcc-ranlib; do \
 		if [ -e $(INS_TOPDIR)$(INS_SUBDIR)/bin/$${bin} ]; then \
 			ln -sf $${bin} $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)$${bin}; \
 		fi; \
-	done; \
-	ln -sf $(CROSS_COMPILE)gcc $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)gcc-$(VERSION)
-endef
+	done
+	@ln -sf $(CROSS_COMPILE)gcc $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)gcc-$(VERSION)
 
-define do_compile
-	set -e; \
-	$(if $(SRC_URLS),$(call do_fetch),true); \
-	mkdir -p $(OBJ_PREFIX); \
-	$(if $(do_prepend),$(call do_prepend),true); \
-	cd $(OBJ_PREFIX) && $(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) \
-		--prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT); \
-	rm -rf $(INS_TOPDIR) && $(MAKES) all-host $(LOGOUTPUT) && $(MAKES) install-host $(LOGOUTPUT); \
-	$(call install_lics); \
-	$(SYSROOT_SCRIPT) replace $(INS_TOPDIR); \
-	$(if $(do_append),$(call do_append),true); \
-	set +e
-endef
-
-ifeq ($(INSTALL_OPTION), release)
-define do_install
-	install -d $(INS_PREFIX); \
-	flock $(INS_PREFIX) -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)"
-endef
-else
-define do_install
-	true
-endef
+ifneq ($(INSTALL_OPTION), release)
+install:
+	@
 endif
-
-include $(ENV_MAKE_DIR)/inc.rule.mk
 
 endif

@@ -1,3 +1,9 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
 import os, sys, socket
 
 port_dir = os.getenv('ENV_CFG_ROOT')
@@ -20,6 +26,7 @@ def do_start():
             break
         elif data[:6] == 'total=':
             total = int(data[6:])
+            continue
 
         if total == 0:
             continue

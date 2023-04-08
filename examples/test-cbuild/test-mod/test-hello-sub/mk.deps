@@ -1,7 +1,7 @@
 #DEPS(mk.deps) test-hello-sub(): ?linux
 
 PACKAGE_NAME     = test-hello-sub
-MAKES_FLAGS      = -C ${ENV_TOP_DIR}/../test-mod/test-hello-sub
+MAKE_FLAGS       = -C ${ENV_TOP_DIR}/../test-mod/test-hello-sub
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 include $(ENV_MAKE_DIR)/inc.rule.mk

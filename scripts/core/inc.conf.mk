@@ -68,10 +68,10 @@ ifneq ($(ENV_BUILD_MODE), yocto)
 
 ifeq ($(wildcard $(CONF_PATH)/mconf), )
 
-CONF_MAKES_FLAGS = $(ENV_BUILD_FLAGS) O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
+CONF_MAKE_FLAGS   = -s O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
 
 buildkconfig:
-	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES_FLAGS) && $(MAKE) $(CONF_MAKES_FLAGS) install
+	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKE_FLAGS) && $(MAKE) $(CONF_MAKE_FLAGS) install
 
 cleankconfig:
 	@rm -rf $(CONF_WORKDIR)

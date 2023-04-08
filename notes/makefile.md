@@ -801,7 +801,7 @@ $(call set_flags,CFLAGS,a.c b.c,-DDEBUG)
 * Kernel Makefile
 
 ```makefile
-KERN_MAKES := make $(BUILD_SILENT) $(BUILD_JOBS)
+KERN_MAKES := $(BUILD_SILENT) $(BUILD_JOBS)
 KERN_MAKES += $(if $(ARCH),ARCH=$(ARCH)) $(if $(CROSS_COMPILE),CROSS_COMPILE=$(CROSS_COMPILE))
 KERN_MAKES += $(if $(KERNEL_OUT),O=$(KERNEL_OUT))
 
@@ -809,28 +809,28 @@ KERN_MAKES += $(if $(KERNEL_OUT),O=$(KERNEL_OUT))
 
 all:
 	@mkdir -p $(KERNEL_OUT)
-	@$(KERN_MAKES) all
+	@$(MAKE) $(KERN_MAKES) all
 	@echo "Build linux-kernel Done."
 
 clean:
-	@$(KERN_MAKES) clean
+	@$(MAKE) $(KERN_MAKES) clean
 	@echo "Clean linux-kernel Done."
 
 install:
-	@$(KERN_MAKES) $(if $(SYSROOT_DIR),INSTALL_MOD_PATH=$(SYSROOT_DIR)) modules_install
+	@$(MAKE) $(KERN_MAKES) $(if $(SYSROOT_DIR),INSTALL_MOD_PATH=$(SYSROOT_DIR)) modules_install
 	@echo "Install linux-kernel Done."
 
 loadconfig:
-	@$(KERN_MAKES) $(KERNEL_CONF)
+	@$(MAKE) $(KERN_MAKES) $(KERNEL_CONF)
 
 menuconfig:
-	@$(KERN_MAKES) menuconfig
+	@$(MAKE) $(KERN_MAKES) menuconfig
 ```
 
 * Module Makefile
 
 ```makefile
-MOD_MAKES := make $(BUILD_SILENT) $(BUILD_JOBS)
+MOD_MAKES := $(BUILD_SILENT) $(BUILD_JOBS)
 MOD_MAKES += -C $(KERNEL_SRC)
 MOD_MAKES += $(if $(ARCH),ARCH=$(ARCH)) $(if $(CROSS_COMPILE),CROSS_COMPILE=$(CROSS_COMPILE))
 MOD_MAKES += $(if $(KERNEL_OUT),O=$(KERNEL_OUT))
@@ -839,15 +839,15 @@ MOD_MAKES += $(if $(OUT_PATH),M=$(OUT_PATH) src=$(shell pwd),M=$(shell pwd))
 .PHONY: all clean install
 
 all:
-	@$(MOD_MAKES) $(if $(MOD_DEPS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(SYSROOT_DIR)/usr/include/%/Module.symvers,$(MOD_DEPS)))") modules
+	@$(MAKE) $(MOD_MAKES) $(if $(MOD_DEPS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(SYSROOT_DIR)/usr/include/%/Module.symvers,$(MOD_DEPS)))") modules
 	@echo "Build $(MOD_NAME) Done."
 
 clean:
-	@$(MOD_MAKES) clean
+	@$(MAKE) $(MOD_MAKES) clean
 	@echo "Clean $(MOD_NAME) Done."
 
 install:
-	@make $(MOD_MAKES) $(if $(SYSROOT_DIR), INSTALL_MOD_PATH=$(SYSROOT_DIR)) modules_install
+	@$(MAKE) $(MOD_MAKES) $(if $(SYSROOT_DIR), INSTALL_MOD_PATH=$(SYSROOT_DIR)) modules_install
 ifneq ($(INSTALL_HEADER), )
 	@mkdir -p $(SYSROOT_DIR)/usr/include/$(MOD_NAME)
 	@cp -fp $(OUT_PATH)/Module.symvers $(SYSROOT_DIR)/usr/include/$(MOD_NAME)
