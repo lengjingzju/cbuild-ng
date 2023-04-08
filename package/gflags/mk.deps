@@ -22,6 +22,7 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = http://github.com/gflags/gflags/archive/refs/tags/v$(VERSION).tar.gz
 SRC_MD5          = 1a865b93bacfa963201af3f75b7bd64c
+INS_FULLER       = n
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

@@ -906,6 +906,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * INS_CHOICE    : The configuration of installation directory for `autotools` `cmake` `meson`
     * INS_FULLER    : Indicates whether to set the installation directory in detail for `autotools` `cmake` `meson`
         * When the installation files have `/etc` and so on, it needs to be set to "y".
+    * INS_FULLER    : Indicates whether to set the run installation directory
 <br>
 
 * Functions in `inc.rule.mk`

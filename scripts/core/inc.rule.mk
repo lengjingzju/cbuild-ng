@@ -29,20 +29,21 @@ MAKES           ?= ninja $(BUILD_JOBS) $(MAKES_FLAGS)
 endif
 
 INS_FULLER      ?= n
+INS_HASRUN      ?= n
 ifeq ($(INS_FULLER), y)
 define ins_common_cfg
 --$(1)dir=$(INS_TOPDIR)$(if $(filter $(1),bin sbin lib),$(INS_SUBDIR)$(base_$(1)dir),$($(1)dir))
 endef
 
 define ins_cmake_cfg
--DCMAKE_INSTALL_FULL_$(shell echo $(1)dir | tr [:lower:] [:upper:])=$(INS_TOPDIR)$(if $(filter $(1),bin sbin lib),$(INS_SUBDIR)$(base_$(1)dir),$($(1)dir))
+-DCMAKE_INSTALL_$(shell echo $(1)dir | tr [:lower:] [:upper:])=$(patsubst /%,%,$(if $(filter $(1),bin sbin lib),$(INS_SUBDIR)$(base_$(1)dir),$($(1)dir)))
 endef
 endif
 
 ifeq ($(COMPILE_TOOL), autotools)
 AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
 ifeq ($(INS_FULLER), y)
-INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot runstate,$(call ins_common_cfg,$(v)))
+INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot $(if $(filter y,$(INS_HASRUN)),runstate),$(call ins_common_cfg,$(v)))
 else
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
 endif
@@ -50,7 +51,7 @@ endif
 else ifeq ($(COMPILE_TOOL), cmake)
 CMAKE_CROSS     ?= $(shell $(MACHINE_SCRIPT) cmake_cross)
 ifeq ($(INS_FULLER), y)
-INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot runstate,$(call ins_cmake_cfg,$(v)))
+INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot $(if $(filter y,$(INS_HASRUN)),runstate),$(call ins_cmake_cfg,$(v)))
 else
 INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
 endif

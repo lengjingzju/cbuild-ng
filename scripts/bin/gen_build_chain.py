@@ -1268,21 +1268,21 @@ class Deps:
                 psys_make = '@%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
                             % (make_cmd, item['target'], item['target'])
 
-                isys_cmd = ''
                 gsys_dir = ''
+                isys_dir = ''
+                isys_cmd = ''
                 if pkg_flags['native'] :
-                    isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(ENV_NATIVE_ROOT)/objects/%s/image $(NATIVE_DESTDIR)' \
-                                % (item['target'])
                     gsys_dir = '$(ENV_NATIVE_ROOT)/sysroot'
+                    isys_dir = '$(ENV_NATIVE_ROOT)/objects/%s/image' % (item['target'].replace('-native', ''))
+                    isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(NATIVE_DESTDIR)' % (isys_dir)
                 else:
-                    isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(ENV_CROSS_ROOT)/objects/%s/image $(CROSS_DESTDIR)' \
-                                % (item['target'])
                     gsys_dir = '$(ENV_CROSS_ROOT)/sysroot'
+                    isys_dir = '$(ENV_CROSS_ROOT)/objects/%s/image' % (item['target'])
+                    isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(CROSS_DESTDIR)' % (isys_dir)
 
                 gsys_make = '@flock %s -c "%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
                             % (gsys_dir, make[1:], unionstr, 'install')
-                gsys_cmd = '@flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(ENV_CROSS_ROOT)/objects/%s/image %s"' \
-                            % (gsys_dir, item['target'], gsys_dir)
+                gsys_cmd = '@flock %s -c "bash $(SYSROOT_SCRIPT) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
 
                 #### process dependencies #####
                 fp.write('ifeq ($(CONFIG_%s), y)\n\n' % (escape_toupper(item['target'])))
@@ -1342,6 +1342,7 @@ class Deps:
                     compile_str += '\t%s %s%s\n' % (make, unionstr, 'prepare')
                 compile_str += '\t%s%s\n' % (make.replace('@', '@$(PRECMD)', 1), ' %s%s' % (unionstr, 'all') if unionstr else '')
                 if pkg_flags['isysroot']:
+                    compile_str += '\t@install -d %s\n' % (isys_dir)
                     compile_str += '\t%s %s%s\n' % (make, unionstr, 'install')
 
                 phony.append(item['target'])

@@ -896,6 +896,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
             * MESON_WRAP_MODE   : 设置了默认值 `--wrap-mode=nodownload`，表示禁止 meson 下载依赖包编译
     * INS_CHOICE        : `autotools` `cmake` `meson` 的安装目录的配置
     * INS_FULLER        : 表示是否详细设置 `autotools` `cmake` `meson` 的安装目录，安装的文件有 `/etc` 等时需要设置为 `y`
+    * INS_HASRUN        : 表示是否设置 run 的安装目录，安装的文件有 `/run` 时需要设置为 `y`
 <br>
 
 * inc.rule.mk 涉及的函数

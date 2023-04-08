@@ -27,6 +27,7 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = http://ftp.gnu.org/gnu/gdb/$(SRC_NAME)
 SRC_MD5          = 4aaad768ff2585464173c091947287ec
+INS_FULLER       = n
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

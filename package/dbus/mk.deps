@@ -29,6 +29,7 @@ SRC_URL          = http://dbus.freedesktop.org/releases/dbus/$(SRC_NAME)
 SRC_MD5          = 5f948b755ccd7c4d0a32d5b7fa423dd5
 INS_SUBDIR       =
 INS_FULLER       = y
+INS_HASRUN       = y
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

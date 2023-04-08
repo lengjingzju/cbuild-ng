@@ -20,6 +20,7 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = http://ftp.gnu.org/gnu/gcc/gcc-$(VERSION)/$(SRC_NAME)
 SRC_MD5          = 73bafd0af874439dcdb9fc063b6fb069
+INS_FULLER       = n
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
