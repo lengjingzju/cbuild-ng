@@ -49,6 +49,19 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
 * Test cases can be viewed in [examples.md](./examples/examples.md)
 
 
+## Performance Test
+
+* Test scenario: 300 packages of an SDK 8-thread local file system compilation
+
+    | Build Method            | Time Usage of First Build | Time Usage of Re-Build | Output Filesystem Occupancy |
+    | ----------------------- | ------------ | ------------ | ---------------- |
+    | CBuild-ng Classic Build | 5m1.790s     | 0m49.785s    | 1.8G             |
+    | CBuild Classic Build    | 5m13.526s    | 0m59.156s    | 2.7G             |
+    | Yocto Build with cache  | 15m42.554s   | 3m31.520s    | 7.4G+            |
+
+* Test Result: Compared with Yocto Build, CBuild-ng Classic Build compilation time is reduced by 2/3, and output filesystem occupancy is reduced by 3/4
+
+
 ## Open Source Contributions
 
 This project has contributed 2 commits to the Linux Kernel Community so far, which have been merged into the Linux kernel mainline.

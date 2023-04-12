@@ -48,6 +48,19 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * 测试用例可以查看 [examples_zh-cn.md](./examples/examples_zh-cn.md)
 
 
+## 性能测试
+
+* 测试场景: 某 SDK 的 300 个包 8 线程本地文件系统编译
+
+    | 编译方法                | 首次编译耗时 | 再次编译耗时 | 输出文件系统占用 |
+    | ----------------------- | ------------ | ------------ | ---------------- |
+    | CBuild-ng Classic Build | 5m1.790s     | 0m49.785s    | 1.8G             |
+    | CBuild Classic Build    | 5m13.526s    | 0m59.156s    | 2.7G             |
+    | Yocto Build with cache  | 15m42.554s   | 3m31.520s    | 7.4G+            |
+
+* 测试结果: 对比 Yocto Build，CBuild-ng 的 Classic Build 编译耗时减少 2/3，输出文件系统占用减少 3/4
+
+
 ## 笔记
 
 * 如果对 Shell 语法不了解，可以查看 [Shell 笔记](./notes/shell.md)
