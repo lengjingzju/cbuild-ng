@@ -44,12 +44,7 @@ link_sysroot() {
             esac
             link_sysroot $s/$v $d/$v
         else
-            if [ $(echo $v | grep -c '\.pc$') -eq 1 ]; then
-                cp -df $s/$v $d/$v
-                sed -i "s@\${DEP_PREFIX}@${dst}@g" $d/$v
-            else
-                ln -sfT $s/$v $d/$v
-            fi
+            ln -sfT $s/$v $d/$v
         fi
     done
 }
@@ -102,9 +97,6 @@ install_sysroot() {
             esac
         else
             cp -df $s/$v $d/$v
-            if [ $(echo $v | grep -c '\.pc$') -eq 1 ]; then
-                sed -i "s@\${DEP_PREFIX}@${dst}@g" $d/$v
-            fi
         fi
     done
 }
@@ -206,10 +198,25 @@ release_sysroot() {
 }
 
 replace_pkgconfig() {
-    pcs="$(find $src -name '*.pc' | xargs)"
-    if [ ! -z "$pcs" ]; then
-        sed -i "s@${src}@\${DEP_PREFIX}@g" $pcs
-    fi
+    python3 <<EOF
+import sys, os, re
+pc_path = ""
+pc_fn = lambda x: "\${pcfiledir}/" + os.path.relpath(x.group(0), pc_path)
+pcs = "$(find $src -name '*.pc' | xargs)".strip().split()
+
+for pc in pcs:
+    pc_content = ""
+    with open(pc, "r") as fp:
+        pc_content = fp.read()
+        if "$src" in pc_content:
+            pc_path = os.path.dirname(pc)
+            pc_content = re.sub(r"($src[\w\.\-/]*)", pc_fn, pc_content)
+        else:
+            pc_content = ""
+    if pc_content:
+        with open(pc, "w") as fp:
+            fp.write(pc_content)
+EOF
 }
 
 install_license() {
