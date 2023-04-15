@@ -7,7 +7,7 @@
 ifeq ($(KERNELRELEASE), )
 
 CONF_WORKDIR     ?= $(ENV_NATIVE_ROOT)/objects/kconfig
-CONF_SRC         ?= $(ENV_TOP_DIR)/scripts/kconfig
+CONF_SRC         ?= $(ENV_MAKE_DIR)/../kconfig
 CONF_PATH        ?= $(CONF_WORKDIR)/image/usr/bin
 CONF_OUT         ?= $(if $(OBJ_PREFIX),$(OBJ_PREFIX),.)
 KCONFIG          ?= Kconfig

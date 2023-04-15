@@ -21,7 +21,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 支持生成任务依赖关系的图片，并有颜色等属性查看任务是否被选中等 `gen_depends_image.sh`
 <br>
 
-* Makefile 编译模板: 比肩 `CMake` `Autotools` `Meson` 等的编译工具，比他们更简洁快速，使用 menuconfig 配置参数，缺点是由于是纯粹 Makefile 实现所以不支持 Windows
+* Makefile 编译模板 (IMake): 比肩 `CMake` `Autotools` `Meson` 等的编译工具，比他们更简洁快速，使用 menuconfig 配置参数，缺点是由于是纯粹 Makefile 实现所以不支持 Windows
     * 编译驱动、库、应用的模板，只需填写少数几个变量就可以完成一个超大项目的 Makefile
     * 支持编译生成最新的交叉编译工具链 `process_machine.sh` `toolchain/Makefile`
     * 一个 Makefile 同时支持 Classic Build 模式和 Yocto Build 方式，同时支持本地编译和交叉编译 `inc.env.mk`
@@ -455,6 +455,19 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 
 ## 编译模板
+
+* 编译模板我也称之为 IMake 编译，他有两层含义:
+    * Include Makefile: 包含模板的编译
+    * I have the make : 任何有一定基础的人可以完全掌握和修改此编译工具
+* 如果用户想把模板放在源码目录，建议用户使用模板 `inc.makes` 并设置 `INC_MAKES` 启用相应的模板
+* `inc.makes` 默认只启用 inc.env.mk 和 ins.ins.mk
+* `INC_MAKES` 的值可以是 `disenv` `conf` `app` `mod` `disins` 的组合
+    * disenv: 不启用 inc.env.mk
+    * conf  : 启用 ins.conf.mk
+    * app   : 启用 ins.app.mk
+    * mod   : 启用 ins.mod.mk
+    * disins: 不启用 ins.ins.mk
+
 
 ### 环境模板 inc.env.mk
 

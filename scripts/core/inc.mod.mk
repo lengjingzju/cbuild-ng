@@ -44,9 +44,7 @@ else
 
 endif
 
-########################################
-
-else
+else # KERNELRELEASE
 
 KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
 MOD_MAKES      += -C $(KERNEL_SRC)
@@ -100,4 +98,3 @@ symvers_install:
 install_hdrs: symvers_install
 
 endif
-

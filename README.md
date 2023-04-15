@@ -21,7 +21,7 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
     * Supports automatic generation of task dependency picture with some useful properties such as color to see whether the task is selected, etc (`gen_depends_image.sh`)
 <br>
 
-* Makefile compilation Templates: Provides compilation templates of driver, library and application
+* Makefile compilation Templates (IMake): Provides compilation templates of driver, library and application
     * Users only need to fill in a few variables to complete the compiled script of a project
     * Supports the generation of latest cross-compilation toolchain (`process_machine.sh` `toolchain/Makefile`)
     * Supports both Classic Build mode and Yocto Build mode, both native-compilation and cross-compilation in one Makefile (`inc.env.mk`)
@@ -475,6 +475,19 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 
 ## Compilation Template
+
+* I also call the compilation templates as IMake compilation, it has two meanings:
+    * Include Makefile: Compile with including templates
+    * I have the make: Anyone with a certain foundation can fully master and modify this compilation tool
+* If users want to put the template in the source directory, it is recommended to put `inc.makes` and set the variable of `INC_MAKES`
+* The default behavior of `inc.makes` only includes inc.env.mk and ins.ins.mk
+* `INC_MAKES` can be set to a combination of `disenv` `conf` `app` `mod` `disins`:
+    * disenv: Excluding inc.env.mk
+    * conf  : Including ins.conf.mk
+    * app   : Including ins.app.mk
+    * mod   : Including ins.mod.mk
+    * disins: Excluding ins.ins.mk
+
 
 ### Environment Template inc.env.mk
 
