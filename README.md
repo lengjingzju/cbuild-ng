@@ -6,7 +6,7 @@
 
 The CBuild-ng compilation system is a more powerful and flexible build system than Buildroot, faster and succincter than Yocto, easier to understand and use than Buildroot and Yocto. It doesn't have a steep learning curve and doesn't re-define a new language, the total core codes are about 4000 lines which are composed of Python / Shell / Makefile scripts.<br>
 CBuild-ng supports both `Classic Build` and `Yocto Build`, and it encapsulates a make command layer and a menuconfig configuration layer for Yocto to make it easier to use.<br>
-The CBuild compilation system is mainly composed of three parts: task analysis and processing tools, Makefile compilation templates, and network and cache processing tools.<br>
+The CBuild compilation system is mainly composed of three parts: task analysis and processing tools, Makefile compilation templates (IMake), and network and cache processing tools.<br>
 The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjingzju/cbuild) is that Classic Build introduces the concept of'WORKDIR ', each package prepares dependencies, compile, and install in the specific directory under its own `WORKDIR`, and the dependencies between packages and sysroot are handled by an automatically generated top-level Makefile.
 <br>
 
@@ -523,6 +523,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * Its default value is equal to `$(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)` in the cross-compilation or `$(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)` in the native-compilation
     * The default values of OBJ_PREFIX / INS_PREFIX / DEP_PREFIX / PATH_PREFIX are defined under WORKDIR
 * OBJ_PREFIX        : Top-level compilation output directory
+* OBJ_SUBDIR        : Compilation output subdirectory, it is generally used for Makefiles with multiple independent submodules
     * Its default value can be changed by `make O=xxx`
 * INS_PREFIX        : Top-level installation directory
     * Its default value can be changed by `make DESTDIR=xxx`

@@ -6,7 +6,7 @@
 
 CBuild-ng 编译系统是一个比 Buildroot 更强大灵活，比 Yocto 更快速简洁的编译系统。他没有陡峭的学习曲线，也没有定义新的语言，他仅仅由约 4000 行的 Python / Shell / Makefile 脚本组成，比 Buildroot 和 Yocto 更易于理解和使用。<br>
 CBuild-ng 支持两种编译方式: Classic Build 和 Yocto Build，并且对 Yocto 封装了一层 make 命令层和 menuconfig 配置层使之更易于使用。<br>
-CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile 编译模板、网络和缓存处理工具。<br>
+CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile 编译模板 (IMake)、网络和缓存处理工具。<br>
 CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别是 Classic Build 引入了 `WORKDIR` 概念，每个包都在自己的 `WORKDIR` 下的特定目录下准备依赖、编译、安装，包之间的依赖关系和 sysroot 由自动生成的顶层 Makefile 处理。
 <br>
 
@@ -503,6 +503,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 交叉编译默认值为 `$(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)`，本地编译默认值为 `$(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)`
     * OBJ_PREFIX / INS_PREFIX / DEP_PREFIX / PATH_PREFIX 的默认定义都在此目录下
 * OBJ_PREFIX        : 顶层编译输出目录
+* OBJ_SUBDIR        : 编译输出子目录，一般用于有多个独立子模块组成的 Makefile
     * 可以使用 `make O=xxx` 改变默认值
 * INS_PREFIX        : 顶层编译安装目录，默认取值 `$(WORKDIR)/image`
     * 可以使用 `make DESTDIR=xxx` 改变默认值

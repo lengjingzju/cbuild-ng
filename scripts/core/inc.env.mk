@@ -55,7 +55,8 @@ endif # NATIVE_BUILD
 INS_SUBDIR     ?= /usr
 INS_TOPDIR     ?= $(WORKDIR)/image
 INS_PREFIX     ?= $(WORKDIR)/image
-OBJ_PREFIX     ?= $(WORKDIR)/build
+OBJ_SUBDIR     ?=
+OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
 ifneq ($(GLOBAL_SYSROOT), y)
 PATH_PREFIX    ?= $(WORKDIR)/sysroot-native
 else
@@ -74,13 +75,14 @@ INS_PREFIX     ?= $(WORKDIR)/image/$(WORKDIR)/recipe-sysroot-native
 DEP_PREFIX     ?= $(WORKDIR)/recipe-sysroot-native
 endif # NATIVE_BUILD
 
-OBJ_PREFIX     ?= $(WORKDIR)/build
+OBJ_SUBDIR     ?=
+OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
 PATH_PREFIX    ?= $(WORKDIR)/recipe-sysroot-native
 
 endif # ENV_BUILD_MODE
 
 ifneq ($(O), )
-OBJ_PREFIX      = $(O)
+OBJ_PREFIX      = $(O)$(OBJ_SUBDIR)
 endif
 
 ifneq ($(DESTDIR), )
