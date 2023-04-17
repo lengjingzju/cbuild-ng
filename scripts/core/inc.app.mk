@@ -41,6 +41,9 @@ LDFLAGS        += -Wl,--gc-sections
 endif
 #LDFLAGS       += -static
 
+CFLAGS         += $(USER_CFLAGS)
+LDFLAGS        += $(USER_LDFLAGS)
+
 define translate_obj
 $(patsubst %,$(OBJ_PREFIX)/%.o,$(basename $(1)))
 endef

@@ -460,13 +460,13 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * Include Makefile: 包含模板的编译
     * I have the make : 任何有一定基础的人可以完全掌握和修改此编译工具
 * 如果用户想把模板放在源码目录，建议用户使用模板 `inc.makes` 并设置 `INC_MAKES` 启用相应的模板
-* `inc.makes` 默认只启用 inc.env.mk 和 ins.ins.mk
+* `inc.makes` 默认只启用 inc.env.mk 和 inc.ins.mk
 * `INC_MAKES` 的值可以是 `disenv` `conf` `app` `mod` `disins` 的组合
     * disenv: 不启用 inc.env.mk
-    * conf  : 启用 ins.conf.mk
-    * app   : 启用 ins.app.mk
-    * mod   : 启用 ins.mod.mk
-    * disins: 不启用 ins.ins.mk
+    * conf  : 启用 inc.conf.mk
+    * app   : 启用 inc.app.mk
+    * mod   : 启用 inc.mod.mk
+    * disins: 不启用 inc.ins.mk
 
 
 ### 环境模板 inc.env.mk
@@ -693,8 +693,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 如果用户指定了 SRCS，也可以设置 SRC_PATH，将 SRC_PATH 和 SRC_PATH 下的 include 加入到头文件搜索的目录
     * 如果用户指定了 SRCS，忽略 IGNORE_PATH 的值
 * CFLAGS: 用户可以设置包自己的一些全局编译标记(用于 `gcc g++` 命令)
+    * USER_CFLAGS: 用户可以设置包自己的一些用户全局编译标记(用于 `gcc g++` 命令)
 * AFLAGS: 用户可以设置包自己的一些全局汇编标记(用于 `as` 命令)
 * LDFLAGS: 用户可以设置包自己的一些全局链接标记
+    * USER_LDFLAGS: 用户可以设置包自己的一些用户全局链接标记
 * CFLAGS_xxx.o: 用户可以单独为指定源码 `xxx.c / xxx.cpp / ... / xxx.S` 设置编译标记
 * AFLAGS_xxx.o: 用户可以单独为指定源码 `xxx.s / xxx.asm` 设置编译标记
 
@@ -769,6 +771,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * IGNORE_PATH: 查找源码文件时，忽略搜索的目录名集合，默认已忽略 `.git scripts output` 文件夹
     * SRCS: 所有的 C 和汇编源码文件，默认是当前目录下的所有的 `*.c *.S` 文件
     * `ccflags-y` `asflags-y` `ldflags-y`: 分别对应内核模块编译、汇编、链接时的参数
+        * `USER_CFLAGS`: 别对应内核模块编译时的用户参数
 <br>
 
 * 提供的函数

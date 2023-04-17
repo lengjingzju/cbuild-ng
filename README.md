@@ -480,13 +480,13 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * Include Makefile: Compile with including templates
     * I have the make: Anyone with a certain foundation can fully master and modify this compilation tool
 * If users want to put the template in the source directory, it is recommended to put `inc.makes` and set the variable of `INC_MAKES`
-* The default behavior of `inc.makes` only includes inc.env.mk and ins.ins.mk
+* The default behavior of `inc.makes` only includes inc.env.mk and inc.ins.mk
 * `INC_MAKES` can be set to a combination of `disenv` `conf` `app` `mod` `disins`:
     * disenv: Excluding inc.env.mk
-    * conf  : Including ins.conf.mk
-    * app   : Including ins.app.mk
-    * mod   : Including ins.mod.mk
-    * disins: Excluding ins.ins.mk
+    * conf  : Including inc.conf.mk
+    * app   : Including inc.app.mk
+    * mod   : Including inc.mod.mk
+    * disins: Excluding inc.ins.mk
 
 
 ### Environment Template inc.env.mk
@@ -714,8 +714,10 @@ Note: The reason for providing the above functions is that multiple libraries or
 * SRCS: All source code files, its default value is all files with suffix of `REG_SUFFIX` in the `SRC_PATH`
     * If users specifies `SRCS`, they can also set `SRC_PATH`, and `IGNORE_PATH` is ignored
 * CFLAGS: Sets global compilation flags for `gcc g++`
+    * USER_CFLAGS: Sets user's global compilation flags for `gcc g++`
 * AFLAGS: Sets global assembly flags for `as`
 * LDFLAGS: Sets global link flags for `gcc g++`
+    * USER_LDFLAGS: Sets user's global link flags for `gcc g++`
 
 
 ### Configuration Template inc.conf.mk
@@ -785,6 +787,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * IGNORE_PATH: The ignored directory names when searching, its default value is `.git scripts output`
     * SRCS: All source code files, its default value is all files with suffix of `REG_SUFFIX` (`*.c` `*.S`) in the `$(src)`
     * `ccflags-y` `asflags-y` `ldflags-y`: The parameters for kernel module compilation, assembly and linking
+        * `USER_CFLAGS` : The user's parameters for kernel module compilation
 <br>
 
 * Functions of Kbuild Part

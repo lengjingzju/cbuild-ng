@@ -7,10 +7,10 @@
 # The default behavior only includes inc.env.mk and inc.ins.mk.
 # INC_MAKES can be set to a combination of `disenv` `conf` `app` `mod` `disins`.
 #   disenv: Excluding inc.env.mk
-#   conf  : Including ins.conf.mk
-#   app   : Including ins.app.mk
-#   mod   : Including ins.mod.mk
-#   disins: Excluding ins.ins.mk
+#   conf  : Including inc.conf.mk
+#   app   : Including inc.app.mk
+#   mod   : Including inc.mod.mk
+#   disins: Excluding inc.ins.mk
 
 ################ inc.env.mk ################
 
@@ -409,6 +409,9 @@ LDFLAGS        += -Wl,--gc-sections
 endif
 #LDFLAGS       += -static
 
+CFLAGS         += $(USER_CFLAGS)
+LDFLAGS        += $(USER_LDFLAGS)
+
 define translate_obj
 $(patsubst %,$(OBJ_PREFIX)/%.o,$(basename $(1)))
 endef
@@ -544,6 +547,7 @@ ifneq ($(SEARCH_HDRS), )
 ccflags-y      += $(call link_hdrs)
 endif
 ccflags-y      += $(CC_OPT_VALUE)
+ccflags-y      += $(USER_CFLAGS)
 
 define translate_obj
 $(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))
