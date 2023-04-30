@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT             #
 # Copyright (C) 2021-.... Jing Leng        #
 # Contact: Jing Leng <lengjingzju@163.com> #
+# https://github.com/lengjingzju/cbuild-ng #
 ############################################
 
 ifneq ($(KERNELRELEASE), )
@@ -14,7 +15,6 @@ ifneq ($(SEARCH_HDRS), )
 ccflags-y      += $(call link_hdrs)
 endif
 ccflags-y      += $(CC_OPT_VALUE)
-ccflags-y      += $(USER_CFLAGS)
 
 define translate_obj
 $(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))

@@ -660,7 +660,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 注意函数中有逗号要用变量覆盖，例如 `$(eval $(call add-libso-build,动态库名,源文件列表,-Wl$(comma)-soname=libxxxx.so))`
 * `$(eval $(call add-bin-build,可执行文件名,源文件列表))`: 创建编译可执行文件规则
 * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数))`: 创建编译可执行文件规则
-* `$(call set_flags,标记名称,源文件列表,标记值)`: 单独为指定源码集合设置编译标记
+* `$(call set_flags,标记名称,源文件列表,标记值)`: 单独为指定源码集合设置C/C++编译标记(CFLAGS)或汇编标记(AFLAGS)
     * 例如 `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
 
 注: 提供上述函数的原因是可以在一个 Makefile 中编译出多个库或可执行文件
@@ -672,19 +672,19 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 也可以指定包下多个(不交叉)目录的源码，例如 `SRC_PATH = src1 src2 src3`
 * IGNORE_PATH: 查找源码文件时，忽略搜索的目录名集合，默认已忽略 `.git scripts output` 文件夹
 * REG_SUFFIX: 支持查找的源码文件的后缀名，默认查找以 `c cpp S` 为后缀的源码文件
-    * 可以修改为其它类型的文件，从 c 和 CPP_SUFFIX / ASM_SUFFIX 定义的类型中选择
-        * CPP_SUFFIX: C++类型的文件后缀名，默认定义为 `cc cp cxx cpp CPP c++ C`
+    * 可以修改为其它类型的文件，从 c 和 CXX_SUFFIX / ASM_SUFFIX 定义的类型中选择
+        * CXX_SUFFIX: C++类型的文件后缀名，默认定义为 `cc cp cxx cpp CPP c++ C`
         * ASM_SUFFIX: 汇编类型的文件后缀名，默认定义为 `S s asm`
-    * 如果支持非 CPP_SUFFIX / ASM_SUFFIX 默认定义类型的文件，只需要修改 REG_SUFFIX 和 CPP_SUFFIX / ASM_SUFFIX ，并定义函数
-    * 例如增加 cxx 类型的支持(CPP_SUFFIX 已有定义 cxx)：
+    * 如果支持非 CXX_SUFFIX / ASM_SUFFIX 默认定义类型的文件，只需要修改 REG_SUFFIX 和 CXX_SUFFIX / ASM_SUFFIX ，并定义函数
+    * 例如增加 cxx 类型的支持(CXX_SUFFIX 已有定义 cxx)：
         ```makefile
         REG_SUFFIX = c cpp S cxx
         include $(ENV_MAKE_DIR)/inc.app.mk
         ```
-    * 例如增加 CXX 类型的支持(CPP_SUFFIX 还未定义 CXX)：
+    * 例如增加 CXX 类型的支持(CXX_SUFFIX 还未定义 CXX)：
         ```makefile
         REG_SUFFIX = c cpp S CXX
-        CPP_SUFFIX = cc cp cxx cpp CPP c++ C CXX
+        CXX_SUFFIX = cc cp cxx cpp CPP c++ C CXX
         include $(ENV_MAKE_DIR)/inc.app.mk
         $(eval $(call compile_obj,CXX,$$(CXX)))
         ```
@@ -692,13 +692,13 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * SRCS: 所有的源码文件，默认是 SRC_PATH 下的所有的 `*.c *.cpp *.S` 文件
     * 如果用户指定了 SRCS，也可以设置 SRC_PATH，将 SRC_PATH 和 SRC_PATH 下的 include 加入到头文件搜索的目录
     * 如果用户指定了 SRCS，忽略 IGNORE_PATH 的值
-* CFLAGS: 用户可以设置包自己的一些全局编译标记(用于 `gcc g++` 命令)
-    * USER_CFLAGS: 用户可以设置包自己的一些用户全局编译标记(用于 `gcc g++` 命令)
-* AFLAGS: 用户可以设置包自己的一些全局汇编标记(用于 `as` 命令)
-* LDFLAGS: 用户可以设置包自己的一些全局链接标记
-    * USER_LDFLAGS: 用户可以设置包自己的一些用户全局链接标记
-* CFLAGS_xxx.o: 用户可以单独为指定源码 `xxx.c / xxx.cpp / ... / xxx.S` 设置编译标记
-* AFLAGS_xxx.o: 用户可以单独为指定源码 `xxx.s / xxx.asm` 设置编译标记
+<br>
+
+* CPFLAGS: 用户可以设置C和C++共有的一些全局编译标记
+* CFLAGS: 用户可以设置C的一些全局编译标记
+* CXXFLAGS: 用户可以设置C++的一些全局编译标记
+* AFLAGS: 用户可以设置一些全局汇编标记
+* LDFLAGS: 用户可以设置一些全局链接标记
 
 
 ### 配置模板 inc.conf.mk
@@ -771,12 +771,11 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * IGNORE_PATH: 查找源码文件时，忽略搜索的目录名集合，默认已忽略 `.git scripts output` 文件夹
     * SRCS: 所有的 C 和汇编源码文件，默认是当前目录下的所有的 `*.c *.S` 文件
     * `ccflags-y` `asflags-y` `ldflags-y`: 分别对应内核模块编译、汇编、链接时的参数
-        * `USER_CFLAGS`: 别对应内核模块编译时的用户参数
 <br>
 
 * 提供的函数
     * `$(call translate_obj,源码文件集)`: 将源码文件集名字转换为 KBUILD 需要的 `*.o` 格式，不管源码是不是以 `$(src)/` 开头
-    * `$(call set_flags,标记名称,源文件列表,标记值)`: 单独为指定源码集设置编译标记，参考 inc.app.mk 的说明
+    * `$(call set_flags,标记名称,源文件列表,标记值)`: 单独为指定源码集合设置编译标记(CFLAGS)或汇编标记(AFLAGS)
 <br>
 
 * 其它说明

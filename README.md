@@ -681,7 +681,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * Note that the commas in the function should be overridden with the comma variable, for example: `$(eval $(call add-libso-build,<shared library name>,<source files>,-Wl$(comma)-soname=libxxxx.so))`
 * `$(eval $(call add-bin-build,<executable name>,<source files>))`: Creates a rule for compiling executable
 * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>))`: Creates a rule for compiling executable
-* `$(call set_flags,<Flag Type>,<source files>,<value>)`: Sets the compilation flags for the specified source codes
+* `$(call set_flags,<Flag Type>,<source files>,<value>)`: Sets the compilation flags for the specified source codes, `Flag Type` can be `CFLAGS` and `AFLAGS`
     * For example: `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
 
 Note: The reason for providing the above functions is that multiple libraries or executables can be compiled in a single Makefile
@@ -694,30 +694,32 @@ Note: The reason for providing the above functions is that multiple libraries or
     * $(SRC_PATH) and $(SRC_PATH)/include are also header folders to search
 * IGNORE_PATH: The ignored directory names when searching, its default value is `.git scripts output`
 * REG_SUFFIX: The source code suffixes to search, its default value is `c cpp S`
-    * The value can be choosen from `c`, `$(CPP_SUFFIX)` and `$(ASM_SUFFIX)`
-        * CPP_SUFFIX: File suffixes C++ of type, its default value is `cc cp cxx cpp CPP c++ C`
+    * The value can be choosen from `c`, `$(CXX_SUFFIX)` and `$(ASM_SUFFIX)`
+        * CXX_SUFFIX: File suffixes C++ of type, its default value is `cc cp cxx cpp CPP c++ C`
         * ASM_SUFFIX: File suffixes of assembly type, its default value is `S s asm`
     * Users can add support for other suffixes, for example:
-        * Add support for cxx (cxx has been added to CPP_SUFFIX)
+        * Add support for cxx (cxx has been added to CXX_SUFFIX)
             ```makefile
             REG_SUFFIX = c cpp S cxx
             include $(ENV_MAKE_DIR)/inc.app.mk
             ```
-        * Add support for CXX (CXX has not been added to CPP_SUFFIX)
+        * Add support for CXX (CXX has not been added to CXX_SUFFIX)
             ```makefile
             REG_SUFFIX = c cpp S CXX
-            CPP_SUFFIX = cc cp cxx cpp CPP c++ C CXX
+            CXX_SUFFIX = cc cp cxx cpp CPP c++ C CXX
             include $(ENV_MAKE_DIR)/inc.app.mk
             $(eval $(call compile_obj,CXX,$$(CXX)))
             ```
 * USING_CXX_BUILD_C: When set to y, indicates compiling `*.c` files with CXX compiler
 * SRCS: All source code files, its default value is all files with suffix of `REG_SUFFIX` in the `SRC_PATH`
     * If users specifies `SRCS`, they can also set `SRC_PATH`, and `IGNORE_PATH` is ignored
-* CFLAGS: Sets global compilation flags for `gcc g++`
-    * USER_CFLAGS: Sets user's global compilation flags for `gcc g++`
-* AFLAGS: Sets global assembly flags for `as`
-* LDFLAGS: Sets global link flags for `gcc g++`
-    * USER_LDFLAGS: Sets user's global link flags for `gcc g++`
+<br>
+
+* CPFLAGS: Sets the global compilation flags for C and C++
+* CFLAGS: Sets the global compilation flags for C (standard)
+* CXXFLAGS: Sets the global compilation flags for C++ (standard)
+* AFLAGS: Sets the global assembly flags (standard)
+* LDFLAGS: Sets the global link flags (standard)
 
 
 ### Configuration Template inc.conf.mk
@@ -787,12 +789,11 @@ Note: The reason for providing the above functions is that multiple libraries or
     * IGNORE_PATH: The ignored directory names when searching, its default value is `.git scripts output`
     * SRCS: All source code files, its default value is all files with suffix of `REG_SUFFIX` (`*.c` `*.S`) in the `$(src)`
     * `ccflags-y` `asflags-y` `ldflags-y`: The parameters for kernel module compilation, assembly and linking
-        * `USER_CFLAGS` : The user's parameters for kernel module compilation
 <br>
 
 * Functions of Kbuild Part
     * `$(call translate_obj,<source files>)`: Converts the source code fileset name to the format required by KBUILD, regardless of whether the source code starts with *.o$(src)/
-    * `$(call set_flags,<Flag Type>,<source files>,<value>)`: Sets the compilation flags for the specified source codes
+    * `$(call set_flags,<Flag Type>,<source files>,<value>)`: Sets the compilation flags for the specified source codes, `Flag Type` can be `CFLAGS` and `AFLAGS`
 <br>
 
 * Other Notes

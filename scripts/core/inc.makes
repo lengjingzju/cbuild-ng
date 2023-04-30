@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT             #
 # Copyright (C) 2021-.... Jing Leng        #
 # Contact: Jing Leng <lengjingzju@163.com> #
+# https://github.com/lengjingzju/cbuild-ng #
 ############################################
 
 # The default behavior only includes inc.env.mk and inc.ins.mk.
@@ -379,9 +380,9 @@ SRC_PATH       ?= .
 IGNORE_PATH    ?= .git .pc scripts output
 REG_SUFFIX     ?= c cpp S
 ifeq ($(USING_CXX_BUILD_C), y)
-CPP_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
+CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
 else
-CPP_SUFFIX     ?= cc cp cxx cpp CPP c++ C
+CXX_SUFFIX     ?= cc cp cxx cpp CPP c++ C
 endif
 ASM_SUFFIX     ?= S s asm
 
@@ -389,28 +390,25 @@ SRCS           ?= $(shell find $(SRC_PATH) $(patsubst %,-path '*/%' -prune -o,$(
                       $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
                   | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs)
 
-CFLAGS         += -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
+CPFLAGS        += -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
 
 ifneq ($(SEARCH_HDRS), )
-CFLAGS         += $(call link_hdrs)
+CPFLAGS        += $(call link_hdrs)
 LDFLAGS        += $(call link_libs)
 endif
 
-CFLAGS         += -Wall # This enables all the warnings about constructions that some users consider questionable.
-CFLAGS         += -Wextra # This enables some extra warning flags that are not enabled by -Wall (This option used to be called -W).
-CFLAGS         += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),1024) # Warn whenever an object is defined whose size exceeds object_byte_size.
-CFLAGS         += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
-#CFLAGS        += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
+CPFLAGS        += -Wall # This enables all the warnings about constructions that some users consider questionable.
+CPFLAGS        += -Wextra # This enables some extra warning flags that are not enabled by -Wall (This option used to be called -W).
+CPFLAGS        += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),1024) # Warn whenever an object is defined whose size exceeds object_byte_size.
+CPFLAGS        += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
+#CPFLAGS       += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
 
-CFLAGS         += $(CC_OPT_VALUE)
+CPFLAGS        += $(CC_OPT_VALUE)
 ifeq ($(CC_OPT_OPTION),release)
-CFLAGS         += -ffunction-sections -fdata-sections
+CPFLAGS        += -ffunction-sections -fdata-sections
 LDFLAGS        += -Wl,--gc-sections
 endif
 #LDFLAGS       += -static
-
-CFLAGS         += $(USER_CFLAGS)
-LDFLAGS        += $(USER_LDFLAGS)
 
 define translate_obj
 $(patsubst %,$(OBJ_PREFIX)/%.o,$(basename $(1)))
@@ -435,7 +433,7 @@ $(strip \
 endef
 
 define compile_tool
-$(if $(filter $(patsubst %,\%.%,$(CPP_SUFFIX)),$(1)),$(CXX),$(CC))
+$(if $(filter $(patsubst %,\%.%,$(CXX_SUFFIX)),$(1)),$(CXX),$(CC))
 endef
 
 define compile_obj
@@ -443,9 +441,15 @@ ifeq ($(filter $(1),$(REG_SUFFIX)),$(1))
 ifneq ($(filter %.$(1),$(SRCS)), )
 $$(patsubst %.$(1),$$(OBJ_PREFIX)/%.o,$$(filter %.$(1),$$(SRCS))): $$(OBJ_PREFIX)/%.o: %.$(1)
 	@mkdir -p $$(dir $$@)
-	@$$(if $$(filter-out $$(patsubst %,\%.%,$$(ASM_SUFFIX)),$$<),$(2) -c $$(CFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<)
+ifeq ($(filter $(1),$(ASM_SUFFIX)), )
+	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(CPFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
+endif
 	@$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(LOGOUTPUT)
-	@$$(if $$(filter-out $$(AS),$(2)),$(2) -c $$(CFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) -fPIC -o $$@ $$<,$(AS) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<)
+ifneq ($(2),$(AS))
+	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(CPFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) -fPIC -o $$@ $$<
+else
+	@$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
+endif
 endif
 endif
 endef
@@ -547,7 +551,6 @@ ifneq ($(SEARCH_HDRS), )
 ccflags-y      += $(call link_hdrs)
 endif
 ccflags-y      += $(CC_OPT_VALUE)
-ccflags-y      += $(USER_CFLAGS)
 
 define translate_obj
 $(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))
