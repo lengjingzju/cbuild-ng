@@ -37,7 +37,7 @@ MAKE_FLAGS      += LIBDIR=$(INS_TOPDIR)/lib BINDIR=$(INS_TOPDIR)/sbin INCDIR=$(I
 MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CROSS_COMPILE)gcc AR=$(CROSS_COMPILE)ar)
 MAKE_FLAGS      += -C $(SRC_PATH)/wpa_supplicant
 
-USER_TARGET_FOR_PREPEND = y
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

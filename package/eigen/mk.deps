@@ -26,7 +26,7 @@ CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = cmake
 
-USER_TARGET_FOR_PREPEND = y
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

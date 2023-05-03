@@ -28,7 +28,7 @@ CACHE_CHECKSUM  += $(PATCH_FOLDER)
 MAKE_FLAGS       = PREFIX=$(INS_TOPDIR) INSTALL_INC=$(INS_TOPDIR)/usr/include INSTALL_MAN=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
 MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
 
-USER_TARGET_FOR_PREPEND = y
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

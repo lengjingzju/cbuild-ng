@@ -65,16 +65,16 @@ AUTOTOOLS_FLAGS += --disable-bootstrap \
 
 ifeq ($(CROSS_COMPILE), )
 
-USER_TARGET_FOR_BUILD = y
+CUSTOM_TARGETS   = build
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 build:
 	@
 else
 
-USER_TARGET_FOR_APPEND = y
+CUSTOM_TARGETS   = append
 ifneq ($(INSTALL_OPTION), release)
-USER_TARGET_FOR_INSTALL = y
+CUSTOM_TARGETS  += install
 endif
 include $(ENV_MAKE_DIR)/inc.rule.mk
 

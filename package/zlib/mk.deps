@@ -25,8 +25,7 @@ SRC_MD5          = 9cb22b7d2aa208b61f5850c04bebda58
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-USER_TARGET_FOR_PREPEND = y
-USER_TARGET_FOR_COMPILE = y
+CUSTOM_TARGETS   = prepend compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

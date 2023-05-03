@@ -36,8 +36,7 @@ CACHE_DEPENDS    = none
 CFG_NAME         = default_defconfig
 MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 
-USER_TARGET_FOR_PREPEND = y
-USER_TARGET_FOR_APPEND = y
+CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

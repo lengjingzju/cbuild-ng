@@ -28,7 +28,7 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = meson
 
-USER_TARGET_FOR_PREPEND = y
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

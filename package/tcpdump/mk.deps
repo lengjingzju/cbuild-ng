@@ -27,7 +27,7 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
 
-USER_TARGET_FOR_APPEND = y
+CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:

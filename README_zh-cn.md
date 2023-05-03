@@ -935,19 +935,19 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * cachebuild        : 有缓存机制的编译，当前包必须设置 `CACHE_BUIILD=y`
     * build             : 下载、补丁、配置、编译、安装到 `$(WORKDIR)/image` 等全过程
         * `prepend` `compile` `append` 是它的子项目
-        * 如果 `USER_TARGET_FOR_BUILD` 被设为 y，将运行用户定义的 build 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `build`，将运行用户定义的 build 目标
     * prepend           : 编译前置操作
-        * 如果 `USER_TARGET_FOR_PREPEND` 被设为 y，将运行用户定义的 prepend 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `prepend`，将运行用户定义的 prepend 目标
     * compile           : 编译安装操作
-        * 如果 `USER_TARGET_FOR_COMPILE` 被设为 y，将运行用户定义的 compile 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `compile`，将运行用户定义的 compile 目标
     * append            : 编译追加操作
-        * 如果 `USER_TARGET_FOR_APPEND` 被设为 y，将运行用户定义的 append 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `append`，将运行用户定义的 append 目标
     * clean             : 清除操作
-        * 如果 `USER_TARGET_FOR_CLEAN` 被设为 y，将运行用户定义的 build 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `clean`，将运行用户定义的 clean 目标
     * distclean         : 完全清除操作
-        * 如果 `USER_TARGET_FOR_DISTCLEAN` 被设为 y，将运行用户定义的 distclean 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `distclean`，将运行用户定义的 distclean 目标
     * install           : 安装操作
-        * 如果 `USER_TARGET_FOR_INSTALL` 被设为 y，将运行用户定义的 install 目标
+        * 如果 `CUSTOM_TARGETS` 包含 `install`，将运行用户定义的 install 目标
 
 
 ### 缓存处理 process_cache.sh

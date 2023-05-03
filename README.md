@@ -951,19 +951,19 @@ Note: The reason for providing the above functions is that multiple libraries or
     * cachebuild    : Compiles with cache mechanism, `CACHE_BUIILD=y` must be set in the `#DEPS` file
     * build         : Performs the entire process of downloading, patching, configuring, compiling, and installing to `$(WORKDIR)/image` ...
         * `prepend` `compile` `append` are sub-targets of `build`
-        * If `USER_TARGET_FOR_BUILD` is set to y, it will run user's `build` target
+        * If `CUSTOM_TARGETS` contains `build`, it will run user's `build` target
     * prepend       : Executes operations before compilation
-        * If `USER_TARGET_FOR_PREPEND` is set to y, it will run user's `prepend` target
+        * If `CUSTOM_TARGETS` contains `prepend`, it will run user's `prepend` target
     * compile       : Executes compilation
-        * If `USER_TARGET_FOR_COMPILE` is set to y, it will run user's `compile` target
+        * If `CUSTOM_TARGETS` contains `compile`, it will run user's `compile` target
     * append        : Executes operations after compilation
-        * If `USER_TARGET_FOR_APPEND` is set to y, it will run user's `append` target
+        * If `CUSTOM_TARGETS` contains `append`, it will run user's `append` target
     * clean         : Executes cleanup
-        * If `USER_TARGET_FOR_CLEAN` is set to y, it will run user's `clean` target
+        * If `CUSTOM_TARGETS` contains `clean`, it will run user's `clean` target
     * distclean     : Executes complete cleanup
-        * If `USER_TARGET_FOR_DISTCLEAN` is set to y, it will run user's `distclean` target
+        * If `CUSTOM_TARGETS` contains `distclean`, it will run user's `distclean` target
     * install       : Executes installation
-        * If `USER_TARGET_FOR_INSTALL` is set to y, it will run user's `install` target
+        * If `CUSTOM_TARGETS` contains `install`, it will run user's `install` target
 
 
 ### Cache process_cache.sh

@@ -36,7 +36,7 @@ MAKE_FLAGS      += BINDIR=$(INS_TOPDIR)/sbin
 MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CROSS_COMPILE)gcc AR=$(CROSS_COMPILE)ar)
 MAKE_FLAGS      += -C $(SRC_PATH)/hostapd
 
-USER_TARGET_FOR_PREPEND = y
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:

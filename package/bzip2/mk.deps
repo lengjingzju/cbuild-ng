@@ -32,7 +32,7 @@ CACHE_DEPENDS    = none
 MAKE_FLAGS       = -C $(SRC_PATH) PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
 MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))
 
-USER_TARGET_FOR_COMPILE = y
+CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 compile:

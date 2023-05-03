@@ -98,12 +98,12 @@ endef
 
 all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
 
-ifneq ($(USER_TARGET_FOR_BUILD), y)
+ifeq ($(filter build,$(CUSTOM_TARGETS)), )
 build:
 	@mkdir -p $(OBJ_PREFIX)
 	@$(if $(SRC_URLS),$(call do_fetch))
 	@$(if $(PATCH_FOLDER),$(call do_patch))
-ifeq ($(USER_TARGET_FOR_PREPEND), y)
+ifneq ($(filter prepend,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) prepend
 endif
 ifeq ($(COMPILE_TOOL), autotools)
@@ -119,7 +119,7 @@ else ifeq ($(COMPILE_TOOL), meson)
 		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(OBJ_PREFIX) $(LOGOUTPUT)
 endif
 	@rm -rf $(INS_TOPDIR)
-ifeq ($(USER_TARGET_FOR_COMPILE), y)
+ifneq ($(filter compile,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) compile
 else
 ifeq ($(COMPILE_TOOL), autotools)
@@ -134,24 +134,24 @@ endif
 endif
 	@$(call install_lics)
 	@$(SYSROOT_SCRIPT) replace $(INS_TOPDIR)
-ifeq ($(USER_TARGET_FOR_APPEND), y)
+ifneq ($(filter append,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) append
 endif
 endif
 
-ifneq ($(USER_TARGET_FOR_CLEAN), y)
+ifeq ($(filter clean,$(CUSTOM_TARGETS)), )
 clean:
 	@rm -rf $(OBJ_PREFIX)
 	@echo "Clean $(PACKAGE_ID) Done."
 endif
 
-ifneq ($(USER_TARGET_FOR_DISTCLEAN), y)
+ifeq ($(filter distclean,$(CUSTOM_TARGETS)), )
 distclean:
 	@rm -rf $(WORKDIR)
 	@echo "Distclean $(PACKAGE_ID) Done."
 endif
 
-ifneq ($(USER_TARGET_FOR_INSTALL), y)
+ifeq ($(filter install,$(CUSTOM_TARGETS)), )
 install:
 	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
 endif
