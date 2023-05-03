@@ -15,21 +15,15 @@ DESCRIPTION      = Ultralightweight JSON parser in ANSI C.
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 7b2f6ae6cf7011e94682b073669f5ff8f69095cc
+VERSION          = 1.0.0
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/json.git
-SRC_REV          = $(VERSION)
-MAKE_FILE        = $(shell pwd)/patch/Makefile
+SRC_REV          = c3bbf895f911c1a6b45061784ea080e6dc62ccf0
 
 CACHE_BUILD      = y
-CACHE_CHECKSUM  += $(MAKE_FILE)
 CACHE_DEPENDS    = none
 
 MAKE_FLAGS       = INS_PREFIX=$(INS_PREFIX) OBJ_PREFIX=$(OBJ_PREFIX) -C $(SRC_PATH)
 
-USER_TARGET_FOR_PREPEND = y
 include $(ENV_MAKE_DIR)/inc.rule.mk
-
-prepend:
-	@cp -f $(MAKE_FILE) $(SRC_PATH)

@@ -28,7 +28,7 @@ endif
 ifneq ($(ENV_BUILD_MODE), yocto)
 
 ifneq ($(NATIVE_BUILD), y)
-ENV_CROSS_ROOT ?= .
+ENV_CROSS_ROOT ?= $(shell pwd)
 WORKDIR        ?= $(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_CROSS_ROOT)/sysroot
 ifneq ($(CROSS_DESTDIR), )
@@ -40,7 +40,7 @@ else
 DEP_PREFIX     ?= $(SYS_PREFIX)
 endif
 else # NATIVE_BUILD
-ENV_NATIVE_ROOT?= .
+ENV_NATIVE_ROOT?= $(shell pwd)
 WORKDIR        ?= $(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_NATIVE_ROOT)/sysroot
 ifneq ($(NATIVE_DESTDIR), )

@@ -40,7 +40,7 @@ endif
 ifneq ($(ENV_BUILD_MODE), yocto)
 
 ifneq ($(NATIVE_BUILD), y)
-ENV_CROSS_ROOT ?= .
+ENV_CROSS_ROOT ?= $(shell pwd)
 WORKDIR        ?= $(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_CROSS_ROOT)/sysroot
 ifneq ($(CROSS_DESTDIR), )
@@ -52,7 +52,7 @@ else
 DEP_PREFIX     ?= $(SYS_PREFIX)
 endif
 else # NATIVE_BUILD
-ENV_NATIVE_ROOT?= .
+ENV_NATIVE_ROOT?= $(shell pwd)
 WORKDIR        ?= $(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_NATIVE_ROOT)/sysroot
 ifneq ($(NATIVE_DESTDIR), )
@@ -484,7 +484,7 @@ define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2))
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
-	@$$(AR) r $$@ $$^ -c
+	@$$(AR) r $$@ $$(call translate_obj,$(2)) -c
 endef
 
 define add-libso-build
@@ -493,7 +493,7 @@ LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
 
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2))
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
-	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$^ $$(LDFLAGS) $(3) \
+	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(LDFLAGS) $(3) \
 		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
 
 ifneq ($$(word 2,$$(libso_names)), )
@@ -517,7 +517,7 @@ define add-bin-build
 BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2))
 	@$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m"
-	@$$(call compile_tool,$(2)) -o $$@ $$^ $$(LDFLAGS) $(3)
+	@$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $$(LDFLAGS) $(3)
 endef
 
 ifneq ($(LIBA_NAME), )

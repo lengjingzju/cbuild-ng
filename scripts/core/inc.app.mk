@@ -116,7 +116,7 @@ define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2))
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
-	@$$(AR) r $$@ $$^ -c
+	@$$(AR) r $$@ $$(call translate_obj,$(2)) -c
 endef
 
 define add-libso-build
@@ -125,7 +125,7 @@ LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
 
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2))
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
-	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$^ $$(LDFLAGS) $(3) \
+	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(LDFLAGS) $(3) \
 		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
 
 ifneq ($$(word 2,$$(libso_names)), )
@@ -149,7 +149,7 @@ define add-bin-build
 BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2))
 	@$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m"
-	@$$(call compile_tool,$(2)) -o $$@ $$^ $$(LDFLAGS) $(3)
+	@$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $$(LDFLAGS) $(3)
 endef
 
 ifneq ($(LIBA_NAME), )
