@@ -86,7 +86,7 @@ SRC_PATH        ?= .
 
 install release: license
 license:
-	$(call install_lics)
+	@$(call install_lics)
 endif
 endif
 
