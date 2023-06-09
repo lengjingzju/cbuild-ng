@@ -1003,6 +1003,11 @@ class Deps:
                     else:
                         deps.append('%s' % (' || '.join(['$(%s)="%s"' % (env_name, t) for t in env_vals])))
 
+        if item['src'] and not os.path.exists(item['src']):
+            deps.append('%s%s' % (config_prepend, escape_toupper("src-path-existed")))
+            if debug_mode:
+                print('WARNING: %s: Invalid src path %s' % (item['target'], item['src']))
+
         if deps:
             fp.write('\tdepends on %s\n' % (' && '.join(deps)))
 
