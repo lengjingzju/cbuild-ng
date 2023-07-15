@@ -21,12 +21,12 @@ MACHINE_SCRIPT  := $(ENV_TOOL_DIR)/process_machine.sh
 GMP_VER         ?= 6.2.1
 MPFR_VER        ?= 4.2.0
 MPC_VER         ?= 1.3.1
-ISL_VER         ?= 0.25
+ISL_VER         ?= 0.26
 LINUX_VER       ?= $(shell $(MACHINE_SCRIPT) linux_version)
 BINUTILS_VER    ?= 2.40
 GCC_VER         ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GLIBC_VER       ?= 2.36
-GDB_VER         ?= 13.1
+GLIBC_VER       ?= 2.37
+GDB_VER         ?= 13.2
 
 GMP_URL         := http://ftp.gnu.org/gnu/gmp/gmp-$(GMP_VER).tar.xz
 MPFR_URL        := http://ftp.gnu.org/gnu/mpfr/mpfr-$(MPFR_VER).tar.xz
