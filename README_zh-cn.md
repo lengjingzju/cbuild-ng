@@ -492,11 +492,11 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * SEARCH_HDRS       : 查找头文件子目录列表，默认值等于 PACKAGE_DEPS 的值
 <br>
 
-* CC_OPT_OPTION     : CC 优化等级选项，总共3个选项:
-    * release       : CC_OPT_VALUE 默认取值 `-O2`
-    * speed         : CC_OPT_VALUE 默认取值 `-O3`
-    * debug         : CC_OPT_VALUE 默认取值 `-O0 -g -ggdb`
-* CC_OPT_VALUE      : CC优化等级值
+* ENV_OPTIMIZATION  : CC 优化等级选项，总共3个选项:
+    * release       : OPTIMIZATION_FLAG 默认取值 `-O2`
+    * speed         : OPTIMIZATION_FLAG 默认取值 `-O3`
+    * debug         : OPTIMIZATION_FLAG 默认取值 `-O0 -g -ggdb`
+* OPTIMIZATION_FLAG : 优化等级值
 <br>
 
 * WORKDIR           : 工作目录
@@ -653,15 +653,25 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 #### 应用模板的函数说明
 
-* `$(eval $(call add-liba-build,静态库名,源文件列表))`: 创建编译静态库规则
-* `$(eval $(call add-libso-build,动态库名,源文件列表))`: 创建编译动态库规则
-    * 动态库名可以设置为 `库名 主版本号 次版本号 补丁版本号` 格式，参考 LIBSO_NAME 的说明
-* `$(eval $(call add-libso-build,动态库名,源文件列表,链接参数))`: 创建编译动态库规则
-    * 注意函数中有逗号要用变量覆盖，例如 `$(eval $(call add-libso-build,动态库名,源文件列表,-Wl$(comma)-soname=libxxxx.so))`
-* `$(eval $(call add-bin-build,可执行文件名,源文件列表))`: 创建编译可执行文件规则
-* `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数))`: 创建编译可执行文件规则
-* `$(call set_flags,标记名称,源文件列表,标记值)`: 单独为指定源码集合设置C/C++编译标记(CFLAGS)或汇编标记(AFLAGS)
-    * 例如 `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
+* add-liba-build: 创建一条编译静态库规则
+    * `$(eval $(call add-liba-build,静态库名,源文件列表))`
+    * `$(eval $(call add-liba-build,静态库名,源文件列表,依赖的静态库路径列表))`
+        * 打包新静态库时会将依赖的静态库追加到这个生成的新静态库
+    * `$(eval $(call add-liba-build,静态库名,源文件列表,依赖的静态库路径列表,私有的CFLAGS参数))`
+* add-libso-build: 创建一条编译动态库规则
+    * `$(eval $(call add-libso-build,动态库名,源文件列表))`
+        * 动态库名可以设置为 `库名 主版本号 次版本号 补丁版本号` 格式，参考 LIBSO_NAME 的说明
+    * `$(eval $(call add-libso-build,动态库名,源文件列表,链接参数))`
+        * 注意函数中有逗号要用变量覆盖，例如 `$(eval $(call add-libso-build,动态库名,源文件列表,-Wl$(comma)-soname=libxxxx.so))`
+    * `$(eval $(call add-libso-build,动态库名,源文件列表,链接参数,私有的CFLAGS参数))`
+* add-libso-build: 创建一条编译可执行文件规则
+    * `$(eval $(call add-bin-build,可执行文件名,源文件列表))`
+    * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数))`
+    * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数,私有的CFLAGS参数))`
+* set_flags: 单独为指定源码集合设置编译标记
+    * `$(call set_flags,标记名称,源文件列表,标记值)`
+        * 编译标志可以是C/C++编译标记(CFLAGS)或汇编标记(AFLAGS)
+        * 例如 `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
 
 注: 提供上述函数的原因是可以在一个 Makefile 中编译出多个库或可执行文件
 

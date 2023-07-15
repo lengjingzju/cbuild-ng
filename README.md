@@ -512,11 +512,11 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * SEARCH_HDRS       : Sub-folders to search headers, its default value is equal to `PACKAGE_DEPS`
 <br>
 
-* CC_OPT_OPTION     : CC optimization option, it has three options:
-    * release       : the default value od CC_OPT_VALUE is `-O2`
-    * speed         : the default value od CC_OPT_VALUE is `-O3`
-    * debug         : the default value od CC_OPT_VALUE is `-O0 -g -ggdb`
-* CC_OPT_VALUE      : CC optimization value
+* ENV_OPTIMIZATION  : CC optimization option, it has three options:
+    * release       : the default value od OPTIMIZATION_FLAG is `-O2`
+    * speed         : the default value od OPTIMIZATION_FLAG is `-O3`
+    * debug         : the default value od OPTIMIZATION_FLAG is `-O0 -g -ggdb`
+* OPTIMIZATION_FLAG : CC optimization value
 <br>
 
 * WORKDIR           : Top-level work directory
@@ -674,15 +674,25 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 #### Functions of Application Template
 
-* `$(eval $(call add-liba-build,<static library name>,<source files>))`: Creates a rule for compiling static library
-* `$(eval $(call add-libso-build,<shared library name>,<source files>))`: Creates a rule for compiling shared library
-    * `<shared library name>` can be set to the format of `<library name> <major version> <minor version> <patch version>, refer to `LIBSO_NAME`
-* `$(eval $(call add-libso-build,<shared library name>,<source files>,<link parameters>))`: Creates a rule for compiling shared library
-    * Note that the commas in the function should be overridden with the comma variable, for example: `$(eval $(call add-libso-build,<shared library name>,<source files>,-Wl$(comma)-soname=libxxxx.so))`
-* `$(eval $(call add-bin-build,<executable name>,<source files>))`: Creates a rule for compiling executable
-* `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>))`: Creates a rule for compiling executable
-* `$(call set_flags,<Flag Type>,<source files>,<value>)`: Sets the compilation flags for the specified source codes, `Flag Type` can be `CFLAGS` and `AFLAGS`
-    * For example: `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
+* add-liba-build: Creates a rule for compiling static library
+    * `$(eval $(call add-liba-build,<static library name>,<source files>))`
+    * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>))`
+        * It will append the content of dependent static libraries to the generated static library 
+    * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>,<private CFLAGS>))`
+* add-libso-build: Creates a rule for compiling shared library
+    * `$(eval $(call add-libso-build,<shared library name>,<source files>))`
+        * `<shared library name>` can be set to the format of `<library name> <major version> <minor version> <patch version>, refer to `LIBSO_NAME`
+    * `$(eval $(call add-libso-build,<shared library name>,<source files>,<link parameters>))`
+        * Note that the commas in the function should be overridden with the comma variable, for example: `$(eval $(call add-libso-build,<shared library name>,<source files>,-Wl$(comma)-soname=libxxxx.so))`
+    * `$(eval $(call add-libso-build,<shared library name>,<source files>,<link parameters>,<private CFLAGS>))`
+* add-bin-build: Creates a rule for compiling executable
+    * `$(eval $(call add-bin-build,<executable name>,<source files>))`
+    * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>))`
+    * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>,<private CFLAGS>))`
+* set_flags: Sets the compilation flags for the specified source codes
+    * `$(call set_flags,<Flag Type>,<source files>,<value>)`
+        * `Flag Type` can be `CFLAGS` and `AFLAGS`
+        * For example: `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
 
 Note: The reason for providing the above functions is that multiple libraries or executables can be compiled in a single Makefile
 
