@@ -50,55 +50,8 @@ link_sysroot() {
 }
 
 install_sysroot() {
-    local s=$1
-    local d=$2
-    local v=
-
-    mkdir -p $d
-    for v in $(ls $s); do
-        if [ -d $s/$v ] && [ ! -L $s/$v ]; then
-            case $v in
-                include)
-                    mkdir -p $d/$v
-                    cp -drfp $s/$v/* $d/$v
-                    ;;
-                bin|sbin|libexec)
-                    mkdir -p $d/$v
-                    cp -drf $s/$v/* $d/$v
-                    ;;
-                etc|srv|com|var|run)
-                    if [ "$s" == "$src" ]; then
-                        mkdir -p $d/$v
-                        cp -drf $s/$v/* $d/$v
-                    else
-                        install_sysroot $s/$v $d/$v
-                    fi
-                    ;;
-                locale|man|info|doc|license)
-                    if [ $(echo $s | grep -c '/share$') -eq 1 ]; then
-                        mkdir -p $d/$v
-                        cp -drf $s/$v/* $d/$v
-                    else
-                        install_sysroot $s/$v $d/$v
-                    fi
-                    ;;
-                terminfo)
-                    # for ncurses
-                    if [ $(echo $s | grep -c '/share$\|/lib$') -eq 1 ]; then
-                        mkdir -p $d/$v
-                        cp -drf $s/$v/* $d/$v
-                    else
-                        install_sysroot $s/$v $d/$v
-                    fi
-                    ;;
-                *)
-                    install_sysroot $s/$v $d/$v
-                    ;;
-            esac
-        else
-            cp -df $s/$v $d/$v
-        fi
-    done
+    mkdir -p $2
+    cp -drf --preserve=mode,timestamps $1/* $2
 }
 
 release_sysroot_with_check() {
@@ -130,7 +83,7 @@ release_sysroot_with_check() {
                 else
                     echo "        $d/$v"
                 fi
-                cp -df $s/$v $d/$v
+                cp -drf --preserve=mode,timestamps $s/$v $d/$v
             fi
         fi
     done
@@ -151,12 +104,12 @@ release_sysroot_without_check() {
                     ;;
                 bin|sbin|libexec)
                     mkdir -p $d/$v
-                    cp -drf $s/$v/* $d/$v
+                    cp -drf --preserve=mode,timestamps $s/$v/* $d/$v
                     ;;
                 etc|srv|com|var|run)
                     if [ "$s" == "$src" ]; then
                         mkdir -p $d/$v
-                        cp -drf $s/$v/* $d/$v
+                        cp -drf --preserve=mode,timestamps $s/$v/* $d/$v
                     else
                         release_sysroot_without_check $s/$v $d/$v
                     fi
@@ -164,7 +117,7 @@ release_sysroot_without_check() {
                 locale|man|info|doc)
                     if [ $(echo $s | grep -c '/share$') -eq 1 ]; then
                         mkdir -p $d/$v
-                        cp -drf $s/$v/* $d/$v
+                        cp -drf --preserve=mode,timestamps $s/$v/* $d/$v
                     else
                         release_sysroot_without_check $s/$v $d/$v
                     fi
@@ -173,7 +126,7 @@ release_sysroot_without_check() {
                     # for ncurses
                     if [ $(echo $s | grep -c '/share$\|/lib$') -eq 1 ]; then
                         mkdir -p $d/$v
-                        cp -drf $s/$v/* $d/$v
+                        cp -drf --preserve=mode,timestamps $s/$v/* $d/$v
                     else
                         release_sysroot_without_check $s/$v $d/$v
                     fi
@@ -187,7 +140,7 @@ release_sysroot_without_check() {
                 if [ -e $d/$v ]; then
                     echo "        WARNING: $d/$v is already existed"
                 fi
-                cp -df $s/$v $d/$v
+                cp -drf --preserve=mode,timestamps $s/$v $d/$v
             fi
         fi
     done
@@ -249,9 +202,9 @@ install_license() {
             mkdir -p ${lic_dstdir}/${package}
             if [ ${lic_begin} -eq 0 ] || [ ${lic_end} -eq 0 ]; then
                 if [ ${rename_flag} -eq 0 ]; then
-                    cp -drf ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}
+                    cp -drf --preserve=mode,timestamps ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}
                 else
-                    cp -drf ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}/${lic_dst}
+                    cp -drf --preserve=mode,timestamps ${lic_srcdir}/${lic_src} ${lic_dstdir}/${package}/${lic_dst}
                 fi
             else
                 sed -n "${lic_begin},${lic_end} p" ${lic_srcdir}/${lic_src} > ${lic_dstdir}/${package}/${lic_dst}

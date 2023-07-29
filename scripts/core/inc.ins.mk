@@ -23,7 +23,7 @@ define install_obj
 .PHONY: install_$(1)s
 install_$(1)s:
 	@install -d $$(INS_PREFIX)$$($(1)dir)
-	@cp $(2) $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
+	@cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
 endef
 
 define install_ext
@@ -31,52 +31,44 @@ install_$(1)s_%:
 	@ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
 	isrc="$$$$(echo $$$${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$$$//g')"; \
 	idst="$$(INS_PREFIX)$$($(1)dir)$$$$(echo $$$${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$$$/\1/g')"; \
-	install -d $$$${idst} && cp $(2) $$$${isrc} $$$${idst}
+	install -d $$$${idst} && cp -drf --preserve=mode,timestamps $$$${isrc} $$$${idst}
 endef
 
-$(eval $(call install_obj,base_bin,-drf))
-$(eval $(call install_obj,base_sbin,-drf))
-$(eval $(call install_obj,base_lib,-drf))
-$(eval $(call install_obj,bin,-drf))
-$(eval $(call install_obj,sbin,-drf))
-$(eval $(call install_obj,lib,-drf))
-$(eval $(call install_obj,libexec,-drf))
-$(eval $(call install_obj,hdr,-drfp))
-$(eval $(call install_obj,include,-drfp))
-$(eval $(call install_obj,data,-drf))
-$(eval $(call install_obj,info,-drf))
-$(eval $(call install_obj,locale,-drf))
-$(eval $(call install_obj,man,-drf))
-$(eval $(call install_obj,doc,-drf))
-$(eval $(call install_obj,sysconf,-drf))
-$(eval $(call install_obj,service,-drf))
-$(eval $(call install_obj,sharedstate,-drf))
-$(eval $(call install_obj,localstate,-drf))
-$(eval $(call install_obj,runstate,-drf))
+$(eval $(call install_obj,base_bin))
+$(eval $(call install_obj,base_sbin))
+$(eval $(call install_obj,base_lib))
+$(eval $(call install_obj,bin))
+$(eval $(call install_obj,sbin))
+$(eval $(call install_obj,lib))
+$(eval $(call install_obj,libexec))
+$(eval $(call install_obj,hdr))
+$(eval $(call install_obj,include))
+$(eval $(call install_obj,data))
+$(eval $(call install_obj,info))
+$(eval $(call install_obj,locale))
+$(eval $(call install_obj,man))
+$(eval $(call install_obj,doc))
+$(eval $(call install_obj,sysconf))
+$(eval $(call install_obj,service))
+$(eval $(call install_obj,sharedstate))
+$(eval $(call install_obj,localstate))
+$(eval $(call install_obj,runstate))
 
-$(eval $(call install_ext,include,-drfp))
-$(eval $(call install_ext,data,-drf))
-$(eval $(call install_ext,sysconf,-drf))
+$(eval $(call install_ext,include))
+$(eval $(call install_ext,data))
+$(eval $(call install_ext,sysconf))
 
 install_todir_%:
 	@ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
 	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
-	iopt="-drf"; \
-	if [ $$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g' | grep -c '/include') -eq 1 ]; then \
-		iopt="-drfp"; \
-	fi; \
-	install -d $${idst} && cp $${iopt} $${isrc} $${idst}
+	install -d $${idst} && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
 
 install_tofile_%:
 	@ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
 	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
-	iopt="-drf"; \
-	if [ $$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g' | grep -c '/include') -eq 1 ]; then \
-		iopt="-drfp"; \
-	fi; \
-	install -d $$(dirname $${idst}) && cp $${iopt} $${isrc} $${idst}
+	install -d $$(dirname $${idst}) && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
 
 ifneq ($(ENV_BUILD_MODE), yocto)
 ifneq ($(DIS_LICENSE), y)

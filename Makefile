@@ -85,12 +85,13 @@ endif
 else # ENV_BUILD_MODE=yocto
 
 WORKDIR        := $(ENV_CFG_ROOT)
-CONF_PATH      := $(shell pwd)/tmp/work/$(shell uname -m)-linux/kconfig-native/1.0-r0/build
+CONF_PATH      := $(WORKDIR)/objs/kconfig
 CONF_OUT       := $(WORKDIR)
 KCONFIG        := $(WORKDIR)/Kconfig
 CONF_SAVE_PATH := $(ENV_TOP_DIR)/configs
 CONF_HEADER    := __CBUILD_GLOBAL_CONFIG__
 DEF_CONFIG     := yocto_config
+CONF_MAKES      = -s O=$(CONF_PATH) -C $(CONF_SRC)
 
 IGNORE_DIRS    := .git:.svn
 IGNORE_RECIPES := none
@@ -102,7 +103,7 @@ IMAGE_PKG_PATH  = $(WORKDIR)/cbuild-image.inc
 PATCH_PKG_PATH  = $(WORKDIR)/prepare-patch.inc
 USER_METAS     ?= meta-example
 
-.PHONY: all clean incs deps kconfig-native
+.PHONY: all clean incs deps
 
 all: incs
 	@bitbake prepare-patch
@@ -110,9 +111,6 @@ all: incs
 	@echo "Build done!"
 
 include $(ENV_MAKE_DIR)/inc.conf.mk
-
-all: incs
-buildkconfig: deps
 
 clean:
 	@bitbake $(IMAGE_NAME) -c clean
@@ -122,15 +120,18 @@ incs: loadconfig
 	@python3 $(ENV_TOOL_DIR)/gen_build_chain.py -t $(WORKDIR)/Target -c $(CONFIG_PATH) \
 		-o $(IMAGE_PKG_PATH) -p $(PATCH_PKG_PATH) -i $(IGNORE_RECIPES)
 
-deps: kconfig-native
+deps:
 	@mkdir -p $(shell dirname $(KCONFIG))
 	@python3 $(ENV_TOOL_DIR)/gen_build_chain.py -k $(WORKDIR)/Kconfig -t $(WORKDIR)/Target \
 		-v mk.vdeps -c mk.kconf -i $(IGNORE_DIRS) -l $(MAXLEVEL) -w $(KEYWORDS) -u $(USER_METAS)
 
-kconfig-native:
-	@if [ ! -e $(CONF_PATH)/conf ] || [ ! -e $(CONF_PATH)/mconf ]; then \
-		bitbake kconfig-native; \
-	fi
+buildkconfig: deps
+ifeq ($(wildcard $(CONF_PATH)/mconf), )
+	@$(MAKE) $(CONF_MAKES)
+endif
+
+cleankconfig:
+	@-$(MAKE) $(CONF_MAKES) clean
 
 %_clean:
 	@bitbake $(patsubst %_clean,%,$@) -c clean

@@ -534,7 +534,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 #### 安装模板的目标和变量说明
 
-* `$(eval $(call install_obj,<ID名>,<cp 选项>))`: 生成安装到指定目录的 Makefile 规则
+* `$(eval $(call install_obj,<ID名>))`: 生成安装到指定目录的 Makefile 规则
     * ID名: 目录名去掉 `dir`
     *  Makefile 规则的目标: `install_<小写id名>s`
     * 要安装的源文件集的变量名: `INSTALL_<大写ID名>S`
@@ -578,7 +578,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     INSTALL_HDRS           ?= $(INSTALL_HEADERS)
     ```
 
-* `$(eval $(call install_ext,<ID名>,<cp 选项>))`: 生成安装到指定目录的指定子目录的 Makefile 模式规则
+* `$(eval $(call install_ext,<ID名>))`: 生成安装到指定目录的指定子目录的 Makefile 模式规则
     * ID名: 目录名去掉 `dir`
     *  Makefile 模式规则的目标: `install_<小写id名>s_%`，`%` 匹配小写字符
     * 要安装的源文件集和目标子文件夹的变量名: `INSTALL_<大写ID名>S_xxx`，`xxx` 和目标中的模式匹配部分的字符串相同
@@ -766,6 +766,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 <br>
 
 * 可设置的变量
+    * MOD_PATH: 模块Kbuild的文件路径，默认值是当前目录
     * MOD_MAKES: 用户指定一些模块自己的信息，例如 XXXX=xxxx
     * KERNEL_SRC: Linux 内核源码目录 (必须）
     * KERNEL_OUT: Linux 内核编译输出目录 （`make -O $(KERNEL_OUT)` 编译内核的情况下必须）

@@ -15,6 +15,7 @@ ifneq ($(SEARCH_HDRS), )
 ccflags-y      += $(call link_hdrs)
 endif
 ccflags-y      += $(OPTIMIZATION_FLAG)
+ccflags-y      += $(IMAKE_CCFLAGS)
 
 define translate_obj
 $(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))
@@ -48,22 +49,23 @@ endif
 else # KERNELRELEASE
 
 KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
+MOD_PATH       ?= $(shell pwd)
 MOD_MAKES      += -C $(KERNEL_SRC)
 
 ifneq ($(ENV_BUILD_MODE), yocto)
 MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
 endif
 
-ifneq ($(filter $(OBJ_PREFIX),. $(shell pwd)), )
-MOD_MAKES      += M=$(shell pwd)
+ifneq ($(filter $(OBJ_PREFIX),. $(MOD_PATH)), )
+MOD_MAKES      += M=$(MOD_PATH)
 else
 
-MOD_MAKES      += M=$(OBJ_PREFIX) src=$(shell pwd)
-KBUILD_MK       = $(if $(wildcard Kbuild),Kbuild,Makefile)
+MOD_MAKES      += M=$(OBJ_PREFIX) src=$(MOD_PATH)
+KBUILD_MK       = $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
 
 modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
 
-$(OBJ_PREFIX)/$(KBUILD_MK): $(KBUILD_MK)
+$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
 	@-mkdir -p $(dir $@)
 	@-cp -f $< $@
 
@@ -94,7 +96,7 @@ modules_install:
 
 symvers_install:
 	@install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
-	@cp -dfp $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+	@cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
 
 install_hdrs: symvers_install
 

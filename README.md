@@ -555,7 +555,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 #### Functions and Targets of Installation Template
 
-* `$(eval $(call install_obj,<ID>,<cp options>))`: Generates Makefile rules for installation to the specified directory
+* `$(eval $(call install_obj,<ID>))`: Generates Makefile rules for installation to the specified directory
     * ID: The directory name with `dir` removed
     * Makefile Target: `install_<lowercase id>s`
     * Variable name to specify files / folders to install: `INSTALL_<uppercase ID>S`
@@ -599,7 +599,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
     INSTALL_HDRS           ?= $(INSTALL_HEADERS)
     ```
 
-* `$(eval $(call install_ext,<ID>,<cp options>))`: Generates Makefile pattern rules for installation to the specified sub-directory in the specified directory
+* `$(eval $(call install_ext,<ID>))`: Generates Makefile pattern rules for installation to the specified sub-directory in the specified directory
     * ID: The directory name with `dir` removed
     * Makefile Pattern Target: `install_<lowercase id>s_%`, `%` matches lowercase letters etc
     * Variable Name for Installation: `INSTALL_<uppercase ID>S_<xxx>`, xxx is same as the pattern in the Target
@@ -784,9 +784,10 @@ Note: The reason for providing the above functions is that multiple libraries or
 <br>
 
 * Variables of Makefile Part
+    * MOD_PATH: The source path of Kbuild, its default value is current directory
     * MOD_MAKES: Users can specify some information to compile the module
-    * KERNEL_SRC        : Linux kernel source code path (required)
-    * KERNEL_OUT        : Linux kernel compilation output path (required when compiling linux kernel with `make -O $(KERNEL_OUT)`)
+    * KERNEL_SRC: Linux kernel source code path (required)
+    * KERNEL_OUT: Linux kernel compilation output path (required when compiling linux kernel with `make -O $(KERNEL_OUT)`)
 
 
 #### Kbuild Part of Driver Template (when KERNELRELEASE has value)

@@ -50,7 +50,7 @@ $(AUTOGEN_FLEX): autogen/lexer.l $(AUTOGEN_BISON)
 	@$(COLORECHO) "\033[32mflex\033[0m	$@"
 	@flex -o $@ -L $<
 
-$(AUTOGEN_OBJS) : %.o:%.c
+$(AUTOGEN_OBJS) : %.o:%.c $(OBJ_PREFIX)/autogen/parser.tab.h
 	@-mkdir -p $(dir $@)
 	@$(CONF_CC) $(CONF_CFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	@$(COLORECHO) "\033[32m$(CONF_CC)\033[0m	$<"

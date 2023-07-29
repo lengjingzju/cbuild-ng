@@ -44,7 +44,7 @@ define sync_config_header
 endef
 
 ifneq ($(DEF_CONFIG), )
-config_hash_file = $(CONFIG_PATH)-md5-$(shell md5sum $(CONF_SAVE_PATH)/$(DEF_CONFIG) | cut -d ' ' -f 1)
+config_hash_file  = $(CONFIG_PATH)-md5-$(shell md5sum $(CONF_SAVE_PATH)/$(DEF_CONFIG) | cut -d ' ' -f 1)
 define process_config_hash
 	rm -f $(CONFIG_PATH)-md5-* && echo > $(config_hash_file)
 endef
@@ -65,29 +65,21 @@ endef
 
 .PHONY: buildkconfig cleankconfig menuconfig loadconfig defconfig cleanconfig
 
-ifneq ($(ENV_BUILD_MODE), yocto)
+ifneq ($(ENV_BUILD_MODE),yocto)
 
-ifeq ($(wildcard $(CONF_PATH)/mconf), )
-
-CONF_MAKE_FLAGS   = -s O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
+CONF_MAKES       ?= -s O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
 
 buildkconfig:
-	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKE_FLAGS) && $(MAKE) $(CONF_MAKE_FLAGS) install
-
-cleankconfig:
-	@rm -rf $(CONF_WORKDIR)
-
-else
-
-buildkconfig cleankconfig:
-	@
-
+ifeq ($(wildcard $(CONF_PATH)/mconf), )
+	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
 endif
 
+cleankconfig:
+	@-$(MAKE) $(CONF_MAKES) clean
+
 else
 
 buildkconfig cleankconfig:
-	@
 
 endif
 
