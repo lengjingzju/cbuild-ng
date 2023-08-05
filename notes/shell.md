@@ -10,7 +10,7 @@
 ## 用户和配置
 
 * 在 Linux 当中，有三种用户: root 用户、一般用户、虚拟用户
-    * root 用户的默认 shell 提示符是井号 `#`，UID(用户ID)是0，可以执行所有命令
+    * root 用户的默认 shell 提示符是井号 `#`，`$UID` (用户ID)是0，可以执行所有命令
         * `sudo -i`             : Ubuntu 切换到 root 用户且切换到它的家目录，不需要先启用和添加 root 用户密码
         * `sudo su`             : Ubuntu 切换到 root 用户且停留在当前目录，不需要先启用和添加 root 用户密码
         * `su`                  : 切换到 root 用户且停留在当前目录，Ubuntu 需要 `sudo passwd root` 先添加 root 用户密码才能使用 su
@@ -18,6 +18,7 @@
         * `exit`                : 返回切换前的用户，如果是最后一个用户会关闭终端(也可以 `CTRL + d` )
     * 一般用户的默认 shell 提示符是美元符号 `$`，不可以执行特权命令，需要在命令前面加 `sudo` 才可以执行特权命令
         * `sudo <command>`      : 加上 sudo 运行特权命令
+        * 修改 shell 提示符可修改 `PS1` 环境变量
     * 虚拟用户无法登陆终端执行命令，主要用于文件服务器权限的设置
 <br>
 
@@ -56,6 +57,7 @@
     * command                   : 命令名、脚本名或可运行程序名, 例如: ./configure 执行当前文件夹下的 configure 文件
         * 执行当前路径下的命令需要加上 `./`
     * options                   : 可选选项，短选项前通常会带 `-` ，长选项前通常会带 `--` ，有的选项前可能什么都不带
+        * 多个短选项可以放在一起，例如 `-a -b -c` 一般也会写成 `-abc`
     * parameter                 : 可能参数，多个参数用空格隔开
 <br>
 
@@ -126,7 +128,7 @@
     * `$(cmd)`                  : 获取命令的输出值，也可以使用 <code>\`cmd\`</code>
     * `(cmd)`                   : 子 shell 命令组，当命令在子 shell 中执行时，不会对当前 shell 有任何影响，所有的改变仅限于子 shell 内
         * 小括号中多个命令之间用分号隔开，最后一个命令可以没有分号，各命令和括号之间不必有空格
-        * 例如:  `pwd; cd ..;pwd`当前目录改变了，加小括号后 `pwd;(cd ..);pwd` 当前目录没改变
+        * 例如: `pwd;cd ..;pwd`当前目录改变了，加小括号后 `pwd;(cd ..);pwd` 当前目录没改变
     * `{cmd}`                   : 命令区块
     * `$?`                      : 最后运行的命令的结束代码(返回值)，成功值为0
 
@@ -137,13 +139,13 @@
         * var 是变量名
             * 变量名只能是字母、数字和下划线 `_`，且头字符不能是数字
             * 通常全大写字符的变量名为系统环境变量
-                * 常用的环境变量: `PWD` 当前目录、`USER` 当前用户名、`HOME` 当前用户家目录、`SHELL` 当前 shell、`PATH` 命令搜索路径
+                * 常用的环境变量: `PWD` 当前目录、`USER` 当前用户名、`HOME` 当前用户家目录、`SHELL` 当前 shell、`PATH` 命令搜索路径、`LANG` 语言
                 * `cat /proc/$PID/environ | tr '\0' '\n'` 可查看进程相关的环境变量
         * value 是赋给变量的值
             * 如果 value 不包含任何空白字符和 `;` 等特殊符号，那么它就不需要使用引号进行引用，否则必须使用单引号或双引号
             * 单引号中的变量引用不会扩展，双引号的会扩展为它的值
         * **等号前后不能有空格**，`var = value` 不是赋值而是比较的意思
-        * 定义局部变量前面加 `local`
+        * 变量默认是全局的，定义局部变量前面加 `local`
     * 变量引用: `$var` or `${var}`
         * 获取变量的值时如果变量名后面不是字母、数字和下划线，可以不加大括号
     * 变量值长度: `${#var}`
@@ -154,12 +156,12 @@
     * 普通数组(数字作为数组索引)
         * `array=(test0 test1)`             : 定义一个普通数组
             * 也可以单个定义或修改数组元素的值 `array[0]=test0; array[1]=test1`
-        * `array[n]`                        : 取数组的第n个元素的值，n从0开始
-    * 关联数组(文本作为数组索引)
+        * `${array[n]}`                     : 取数组的第n个元素的值，n从0开始
+    * 关联数组(文本作为数组索引)(从 bash4.0 开始)
         * `declare -A array`                : 声明一个关联数组
         * `array=([ia]=test0 [ib]=test1)`   : 将元素添加到关联数组中
             * 也可以一个一个元素地添加到关联数组中 `array[ia]=test0; array[ib]=test1`
-        * `array[index]`                    : 取关联数组的索引文本为 `index` 的元素的值
+        * `${array[index]}`                 : 取关联数组的索引文本为 `index` 的元素的值
     * 数组遍历
         * `${array[*]}` or `${array[@]}`    : 数组所有元素值组成的列表
         * `${!array[*]}` or `${!array[@]}`  : 数组所有元素索引组成的列表
@@ -169,12 +171,16 @@
 
 * 变量命令
     * `eval`                    : 变量引用前加 `eval` 会把变量字符串当作命令执行
+        * 例如: `eval echo \$$val` 取变量名为 `$val` 的变量值
     * `env`                     : 查看所有的环境变量
-    * `set`                     : 查看所有的环境变量和自定义变量
+    * `set` or `printenv`       : 查看所有的环境变量和自定义变量
     * `unset var`               : 删除变量定义
     * `export var`              : 导出变量，可同时导出多个变量(空格分隔)，则从当前 shell 执行的任何程序都会继承这个变量
         * `export var=value`    : 定义并导出变量
         * 例如: `export PATH=$PATH:/home/user/bin` 会将 `/home/user/bin` 添加到了环境变量 `PATH` 中
+        * 例如: `export LANG=en_US.UTF-8` 语言使用英文 `export LC_TIME=en_US.UTF-8` 日期使用英文
+        * 例如: `export GIT_SSL_NO_VERIFY=1` 关闭 git 的 ssl 安全校验
+    * `export -f fname`         : 导出函数
 <br>
 
 * 变量切片 `${var:start:length}`
@@ -183,6 +189,7 @@
         * `start` 序号从 `0` 开始，也可以使用负数，`-1` 是最后一个字符
         * `start` 是负数时必须在 `var` 的冒号后加空格或用小括号把数值括起来
         * 可以省略 `:length`，此时表示切片到字符串结尾
+        * `length` 大于最大长度时切片到字符串结尾
         * `length` 可以使用负数，此时不再表示长度的意思，而是切片到索引(不含)的意思
         * 注: dash 中不支持变量切片
     * 例子(定义 `var=www.google.com`)
@@ -207,9 +214,10 @@
     * 整数计算: 不支持浮点型，`expression` 的运算符和表达式符合C语言运算规则即可
         * `${var:+expression}`  : 如果 var 有值且不为空，则使用 `expression` 的值
         * `$[ expression ]`     : 取运算 `expression` 的值(注意 `expression` 前后有空格)，出现在 `[  ]` 中的变量名之前可加可不加 `$`
-        * `$(( expression ))`   : 取运算 `expression` 的值(注意 `expression` 前后有空格)，出现在 `((  ))` 中的变量名之前可加可不加 `$`
-        * `$(expr expression)`  : 取运算 `expression` 的值，出现在 `(  )` 中的变量名之前要加 `$`
-        * `let expression`      : 进行 `expression` 运算更新值，例如: `let num++ ; let num-- ; let num+=1 ; let num-=1 ; let num=1+1`
+        * `$(( expression ))`   : 取运算 `expression` 的值，出现在 `((  ))` 中的变量名之前可加可不加 `$`
+        * `$(expr expression)`  : 取运算 `expression` 的值，出现在 `(  )` 中的变量名之前要加 `$` (注意 `expression` 变量和运算符之间必须有空格)
+        * `let expression`      : 进行 `expression` 运算更新值，使用 `let` 时，变量名之前不需要再添加 `$`
+            * 例如: `let num++ ; let num-- ; let num+=1 ; let num-=1 ; let num=1+1`
     * 高级计算: `echo "expression" | bc`
         * 设定小数精度，例如: `echo "scale=2;22/7" | bc` 将输出 3.14
         * 进制转换，`echo "obase=2;10" | bc` 将输出 1010 ; `echo "obase=10;ibase=2;1010" | bc` 将输出 10
@@ -226,7 +234,7 @@
             * 不带引号时，echo 会把输出的换行符换成空格，而带双引号不会，例如: `echo $(ls -l)` 输出没有换行，`echo "$(ls -l)"` 输出有换行
         * 命令参数
             * `-n`              : 不换行，后面输出紧接着这行(echo 默认会将一个换行符追加到输出文本的尾部)
-            * `-e`              : 启用 `ASCII-C 转义字符` 的解释，例如: `echo -e "\t"` 或 `echo -e '\t'` 会打印 tab，不加 -e 直接打印`\t`
+            * `-e`              : 启用 `ASCII-C 转义字符` 的解释，例如: `echo -e "\t"` 或 `echo -e '\t'` 会打印 tab，不加 -e 直接打印 `\t`
         * 颜色打印: `echo -e "\033[背景色;前景色m字符串\033[0m"` ，例如: `echo -e "\033[41;37m红底白字\033[0m"`
             * `\033[0m`         : 关闭所有属性(注: `\033` 可以写成 `\e`)
             * `\033[4x;3xm`     : 同时设置背景色和前景色(x是数字代表: `0` 黑 `1` 红 `2` 绿 `3` 黄 `4` 蓝 `5` 紫 `6` 天蓝 `7` 白)
@@ -270,6 +278,12 @@ The age of lengjing is 30.
             * 将 stderr 输出丢弃
     * `cmd | tee output.txt`    : tee只能从stdin中读取，终端中打印，并复制一份输出将它重定向到一个文件中
         * tee 命令默认会将文件覆盖，可以使用  `-a` 选项追加内容
+<br>
+
+* 自定义文件描述符 exec
+    * 读 `exec 10<input.txt; cat <&10`
+    * 写 `exec 11>output.txt; echo newline >&11`
+    * 追加 `exec 12>>input.txt; echo appended line >&12`
 
 ## shell 脚本
 
@@ -388,7 +402,8 @@ done
     * `function` 可以省略
         * 注: dash 中没有 `function` 这个关键字
     * 函数括号里面不写参数
-    * 函数里面参数用 `$1 $2 ...` 表示，注意函数里面的这些值不再是脚本的参数(`$0` 还是脚本名)
+        * 函数里面参数用 `$1 $2 ...` 表示，注意函数里面的这些值不再是脚本的参数(`$0` 还是脚本名)
+    * 支持递归调用，例如: Fork炸弹 `:(){ :|:& };:`
 
 ```sh
 function fname() {
@@ -404,7 +419,6 @@ fname() {
 
 * 调用函数
     * 直接 `fname` 或 `fname arg1 arg2 ...` ，不需要括号
-    * `export -f fname` 用来导出函数
 
 ### 条件测试
 
@@ -420,6 +434,7 @@ fname() {
         * `-r` 文件可读; `-w` 文件可写; `-x` 文件可执行
         * `-u SUID`; `-g SGID`; `-k SBIT`
         * `-c` 是字符设备; `-b` 是块设备; `-L` 是符号链接; `-S` 是socket; `-p` 是FIFO/pipe
+        * 注：符号链接指向目录，`-d 这个符号链接` 也是目录
     * `[ file1 -nt file2 ]`
         * `-nt` 新; `-ot` 旧; `-ef` 指向同一inode
 
@@ -540,8 +555,8 @@ esac
 ### 循环语句
 
 * for-in 语句: 对 list 中的每一项进行迭代
-    * list 可以是一个字符串，也可以是一个序列，也可以是一个数组
-    * 例如: `for i in $( seq 1 10 )`  or `for i in {1..10}`
+    * list 可以是一个字符串，也可以是一个序列，也可以是一个数组，也可以是带通配符的文件名
+    * 例如: `for i in $(seq 1 10)`  or `for i in {1..10}`  seq不写开始时从1开始
     * 定界符 `IFS` 的默认值为空白字符(空格符 换行符 制表符)，可修改此变量从而使序列发生变化
     * 例如: `bIFS=$IFS; IFS=':'; for i in $(cat /etc/passwd); do echo $i;done`
 
@@ -562,7 +577,7 @@ done
 ```
 
 * while 语句: 条件为真时一直执行循环，直到条件为假
-    * 注: `while true` 或 `while :` 表示死循环，只是 `while :` 不会每次执行循环内的命令时生成子进程
+    * 注: `while true` 或 `while :` 表示死循环，但 `:` 是 shell 的内建命令，退出状态总是0，不会每次执行时生成子进程
         * `true`是作为一个二进制文件实现的，`:` 是 shell 的内建命令，它的退出状态总是为0
 
 ```sh
@@ -598,46 +613,85 @@ done
 
 ### 正则匹配
 
-* 重复(标准正则表达式)
+* 图形化正则表达式 https://regexper.com/
+* 正则表达式模式 https://zhuanlan.zhihu.com/p/435815082
+    * BRE(标准正则)，grep / sed 的默认模式
+    * ERE(扩展正则)，awk 的默认模式，grep / sed 使用 `-E` 选项可使用扩展正则
+    * PCRE(Perl正则)，perl/python/ruby/php/java等的模式，grep 使用 `-P` 选项可使用Perl正则
+* 特殊字符: 
+    * 不加反斜杠: `?` `+` `{` `}` `|` `(` `)` ，BRE 表示字符本身，ERE 和 PCRE 表示正则规则
+    * 加反斜杠:  `\?` `\+` `\{` `\}` `\|` `\(` `\)` ，BRE 表示正则规则，ERE 和 PCRE 表示字符本身
+<br>
+
+* 重复(BRE ERE PCRE)
     * `.`                       : 匹配任意1个字符(是且只是1个)，一般不会匹配换行符
     * `*`                       : 匹配前1个字符任意次(包括0次)，例如: `co*l` 表示匹配 cl、col、coool ...
+
+* 重复(BRE)
+    * `\?`                      : 匹配前1个字符0次或1次，例如: `co\?l` 表示匹配 cl、col
+    * `\+`                      : 匹配前1个字符至少1次，例如: `co\+l` 表示匹配 col、coool ... (不包括 cl)
+    * `\{n\}`                   : 匹配前面字符出现n次
+    * `\{n,\}`                  : 匹配前面字符至少出现n次
+    * `\{n,m\}`                 : 匹配前面字符出现n到m次
+
+* 重复(ERE PCRE)
+    * `?`                       : 匹配前1个字符0次或1次，例如: `co?l` 表示匹配 cl、col
+    * `+`                       : 匹配前1个字符至少1次，例如: `co+l` 表示匹配 col、coool ... (不包括 cl)
     * `{n}`                     : 匹配前面字符出现n次
     * `{n,}`                    : 匹配前面字符至少出现n次
     * `{n,m}`                   : 匹配前面字符出现n到m次
 
-* 重复(扩展正则表达式)
-    * `+`                       : 匹配前1个字符至少1次，例如: `co+l` 表示匹配 col、coool ... (不包括 cl)
-    * `?`                       : 匹配前1个字符0次或1次，例如: `co?l` 表示匹配 cl、col
+* 贪婪和回溯(PCRE)
+    * 默认：重复匹配符默认是贪婪匹配(尽可能匹配多的字符)且可回溯(贪婪匹配下一步出错时返回前面符合的那步再重新匹配)
+    * 非贪婪: 重复匹配符后加问号 `?` 表示非贪婪匹配(尽可能匹配少的字符)
+    * 不回溯: 重复匹配符后加加号 `+` 表示不回溯(贪婪匹配下一步出错时不会返回前面符合的那步再重新匹配)
 
-注: 重复匹配符默认是贪婪匹配(尽可能匹配多的字符)，可以在匹配符后加问号 `?` 表示非贪婪匹配(尽可能匹配少的字符)
-<br>
+    ```sh
+    lengjing@lengjing:~$ echo 123123 | grep -P -o '[0-9]+?3'
+    123
+    123
+    lengjing@lengjing:~$ echo 123123 | grep -P -o '[0-9]+3'
+    123123
+    lengjing@lengjing:~$ echo 123123 | grep -P -o '[0-9]+3'
+    lengjing@lengjing:~$
+    ```
 
-* 定界(标准正则表达式)
+* 定界(BRE ERE PCRE)
     * `\< \>`                   : 精确匹配，如: `\<the\>` 表示精确匹配the这个单词，而不匹配包含the字符的单词
     * `^`                       : 匹配字符串开头，一般工具都是读取每行作为字符串，即 `^` 看做匹配行首
     * `$`                       : 匹配字符串结尾，即 `$` 看做匹配行尾，例如: `^$` 表示匹配空行 (注意 win 下的换行字符是 `^M$`，即 `\r\n`)
 <br>
 
-* 集合(标准正则表达式)
-    * `[ ]`                     : 匹配字符集，`[]` 里面不管有几个字符，他都只代表1个字符，字符集里面的特殊字符加不加转义斜杠 `\` 都可以，例如: `[ab]`表示匹配a或匹配b
+* 集合(BRE ERE PCRE)
+    * `[ ]`                     : 匹配字符集中的1个字符，例如: `[ab]`表示匹配a或匹配b
     * `[ - ]`                   : 匹配字符集(连续编码使用减号连接)，例如: 大写字母 `[a-z]`，小写字母 `[a-z]`，数字 `[0-9]`
     * `[^ ]`                    : 字符集的反向选择，例如: 非数字和英文 `[^a-zA-Z0-9]`
 
-* 集合(扩展正则表达式)
+* 集合(BRE)
+    * `\|`                      : 匹配用或的方式找出数个字符串, 例如: `ma\(tri\)\|\(ilbo\)x` 表示匹配 matrix 或 mailbox
+    * `\(pattern\)`             : 匹配子串，例如: `ma\(tri\)\?x` 表示匹配 max 或 matrix
+
+* 集合(ERE PCRE)
     * `|`                       : 匹配用或的方式找出数个字符串, 例如: `ma(tri)|(ilbo)x` 表示匹配 matrix 或 mailbox
     * `(pattern)`               : 匹配子串，例如: `ma(tri)?x` 表示匹配 max 或 matrix
 
-* 高级扩展(一般 Python 可用)
-    * `\num`                    : 子串回溯匹配，`\0` 一般表示正则表达式本身，`\1` 表示第1个子项，`\2` 表示第2个....，例如: `([0-9])\1([0-9])\2` 表示匹配 `mmnn` 格式的数字
-    * `(?:pattern)`             : 匹配子串，但子串不能回溯匹配
+* 集合中字符
+    * `?` `+` `{` `}` `|` `(` `)` 特殊字符在集合中会失去其正则意义(BRE ERE PCRE)
+    * PCRE 集合中可以使用元字符，BRE ERE 中不行
+<br>
+
+* 高级扩展(PCRE)
     * `(?aiLmsux)`              : 设置正则表达式标记，可同时设置多个，标记前面加减号 `-` 表示关闭标记
         * `i` 忽略大小写        : 进行忽略大小写匹配，例如: `(?i)b(?-i)ook`表示匹配 Book 或 book
         * `m` 多行模式          : 设置以后，`^` 匹配字符串的开始，和每一行的开始（换行符后面紧跟的符号）；`$` 匹配字符串尾，和每一行的结尾（换行符前面那个符号）
         * `s` 点号匹配全部字符  : 让 `.` 特殊字符匹配任何字符，包括换行符; 如果没有这个标记，`.` 匹配除了换行符的其他任意字符
         * `x` 冗长模式          : 注释(`#` 后面的到行尾)和空白符号会被忽略
-        * `a` 只匹配 ASCII 字符 : 让 `\w`, `\W`, `\b`,` \B`, `\d`, `\D`, `\s` 和 `\S` 只匹配 ASCII，而不是 Unicode，只对 Unicode 样式有效
         * `L` 语言依赖          : 由当前语言区域决定 `\w`, `\W`, `\b`, `\B` 和大小写敏感匹配，这个标记只能对 byte 样式有效
+        * `a` 只匹配 ASCII 字符 : 让 `\w`, `\W`, `\b`,` \B`, `\d`, `\D`, `\s` 和 `\S` 只匹配 ASCII，而不是 Unicode，只对 Unicode 样式有效
         * `u` Unicode 匹配
+    * `\num`                    : 子串回溯匹配，`\0` 一般表示正则表达式本身，`\1` 表示第1个子项，`\2` 表示第2个....，例如: `([0-9])\1([0-9])\2` 表示匹配 `mmnn` 格式的数字
+    * `(?:pattern)`             : 正则括号的非捕获版本，匹配在括号内的任何正则表达式，但该分组所匹配的子字符串不能在执行匹配后被获取或是之后在模式中被引用
+    * `(?aiLmsux:pattern)`      : 正则括号的非捕获版本，k可设置正则表达式标记
     * `(?#annotation)`          : 注释；里面的内容会被忽略
     * `(?P<name>pattern)`       : 匹配 pattern 并为这个模式定义一个名字 name
     * `(?P=name)`               : 匹配前面 name 定义的 pattern，例如: `(?P<quote>['"]).*?(?P=quote)` 表示匹配单引号或者双引号括起来的字符串
@@ -647,10 +701,6 @@ done
     * `(?<!patternb)patterna`   : 后视取反，只在前面不是 patternb 的情况下匹配 patterna
 
 ### 字符集合
-
-* 转义特殊字符(转义后表示字符本身)
-    * `\.` `\*` `\+` `\-` `\?` `\[` `\]` `\{` `\}` `\(` `\)` `\\` `\|`
-<br>
 
 * ASCII C 转义字符
     * `\0`                      : 空字符，十进制为 0，十六进制为 0x00
@@ -663,7 +713,6 @@ done
     * `\r`                      : 回车符，十进制为 13，十六进制为 0x0D
     * `\"`                      : 双引号，十进制为 34，十六进制为 0x22
     * `\'`                      : 单引号，十进制为 39，十六进制为 0x27
-    * `\?`                      : 问号，十进制为 63，十六进制为 0x3F
     * `\\`                      : 反斜杠，十进制为 92，十六进制为 0x5C
     * `\nnn`                    : 1~3位八进制数字表示的字符
     * `\xHH`                    : 1~2位十六进制数字表示的字符
@@ -671,32 +720,35 @@ done
     * `\UHHHHHHHH`              : 1~8位十六进制数字表示的 Unicode (ISO/IEC 10646) 字符
 <br>
 
-* 元字符
+* 元字符(PCRE)
     * `\d`                      : 匹配数字 `[0-9]`
     * `\D`                      : 匹配非数字 `[^0-9]`
+    * `\A`                      : 匹配字符串开始
+    * `\Z`                      : 匹配字符串结尾
+
+* 元字符(BRE ERE PCRE)
     * `\w`                      : 匹配字母数字下划线 `[a-zA-Z0-9_]`
     * `\W`                      : 匹配非字母数字下划线 `[^a-zA-Z0-9_]`
     * `\s`                      : 匹配空白字符 `[\r\n\f\t\v ]`
     * `\S`                      : 匹配非空白字符 `[^\r\n\f\t\v ]`
     * `\b`                      : 匹配单词边界(单词边界为字母数字下划线之间)
     * `\B`                      : 匹配非单词边界(单词边界为字母数字下划线之间)
-    * `\A`                      : 匹配字符串开始
-    * `\Z`                      : 匹配字符串结尾
 <br>
 
-* POSIX 字符类 (在正则表达式中POSIX字符类一般是2个连续的方括号，外层方括号表示集合，例如 `[[:digit:]]`)
+* POSIX 字符类 (在正则表达式中POSIX字符类一般是2个连续的方括号，外层方括号表示集合，例如 `[[:digit:]]`)(BRE ERE PCRE)
     * `[:digit:]`               : 表示数字 `[0-9]`
-    * `[:xdigit:]`              : 表示十六进制数 `[a-fA-F0-9]`
+    * `[:xdigit:]`              : 表示十六进制数 `[0-9A-Fa-f]`
     * `[:lower:]`               : 表示小写字母 `[a-z]`
     * `[:upper:]`               : 表示大写字符 `[A-Z]`
-    * `[:alpha:]`               : 表示大小写字母 `[a-zA-Z]`
-    * `[:alnum:]`               : 表示大小写字母和数字 `[a-zA-Z0-9]`
+    * `[:alpha:]`               : 表示大小写字母 `[A-Za-z]`
+    * `[:alnum:]`               : 表示大小写字母和数字 `[0-9A-Za-z]`
     * `[:blank:]`               : 表示空格或 Tab `[\t ]`
     * `[:space:]`               : 表示空白字符 `[\r\n\f\t\v ]`
-    * `[:cntrl:]`               : 表示 ASCII 控制字符，ASCII 码 0-31 和 ASCII 码 127
+    * `[:cntrl:]`               : 表示 ASCII 控制字符，ASCII 码 0-31 和 ASCII 码 127 `[\x00-\x1F\x7F]`
     * `[:print:]`               : 表示 ASCII 码 32-126
     * `[:graph:]`               : 表示 ASCII 码 33-126，比 `[:print:]` 少了空格
     * `[:punct:]`               : 表示 ASCII 码 32-47 和 58-64 和 91-96 和 123-126，`[:print:]`除去 `[:alnum:]`
+    * `[:ascii:]`               : 表示 ASCII 码 32-47 和 58-64 和 91-96 和 123-126 `[\x00-\x7F]`
 
 ## 文本处理
 
@@ -739,7 +791,7 @@ done
     * 动作参数
         * `-print`              : 打印找到的文件的文件名，默认动作
         * `-delete`             : 删除找到的文件
-        * `-exec command`       : 对找到的文件执行 command
+        * `-exec command`       : 对找到的文件执行 command，注意该命令结尾的特殊标记 `\;`
             * command 中的 `{}` 表示对于每一个相应的匹配文件的文件名，例如: `find -name *.html -exec cp {} ../html \;`
 <br>
 
@@ -876,9 +928,9 @@ echo -e "\033[32m$cmd\033[0m"
         * 搜索的字符串使用正则表达式，包含空格时，必须用单引号或双引号括起来，双引号会对表达式求值
         * 不使用文件名时，一般与 `-r` 选项合用，表示递归搜索当前文件夹下的所有字符串
     * 处理参数
-        * `grep -G`             : 表示使用基本正则表达式，**默认行为**
-        * `grep -E` or `egrep`  : 表示使用扩展正则表达式
-        * `grep -P`             : 表示使用 Perl 正则表达式
+        * `grep -G`             : 表示使用基本正则表达式，**默认行为** (BRE)
+        * `grep -E` or `egrep`  : 表示使用扩展正则表达式 (ERE)
+        * `grep -P`             : 表示使用 Perl 正则表达式 (PCRE)
         * `grep -F`             : 表示不使用正则表达式
         * `grep -f file`        : 从文件中获取搜索的字符串的样式，每个样式一行，相当于与逻辑
         * `grep -e "pattern1" -e "pattern2"` : 同时匹配，等价于 `grep "pattern1" | grep "pattern2"`
@@ -894,7 +946,7 @@ echo -e "\033[32m$cmd\033[0m"
         * `-x`                  : 精确匹配行
     * 输出参数
         * `-n`                  : 输出匹配行的行号，输出 `文件名:行号: 匹配行`
-        * `-c`                  : 只列出匹配多少行，并不是匹配的次数，相当于 `grep -x "xxx" | wc -l`
+        * `-c`                  : 只列出匹配多少行，并不是匹配的次数，相当于 `grep "xxx" | wc -l`
         * `-l`                  : 只输出有匹配的文件列表，而不是匹配的行，`-L` 相反
         * `-o`                  : 只输出匹配部分的字符串，一行有多个匹配会输出多行，例如: `echo this is a line. | egrep -o "[a-z]+\."` 输出 `line.`
         * `-q`                  : 静默模式，无任何输出，命令运行结果 `$?`: 匹配到会返回 0，否则返回 1
@@ -1004,7 +1056,7 @@ echo -e "\033[32m$cmd\033[0m"
         * `sed -e 'pattern command'` : 从命令行获取命令的样式，默认选项，只有一个命令时可以省略 `-e`
             * 可同时使用多个样式 `sed -e 'expression' -e 'expression'` or `sed 'expression' | sed 'expression'` or `sed 'expression; expression'`
         * `sed -f file`         : 从文件中获取命令的样式
-        * `sed -E` or `sed -r`  : 支持扩展正则表达式，**不加此选项时扩展正则表达式符号要加反斜杠 `\` 转义**
+        * `sed -E` or `sed -r`  : 表示使用扩展正则表达式 (ERE)
         * `--debug`             : 调试 sed
         * `-n`                  : 不打印模式空间的行，例如: `sed -n '2p' filename` 表示只打印 filename 文件的第2行
         * `-i`                  : 在文件中直接修改文件内容，不加此选项时默认打印到屏幕
@@ -1387,10 +1439,9 @@ egrep -o '\b\w+\b' $filename | \
     * 命令参数
         * `-n num`              : 表示 num 个元素之后另起一行
         * `-d separator`        : separator 是单个字符，表示这个字符作为定界符，例如: `echo "AXBXCX" | xargs -d X`
-        * `-i`                  : 表示在 `{}` 表示的指定位置替换参数，否则参数位置是末尾
 <br>
 
-* `tr set1 set2`                : 字符映射
+* `tr set1 set2`                : 字符映射，集合可以使用POSIX字符类 
     * 功能
         * 将来自 stdin 的输入字符从 set1 映射到 set2，然后将输出写入 stdout
         * set1 和 set2 是字符类或字符集
@@ -1403,7 +1454,7 @@ egrep -o '\b\w+\b' $filename | \
 * `tr [options] set`            : 字符处理
     * 命令参数
         * `-d`                  : 后面接要删除的字符集合
-        * `-c`                  : 后面接要保留的字符集合
+        * `-d -c`               : 后面接要保留的字符集合
         * `-s`                  : 后面接要压缩的字符集合
     * 例子
         * 例如: `echo "Hello 123 world   456" | tr -d '0-9' | tr -s ' '` 删除数字压缩空格
@@ -1441,7 +1492,7 @@ egrep -o '\b\w+\b' $filename | \
         * `-d`                  : 以字典序进行排序
         * `-t separator`        : 指定排序时所用的栏位分隔字符，默认情况下，键就是文本文件中的列，列与列之间用空格分隔
         * `-k num`              : 按第 num 列参数的值进行排序
-        * `-m`                  : 排序合并文件
+        * `-m`                  : 合并两个已排序过的文件
         * `-b`                  : 忽略文件中的前导空白行
 <br>
 
@@ -1457,7 +1508,7 @@ egrep -o '\b\w+\b' $filename | \
 * `comm [options] file1 file2`  : 求集合，常和 `sort` 连用
     * 功能
         * 两个文件当中行求集合，输出制表符分隔的3列，第1列放置 file1 独有的行， 第2列放置 file2 独有的行，第3列放置共有的行
-        * 命令参数可用 `-1` 删除 file1 独有的行，`-2` 删除 file2 独有的行， `-3` 删除 file1 共有的行
+        * 命令参数可用 `-1` 删除 file1 独有的行，`-2` 删除 file2 独有的行， `-3` 删除共有的行
 <br>
 
 * `join [options] file1 file2`  : 联合，常和 `sort` 连用
@@ -1479,7 +1530,7 @@ egrep -o '\b\w+\b' $filename | \
         * `-`                   : 如果 file 部分写成 `-` ，表示来自 stdin 的数据的意思
 <br>
 
-* `wc`                          : 统计
+* `wc file1`                    : 统计
     * 功能
         * 当不使用任何选项执行 wc 时，它会分别打印出文件的行数、单词数和字符数
     * 命令参数
@@ -1488,7 +1539,7 @@ egrep -o '\b\w+\b' $filename | \
         * `-c`                  : 统计字符数
         * `-L`                  : 打印出文件中最长一行的长度，例如: `wc -L file`
 
-## 目录和文件
+## 目录文件
 
 ### 查看文件
 
@@ -1564,15 +1615,17 @@ egrep -o '\b\w+\b' $filename | \
         * `-l`                  : 详细信息
         * `-a`                  : 隐藏文件也列出，包括 `.` 和 `..`
         * `-A`                  : 隐藏文件也列出，不包括 `.` 和 `..`
-        * `-d`                  : 不列出目录内容
+        * `-d`                  : 将目录名象其它文件一样列出，而不是列出它们的内容
+        * `-F`                  : 加类型后缀，`*` 可执行文件 `/` 目录 `@` 符号链接 `|` FIFOs `=` 套接字 无后缀表示普通文件
         * `-R`                  : 递归式操作
+        * `-t`                  : 按最近修改时间排序
         * `-h`                  : 将文件容量以 GB MB KB 等列出
-        * `-t`                  : 按时间排序，新的在前
      * 例如: `ls -d */` or `ls -F | grep "/$"` or `ls -l | grep "^d"` or `find . -maxdepth 1  -type d -print` 列出当前目录下的目录
 * `cd [dirname]`                : 切换目录
     * 功能
         * `/` 根目录 `.` 当前目录 `..` 上一层目录 `-` 前一工作目录 `~` 当前用户家目录 `~lengjing` 用户 lengjing 家目录
         * `cd /xxx/xxx/...` 进绝对路径目录 ; `cd ./xxx/xxx/...` 进相对路径目录
+* `pushd [dirname]` `popd` `dirs` : 压入并切换路径 / 删除最近压入的路径并切换到下一个目录 / 查看栈的内容
 * `mkdir [options] [dirname]`   : 创建目录
     * 命令参数
         * `-m n1n2n3`           : 设权限
@@ -1591,19 +1644,20 @@ egrep -o '\b\w+\b' $filename | \
     * 说明
         * 如果提供了定制模板(至少3个 `X`)，`X` 会被随机的字符(字母或数字)替换
     * 命令参数
-        * `-d`                  : 生成一个临时目录并返回其文件名
+        * `-d`                  : 生成一个临时目录并返回其目录名
         * `-u`                  : 生成文件名，不创建实际的文件或目录
 <br>
 
 * `cp [options] [srcs] [dst]`   : 复制文件，srcs 可以是多个项目
     * 命令参数
-        * `-r`                  : 递归复制
+        * `-r` or `-R`          : 递归复制
         * `-f`                  : dst 无法打开时，删除 dst 再试复制
-        * `-d`                  : 符号链接指向的文件不存在时也可以复制
-        * `-p`                  : 连同属性也复制(备份常用)，包含 `-d` 作用
+        * `-d`                  : 保留符号链接属性，符号链接指向的文件不存在时也可以复制，相当于 `--preserve=links`
+        * `-p`                  : 连同属性也复制(符号链接)(备份常用)，相当于 `--preserve=mode,ownership,timestamps`
         * `-i`                  : 询问是否覆盖
-        * `-a`                  : 保留属性，递归的复制
+        * `-a`                  : 保留属性，递归的复制，相当于 `-dR --preserve=all`
         * `-s`                  : 创建符号链接，也可以用  `ln -s` 创建符号链接
+        * `-u`                  : 仅在源文件比目标文件新，或者目标文件不存在的情况下复制
 * `mv [options] [srcs] [dst]`   : 移动文件，可以用来重命名，srcs 可以是多个项目
     * 命令参数
         * `-f`                  : 同名档案直接覆盖
@@ -1612,7 +1666,7 @@ egrep -o '\b\w+\b' $filename | \
         * `-u`                  : 比已有文件新则覆盖(update)
 * `rm [options] [filename]`     : 删除文件，命令删除是没有回收站的
     * 命令参数
-        * `-r`                  : 递归地删除(常用于删除有文件的目录)
+        * `-r` or `-R`          : 递归地删除(常用于删除有文件的目录)
         * `-f`                  : 忽略文件不存在时的警告信息
         * `-i`                  : 询问是否删除
 * `ln [options] [src] [dst]`    : 给文件或目录创建链接
@@ -1622,7 +1676,9 @@ egrep -o '\b\w+\b' $filename | \
         * Symbolic Link (符号链接，软链接或快捷方式)，创建一个独立的文件，而这个文件会让数据的读取指向他 link 的那个文件的档名
     * 命令参数
         * `-f`                  : 如果目标文件存在时，就主动的将目标文件直接移除后再创建，文件夹还要加上 `-T`
+        * `-r`                  : 创建相对路径的符号链接
         * `-s`                  : 添加符号链接，如果不加任何参数就进行硬链接
+        * `-T`                  : 总是将给定的链接名当作普通文件
 
 ### 压缩打包
 
@@ -1644,7 +1700,7 @@ egrep -o '\b\w+\b' $filename | \
 
 * `tar`
     ```
-    tar -[Jjz] -c -f [tarname] -C [dir] [objects]
+    tar -[Jjz] -c -f [tarname] [objects] -C [dir]
     tar        -x -f [tarname] -C [dir]
     tar        -t -f [tarname]
     ```
@@ -1652,9 +1708,10 @@ egrep -o '\b\w+\b' $filename | \
         * 可以将选项写在一起 (UNIX-style)，例如: `tar -Jcvf test.tar.xz test`
         * 可以省略横线 `-`(Traditional Style)，例如: `tar Jcvf test.tar.xz test`
     * 压缩类型选项
-        * `-J`                  : xz   打包压缩，此时 tarname 需要命名为 `*.tar.xz`
-        * `-j`                  : bz2  打包压缩，此时 tarname 需要命名为 `*.tar.bz2`
-        * `-z`                  : gzip 打包压缩，此时 tarname 需要命名为 `*.tar.gz`
+        * `-J`                  : 选择 xz   压缩算法，此时 tarname 需要命名为 `*.tar.xz`
+        * `-j`                  : 选择 bz2  压缩算法，此时 tarname 需要命名为 `*.tar.bz2`
+        * `-z`                  : 选择 gzip 压缩算法，此时 tarname 需要命名为 `*.tar.gz`
+        * `-a`                  : 自动根据后缀选择压缩算法
     * 处理方式选项
         * `-c`                  : 压缩
         * `-x`                  : 解压
@@ -1662,17 +1719,18 @@ egrep -o '\b\w+\b' $filename | \
     * 其它选项
         * `-f [tarname]`        : 打包文件名
         * `-C [dir]`            : 进入指定目录打包(否则包含路径)或解压到指定目录(否则当前目录)
-        * `-P`                  : 保留绝对路径
+            * 例如打包test目录下的内容且不包含test目录: `tar -Jcvf test.tar.xz -C test .`
         * `-v`                  : 显示处理信息
         * `-p`                  : 保留属性
         * `-P`                  : 保留绝对路径
+        * `--exclude-vcs`       : 打包时排除版本控制相关的文件和目录
 
 ### 分割文件
 
-* `split [options] [filename] [prefix]`  : 分割文件
+* `split [options] [filename] [prefix]`  : 分割文件，`prefix` 为前缀名称
     * 命令参数
         * `-x`                  : 以数字命名后缀而不是字母命名
-        * `-a num`              : 指定分割的后缀的位数 `num`，默认2位，`prefix` 为前缀名称
+        * `-a num`              : 指定分割的后缀的位数 `num`，默认2位
         * `-b value`            : 多大一个文件，单位有: `c` 1 byte; `w` 2 bytes; `b` 512 bytes; `k` 1024 bytes; `M` 1024k bytes; `G` 1024M bytes
         * `-l num`              : 多少行一个文件
         * `-n CHUNKS`           : 分割成指定个文件
@@ -1824,8 +1882,8 @@ egrep -o '\b\w+\b' $filename | \
             * 磁盘挂载
             * 例如: 重新挂载根目录 `sudo mount -o remount,rw,auto /`
             * 例如: 手动挂载 ntfs: `sudo mount -t ntfs /dev/sda2 /home/ntfspd`
-            * 例如: 手动挂载 nfs: `sudo mount -t nfs <ip_addr>:<path> <mount_path> -o nolock -o tcp -o rsize=32768,wsize=32768`
-            * 例如: 手动挂载 smb: `sudo mount -t cifs //<ip_addr>/<path> <mount_path> -o domain=<str1>,username=<str2>,password=<str3>,vers=1.0,uid=1000,gid=1000`
+            * 例如: 手动挂载 nfs: `sudo mount -t nfs <ip_addr>:<path> <mount_path> -o vers=3,nolock,proto=tcp,rsize=32768,wsize=32768`
+            * 例如: 手动挂载 smb: `sudo mount -t cifs //<ip_addr>/<path> <mount_path> -o forceuid,forcegid,uid=1000,gid=1000,domain=<str1>,username=<str2>,password=<str3>,vers=2.0`
             * 进行挂载前，你最好先确定几件事:
                 1. 单一文件系统不应该被重复挂载在不同的挂载点(目录)中
                 2. 单一目录不应该重复挂载多个文件系统
@@ -1869,7 +1927,7 @@ egrep -o '\b\w+\b' $filename | \
             * 读取、转换并输出数据，源和目标可以是是文件或设备
             * `if=`             : 源，两个常用的源: `/dev/zero` 返回全0，`/dev/random` 返回随机数
             * `of=`             : 目标
-            * `bs=`             : 每次复制的大小，单位有: `c` 1 byte; `w` 2 bytes; `b` 512 bytes; `k` 1024 bytes; `M` 1024k bytes; `G` 1024M bytes
+            * `bs=`             : 每次复制的大小，单位有: `c` 1 byte; `w` 2 bytes; `b` 512 bytes; `K` 1024 bytes; `M` 1024k bytes; `G` 1024M bytes
             * `count=`          : 复制的次数
 <br>
 
@@ -1889,3 +1947,403 @@ egrep -o '\b\w+\b' $filename | \
     ll /dev/disk/by-id/         # 查看对应的硬盘
     sudo fsck -a /dev/disk/by-id/devname # fsck命令进行硬盘修复
     ```
+
+## Git 使用
+
+### 一般工作流程
+
+* `git init`        : 新建一个Git代码库
+* `git clone`       : 克隆Git资源
+* `...`             : 修改工作区文件
+* `git add/rm/mv`   : 将工作区修改提交到暂存区
+* `git commit`      : 将暂存区修改提交到仓库区
+* `git push`        : 将仓库区修改提交到远程仓库
+
+* Git的4个工作区
+    * `Workspace`       : 工作区
+    * `Index/Stage`     : 暂存区(索引区)
+    * `Repository`      : 仓库区(或本地仓库)
+    * `Remote`          : 远程仓库
+
+### 配置
+
+* git config常用选项
+
+    | 选项                    | 说明               | 配置文件路径      |
+    | ----                    | ----               | ----              |
+    | `--system`              | 使用系统级配置文件 | `/etc/gitconfig`  |
+    | `--global `             | 使用全局配置文件   | `~/.gitconfig`    |
+    | `--local`               | 使用仓库级配置文件 | `.git/config`     |
+    | `-f, --file <filename>` | 使用指定的配置文件 |                   |
+    | `-l, --list`            | 查看Git配置文件    |                   |
+    | `-e, --edit`            | 编辑Git配置文件    |                   |
+
+* 查看Git全局配置文件
+    * `git config -l --global`
+* 编辑Git全局配置文件
+    * `git config -e --global`
+* 设置提交代码时的全局用户信息
+    * `git config --global user.name "name"`
+    * `git config --global user.email "email_address"`
+* 全局别名设置
+    * `git config --global alias.co checkout`
+    * `git config --global alias.br branch`
+    * `git config --global alias.ci commit`
+    * `git config --global alias.st status`
+* commit编辑器 nano 改 vim
+    * `git config --global core.editor vim`
+* 配置图形化比较工具为 meld
+    * `git config --global diff.tool meld`
+* 配置图形化比较工具为 Beyond Compare
+    * `git config --global diff.tool bc3`
+    * `git config --global difftool.bc3.path "/usr/bin/bcompare"`
+    * 注: `~/.config/bcompare/registry.dat` 为 bc3 的许可证文件
+
+### 初始化
+
+* 将当前目录初始化为Git代码库
+    * `git init`
+* 新建dir目录，将其初始化为Git代码库
+    * `git init [dir]`
+* 克隆一个项目到当前目录
+    * `git clone [url]`
+    * 例: `git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git` : 克隆linux kernel仓库
+* 克隆一个项目到到指定目录dir
+    * `git clone [url] [dir]`
+
+注: 在执行完成 git init 命令后，Git 仓库会生成一个 .git 目录(Git的版本库)，该目录包含了资源的所有元数据
+
+### 增加/删除文件
+
+* 添加指定(修改的/新建的)文件或目录(包括子目录)到暂存区
+    * `git add [file] [dir] ...`
+* 强制添加指定(修改的/新建的)文件或目录(包括子目录)到暂存区，.gitignore中忽略的也提交
+    * `git add -f [file] [dir]`
+* 监控工作区的状态树，使用它会把工作时的所有变化提交到暂存区，包括文件内容修改(modified)以及新文件(new)，但不包括被删除的文件。
+    * `git add .`
+* 仅监控已经被add的文件（即tracked file），他会将被修改删除的文件提交到暂存区，不会提交新文件
+    * `git add -u`
+* 是上面两个功能的合集（git add --all的缩写）
+    * `git add -A`
+* 添加每个变化前，都会要求确认，对于同一个文件的多处变化，可以实现分次提交
+    * `git add -p`
+* 删除工作区文件，并且将这次删除放入暂存区
+    * `git rm [file1] [file2] ...`
+* 删除工作区文件夹，并且将这次删除放入暂存区
+    * `git rm -r [dir] ...`
+* 删除仓库区文件，并且将这次删除放入暂存区
+    * `git rm -f [file1] [file2]...`
+* 停止追踪指定文件，但该文件会保留在工作区
+    * `git rm --cached [file]`
+* 改名文件，并且将这个改名放入暂存区
+    * `git mv [file-original] [file-renamed]`
+
+### 代码提交
+
+* 提交暂存区到仓库区，会跳出编辑器让你输入提交信息
+    * `git commit`
+* 提交暂存区到仓库区，-m接提交信息
+    * `git commit -m [message]`
+* 提交暂存区的指定文件到仓库区
+    * `git commit [file1] [file2] ...`
+* 提交工作区自上次commit之后的变化，直接到仓库区
+    * `git commit -A`
+* 提交时显示所有diff信息
+    * `git commit -v`
+* 提交时在上一次的提交上盖楼
+    * `git commit --amend`
+
+### 分支
+
+* 列出所有本地分支
+    * `git branch`
+* 列出所有远程分支
+    * `git branch -r`
+* 列出所有本地分支和远程分支
+    * `git branch -a`
+* 新建一个分支，但依然停留在当前分支
+    * `git branch [branch-name]`
+* 新建一个分支，并切换到该分支
+    * `git checkout -b [branch]`
+* 新建一个分支，指向指定commit
+    * `git branch [branch] [commit]`
+* 切换到指定分支，并更新工作区
+    * `git checkout [branch-name]`
+* 切换到上一个分支
+    * `git checkout -`
+* 新建一个分支，与指定的远程分支建立追踪关系
+    * `git branch --track [branch] [remote-branch]`
+* 建立追踪关系，在现有分支与指定的远程分支之间
+    * `git branch --set-upstream [branch] [remote-branch]`
+* 合并指定分支到当前分支
+    * `git merge [branch]`
+* 选择一个commit，合并进当前分支
+    * `git cherry-pick [commit]`
+* 删除分支
+    * `git branch -d [branch-name]`
+* 删除远程分支
+    * `git push origin --delete [branch-name]`
+    * `git branch -dr [remote/branch]`
+
+### 标签
+
+* 列出所有tag
+    * `git tag`
+* 列出所有tag，时间倒序
+    * `git tag --sort=-taggerdate`
+* 新建一个tag在当前commit
+    * `git tag [tag]`
+* 新建一个tag在指定commit
+    * `git tag [tag] [commit]`
+* 删除本地tag
+    * `git tag -d [tag]`
+* 删除远程tag
+    * `git push origin :refs/tags/[tagName]`
+* 查看tag信息
+    * `git show [tag]`
+* 提交指定tag
+    * `git push [remote] [tag]`
+* 提交所有tag
+    * `git push [remote] --tags`
+* 新建一个分支，指向某个tag
+    * `git checkout -b [branch] [tag]`
+
+### 查看信息
+
+* 显示有变更的文件
+    * `git status`
+* 显示当前分支的版本历史
+    * `git log`
+* 显示当前分支的含commit date的版本历史
+    * `git log --pretty=fuller`
+* 显示commit历史，以及每次commit发生变更的文件
+    * `git log --stat`
+* 搜索特定用户的提交历史
+    * `git log --author=[author_name]`
+* 搜索提交历史，根据关键词
+    * `git log -S [keyword]`
+* 显示某个commit之后的所有变动，每个commit占据一行
+    * `git log [tag] HEAD --pretty=format:%s`
+* 显示某个commit之后的所有变动，其"提交说明"必须符合搜索条件
+    * `git log [tag] HEAD --grep feature`
+* 显示某个文件的版本历史，包括文件改名
+    * `git log --follow [file]`
+    * `git whatchanged [file]`
+* 显示指定文件相关的每一次diff
+    * `git log -p [file]`
+* 显示过去5次提交
+    * `git log -5 --pretty --oneline`
+* 显示所有提交过的用户，按提交次数排序
+    * `git shortlog -sn`
+* 显示指定文件是什么人在什么时间修改过
+    * `git blame [file]`
+* 显示暂存区和工作区的差异
+    * `git diff`
+* 显示暂存区和上一个commit的差异
+    * `git diff --cached [file]`
+* 显示工作区与当前分支最新commit之间的差异
+    * `git diff HEAD`
+* 显示两次提交之间的差异
+    * `git diff [first-branch]...[second-branch]`
+* 显示今天你写了多少行代码
+    * `git diff --shortstat "@{0 day ago}"`
+* 显示某次提交的元数据和内容变化
+    * `git show [commit]`
+* 显示某次提交发生变化的文件
+    * `git show --name-only [commit]`
+* 显示某次提交时，某个文件的内容
+    * `git show [commit]:[filename]`
+* 显示当前分支的最近几次提交
+    * `git reflog`
+
+### 远程同步
+
+* 下载远程仓库的所有变动
+    * `git fetch [remote]`
+* 显示所有远程仓库
+    * `git remote -v`
+* 显示某个远程仓库的信息
+    * `git remote show [remote]`
+* 增加一个新的远程仓库，并命名
+    * `git remote add [shortname] [url]`
+* 取回远程仓库的变化，并与本地分支合并
+    * `git pull [remote] [branch]`
+* 上传本地指定分支到远程仓库
+    * `git push [remote host] [local branch]`
+    * `git push [remote host] [local branch]:[remote branch]`
+    * 例如: `git push origin master` or  `git push origin master:master` or `git push origin HEAD:refs/heads/master` or `git push` 直接推入库中
+    * 例如: `git push origin HEAD:refs/for/master` 先推入gerrit评审中
+* 强行推送当前分支到远程仓库，即使有冲突
+    * `git push [remote] --force`
+* 推送所有分支到远程仓库
+    * `git push [remote] --all`
+
+### 撤销
+
+* 恢复暂存区的指定文件到工作区
+    * `git checkout [file]`
+* 恢复某个commit的指定文件到暂存区和工作区
+    * `git checkout [commit] [file]`
+* 恢复暂存区的所有文件到工作区
+    * `git checkout .`
+* 重置暂存区的指定文件，与上一次commit保持一致，但工作区不变
+    * `git reset [file]`
+* 重置暂存区与工作区，与上一次commit保持一致
+    * `git reset --hard`
+* 重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变
+    * `git reset [commit]`
+* 重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致
+    * `git reset --hard [commit]`
+* 重置当前HEAD为指定commit，但保持暂存区和工作区不变
+    * `git reset --keep [commit]`
+* 新建一个commit，用来撤销指定commit，后者的所有变化都将被前者抵消，并且应用到当前分支
+    * `git revert [commit]`
+* 暂时将未提交的变化移除，稍后再移入
+    * `git stash`
+    * `git stash pop`
+* 清除未被跟踪的文件(`-f`)和文件夹(`-d`)，包含.gitignore中忽略的(`-x`)
+    * `git clean -fdx`
+
+### 补丁
+
+* 生成一个可供发布的压缩包
+    * `git archive`
+* 生成最近一次提交的patch
+    * `git format-patch HEAD^` or `git format-patch -1`
+    * 在Git中，`HEAD` 表示当前版本，`HEAD^` 表示上一个版本，`HEAD^^` 表示上上一个版本，`HEAD~N` 表示上N一个版本
+* 本地变更 git diff 的内容，生成patch文件
+    * `git diff > xxxx.patch`
+* 合并patch到其它仓库，dest_patch_dir为要打补丁的目录(git根目录可省略)
+    * `git am --directory='dest_patch_dir' xxxx.patch`
+* 合并patch到其它仓库
+    * `git apply xxxx.patch`
+    * git apply与git am的区别是：
+        * `git apply`并不会将commit message等打上去，打完patch后需要重新git add和git commit
+        * `git am`会直接将patch的所有信息打上去，而且不用重新git add和git commit
+* 合并内核patch，dest_patch_dir为要打补丁的目录，src_patch_dir为存放补丁的目录
+    * 假设本地版本为4.9.150，网站下载增量补丁patch-4.9.150-151.xz，解压后修改名字patch-4.9.151
+    * .`/scripts/patch-kernel dest_patch_dir src_patch_dir`
+* diff 生成补丁和 patch 打补丁和删除补丁
+    * 例如: diff -rapuN --no-dereference -x .git linux-5.15 linux-5.15.120 > linux-5.15.120.patch
+
+```sh
+#!/bin/bash
+
+patch_opt=$1
+patch_src=$2
+patch_dst=$3
+patch_arr=""
+
+if [ -e ${patch_dst} ]; then
+	for src in ${patch_src}; do
+		if [ -d ${src} ]; then
+			for ssrc in $(\ls ${src}); do
+				if [ $(echo ${ssrc} | grep -c '\.patch$') -eq 1 ]; then
+					patch_arr="${patch_arr} ${src}/${ssrc}"
+				fi
+			done
+		elif [ -f ${src} ]; then
+			patch_arr="${patch_arr} ${src}"
+		else
+			echo "Warning: ${src} is unexisted."
+		fi
+	done
+
+	for src in ${patch_arr}; do
+		patch_state="$(patch -p1 -R -s -f --dry-run -d ${patch_dst} < ${src})"
+		if [ ${patch_opt} = "patch" ] && [ ! -z "${patch_state}" ]; then
+			patch -p1 -b -d ${patch_dst} < ${src}
+			echo "Patch ${src} to ${patch_dst} Done."
+		elif [ ${patch_opt} = "unpatch" ] && [ -z "${patch_state}" ]; then
+			patch -p1 -R -d ${patch_dst} < ${src}
+			echo "Unpatch ${src} to ${patch_dst} Done."
+		fi
+	done
+fi
+```
+
+### repo + git
+
+* 初始化
+    * `repo init -u url -m xml -b branch && repo sync` : 下载repo并克隆manifest
+        * `-u url` : 指定一个URL，其连接到一个maniest仓库
+        * `-m xml` : 在manifest仓库中选择一个xml文件
+        * `-b branch` : 选择一个maniest仓库中的一个特殊的分支
+        * `repo sync` : 同步代码，更新代码到最新
+
+* 一般工作步骤
+    1. `repo start test .`      : 建立本地开发分支
+    2. `vi xxxx.c`              : 修改代码xxxx.c
+    3. `git add xxxx.c`         : 修改提交到暂存区
+    4. `git commit xxxx.c`      : 暂存区提交到到本地仓库
+        * 盖楼提交使用 `git commit --amend`
+    5. `repo upload .`          : 代码提交到远程服务器
+    6. `repo abandon test .`    : 删除本地分支
+
+    * 注意: 
+        * 解决新的问题重做1-6步骤
+        * 如果这个问题还要修改并且已经做了第4步，但是没有做第6步，重做2-6步骤，第4步使用 `git commit --amend`
+        * 如果这个问题还要修改(修改未merge)并且已经做了第6步，重做1-6步骤，第1步和第2步之间运行`Cherry Pick`命令(“问题网页downloads的Cherry Pick的字符串")，第4步使用 `git commit --amend`
+        * 如果这个问题还要修改(修改已merge)， 删除本地分支再重做1-6步骤
+
+* 其他repo命令
+    * `repo checkout` : 切换分支
+    * `repo branches` : 查看分支
+    * `repo diff` : 查看工作区文件差异
+    * `repo checkout` : 切换分支
+    * `repo status` : 查看文件状态
+
+* 在所有git仓库运行命令 `repo forall -vc "COMMAND TO EXECUTE"`
+    * `-v` 是详细的，因此它将打印命令的输出
+    * `-c "COMMAND TO EXECUTE"` 是您想要的实际命令
+    * 例如清除所有修改 `repo forall -vc "git reset --hard; git clean -fdx"`
+
+
+### 附加: svn 常用命令
+
+* 初始化
+    * `svn co URL`
+* 同步代码
+    * 同步代码到最新
+        * `svn up`
+    * 同步代码到指定reversion
+        * `svn up -r [reversion]`
+* 增加/删除文件
+    * 添加指定(修改的/新建的)文件或目录(包括子目录)
+        * `svn add [file] [dir] ...`
+    * 删除指定文件或目录(包括子目录)
+        * `svn rm [file] [dir] ...`
+    * 添加目录下的所有类型的文件
+        * `svn add [dir] --no-ignore --force`
+* 撤销修改(未ci)
+    * `svn revert [file]`
+    * `svn revert -R [dir]`
+* 撤销修改(已ci)
+    * `svn merge -r [newest reversion]:[revert reversion] [dir] ; svn ci -m "revert from rxxx to rxxx"`
+* 提交代码
+    * 提交代码到服务器，会跳出编辑器让你输入提交信息
+        * `svn ci`
+        * 注: svn修改编辑器是将 `editor-cmd = vim` 加入 `~/.subversion/config`
+    * 提交代码到服务器，-m接提交信息
+        * `svn ci -m [message]`
+* 查看信息
+    * 显示有变更的文件
+        * `svn st`
+    * 查看当前工作副本log
+        * `svn log`
+    * 只查看指定版本的log
+        * `svn log -r [reversion]`
+    * 查看特定时间范围内的log
+        * `svn log -r {2022-1-1}:{2022-8-1}`
+    * 查看当前工作区的所有改动
+        * `svn diff`
+    * 查看当前工作区和指定版本的差异
+        * `svn diff -r [reversion]`
+    * 显示两个版本间的差异
+        * `svn diff -r [newreversion]:[oldreversion]`
+    * 显示指定文件是什么人在什么时间修改过
+        * `svn blame [file]`
+* 查看svn配置信息
+    * `svn info`
+* 查看SVN帮助
+    * `svn help`
