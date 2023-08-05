@@ -11,9 +11,7 @@ MOD_NAME       ?= hello
 obj-m          := $(patsubst %,%.o,$(MOD_NAME))
 
 ccflags-y      += $(patsubst %,-I%,$(src) $(src)/include $(obj))
-ifneq ($(SEARCH_HDRS), )
 ccflags-y      += $(call link_hdrs)
-endif
 ccflags-y      += $(OPTIMIZATION_FLAG)
 ccflags-y      += $(IMAKE_CCFLAGS)
 
@@ -25,7 +23,7 @@ define set_flags
 $(foreach v,$(2),$(eval $(1)_$(call translate_obj,$(v)) = $(3)))
 endef
 
-ifeq ($(words $(MOD_NAME)), 1)
+ifeq ($(words $(MOD_NAME)),1)
 
 IGNORE_PATH    ?= .git .pc scripts output
 REG_SUFFIX     ?= c S
@@ -35,7 +33,7 @@ SRCS           ?= $(filter-out %.mod.c,$(shell find $(src) \
                      | xargs))
 OBJS            = $(call translate_obj,$(SRCS))
 
-ifneq ($(words $(OBJS))-$(OBJS), 1-$(MOD_NAME).o)
+ifneq ($(words $(OBJS))-$(OBJS),1-$(MOD_NAME).o)
 $(MOD_NAME)-y  := $(OBJS)
 endif
 
@@ -52,7 +50,7 @@ KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
 MOD_PATH       ?= $(shell pwd)
 MOD_MAKES      += -C $(KERNEL_SRC)
 
-ifneq ($(ENV_BUILD_MODE), yocto)
+ifneq ($(ENV_BUILD_MODE),yocto)
 MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
 endif
 

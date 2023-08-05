@@ -11,7 +11,7 @@ COLORECHO      ?= $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e
 SRC_PATH       ?= .
 IGNORE_PATH    ?= .git .pc scripts output
 REG_SUFFIX     ?= c cpp S
-ifeq ($(USING_CXX_BUILD_C), y)
+ifeq ($(USING_CXX_BUILD_C),y)
 CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
 else
 CXX_SUFFIX     ?= cc cp cxx cpp CPP c++ C
@@ -23,11 +23,10 @@ SRCS           ?= $(shell find $(SRC_PATH) $(patsubst %,-path '*/%' -prune -o,$(
                   | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs)
 
 CPFLAGS        += -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
+LDFLAGS        += -L$(OBJ_PREFIX) -Wl,-rpath-link=$(OBJ_PREFIX)
 
-ifneq ($(SEARCH_HDRS), )
 CPFLAGS        += $(call link_hdrs)
 LDFLAGS        += $(call link_libs)
-endif
 
 CPFLAGS        += $(OPTIMIZATION_FLAG)
 LDFLAGS        += -Wl,-O1
@@ -92,6 +91,21 @@ CPFLAGS        += -fanalyzer
 LDFLAGS        += -fanalyzer
 endif
 
+CHECK_INFO     += ENV_OPTIMIZATION=$(ENV_OPTIMIZATION)  \
+                  ENV_SECURITY=$(ENV_SECURITY)          \
+                  ENV_SANITIZER=$(ENV_SANITIZER)        \
+                  ENV_ANALYZER=$(ENV_ANALYZER)          \
+                  USING_CXX_BUILD_C=$(USING_CXX_BUILD_C)\
+                  CC=$(CC)                              \
+                  CPFLAGS=$(CPFLAGS)                    \
+                  CFLAGS=$(CFLAGS)                      \
+                  CXXFLAGS=$(CXXFLAGS)                  \
+                  IMAKE_CFLAGS=$(IMAKE_CFLAGS)          \
+                  IMAKE_CXXFLAGS=$(IMAKE_CXXFLAGS)      \
+                  PRE_LDFLAGS=$(PRE_LDFLAGS)            \
+                  LDFLAGS=$(LDFLAGS)                    \
+                  IMAKE_LDFLAGS=$(IMAKE_LDFLAGS)
+
 define translate_obj
 $(patsubst %,$(OBJ_PREFIX)/%.o,$(basename $(1)))
 endef
@@ -137,7 +151,7 @@ endif
 endif
 endef
 
-ifeq ($(USING_CXX_BUILD_C), y)
+ifeq ($(USING_CXX_BUILD_C),y)
 $(eval $(call compile_obj,c,$$(CXX)))
 else
 $(eval $(call compile_obj,c,$$(CC)))
@@ -155,13 +169,26 @@ $(eval $(call compile_obj,asm,$$(AS)))
 
 OBJS            = $(call translate_obj,$(SRCS))
 DEPS            = $(patsubst %.o,%.d,$(OBJS))
-$(OBJS): $(MAKEFILE_LIST)
+CHECK_FILE      = $(OBJ_PREFIX)/checkinfo
+
+$(OBJS): $(MAKEFILE_LIST) $(CHECK_FILE)
 -include $(DEPS)
+
+$(CHECK_FILE): $(CHECK_FILE).tmp
+	@if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
+		rm -f $<; \
+	else \
+		mv -f $< $@; \
+	fi
+
+$(CHECK_FILE).tmp:
+	@mkdir -p $(OBJ_PREFIX)
+	@echo "$(CHECK_INFO)" > $@
 
 .PHONY: clean_objs
 
 clean_objs:
-	@rm -rf $(OBJS) $(DEPS)
+	@rm -rf $(OBJS) $(DEPS) $(OBJ_PREFIX)/checkinfo
 
 define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)

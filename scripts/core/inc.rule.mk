@@ -28,7 +28,7 @@ MAKE_FNAME      ?= mk.deps
 
 INS_FULLER      ?= n
 INS_HASRUN      ?= n
-ifeq ($(INS_FULLER), y)
+ifeq ($(INS_FULLER),y)
 define ins_common_cfg
 --$(1)dir=$(INS_TOPDIR)$(if $(filter $(1),bin sbin lib),$(INS_SUBDIR)$(base_$(1)dir),$($(1)dir))
 endef
@@ -38,25 +38,25 @@ define ins_cmake_cfg
 endef
 endif
 
-ifeq ($(COMPILE_TOOL), autotools)
+ifeq ($(COMPILE_TOOL),autotools)
 AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
-ifeq ($(INS_FULLER), y)
+ifeq ($(INS_FULLER),y)
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot $(if $(filter y,$(INS_HASRUN)),runstate),$(call ins_common_cfg,$(v)))
 else
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
 endif
 
-else ifeq ($(COMPILE_TOOL), cmake)
+else ifeq ($(COMPILE_TOOL),cmake)
 CMAKE_CROSS     ?= $(shell $(MACHINE_SCRIPT) cmake_cross)
-ifeq ($(INS_FULLER), y)
+ifeq ($(INS_FULLER),y)
 INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot $(if $(filter y,$(INS_HASRUN)),runstate),$(call ins_cmake_cfg,$(v)))
 else
 INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
 endif
 
-else ifeq ($(COMPILE_TOOL), meson)
+else ifeq ($(COMPILE_TOOL),meson)
 MESON_WRAP_MODE ?= --wrap-mode=nodownload
-ifeq ($(INS_FULLER), y)
+ifeq ($(INS_FULLER),y)
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include data info locale man,$(call ins_common_cfg,$(v)))
 else
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR) --libdir=$(INS_TOPDIR)$(INS_SUBDIR)/lib
@@ -66,7 +66,7 @@ else
 INS_CONFIG      ?=
 endif
 
-ifeq ($(CACHE_BUILD), y)
+ifeq ($(CACHE_BUILD),y)
 CACHE_OUTPATH   ?= $(WORKDIR)
 CACHE_INSPATH   ?= $(INS_TOPDIR)
 CACHE_STATUS    ?= $(WORKDIR)/MATCH.status
@@ -106,13 +106,13 @@ build:
 ifneq ($(filter prepend,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) prepend
 endif
-ifeq ($(COMPILE_TOOL), autotools)
+ifeq ($(COMPILE_TOOL),autotools)
 	@cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT)
-else ifeq ($(COMPILE_TOOL), cmake)
+else ifeq ($(COMPILE_TOOL),cmake)
 	@cd $(OBJ_PREFIX) && \
 		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT)
-else ifeq ($(COMPILE_TOOL), meson)
+else ifeq ($(COMPILE_TOOL),meson)
 	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
 	@$(if $(do_meson_cfg),$(call do_meson_cfg))
 	@cd $(SRC_PATH) && \
@@ -122,11 +122,11 @@ endif
 ifneq ($(filter compile,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) compile
 else
-ifeq ($(COMPILE_TOOL), autotools)
+ifeq ($(COMPILE_TOOL),autotools)
 	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
-else ifeq ($(COMPILE_TOOL), cmake)
+else ifeq ($(COMPILE_TOOL),cmake)
 	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
-else ifeq ($(COMPILE_TOOL), meson)
+else ifeq ($(COMPILE_TOOL),meson)
 	@cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(LOGOUTPUT) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(LOGOUTPUT)
 else
 	@$(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
@@ -156,7 +156,7 @@ install:
 	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
 endif
 
-ifeq ($(CACHE_BUILD), y)
+ifeq ($(CACHE_BUILD),y)
 
 .PHONY: checksum psysroot cachebuild setforce set1force unsetforce
 

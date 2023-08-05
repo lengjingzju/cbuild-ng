@@ -10,7 +10,7 @@ LOGOUTPUT      ?= $(if $(filter y,$(BUILDVERBOSE)),,1>/dev/null)
 
 INSTALL_HDR    ?= $(PACKAGE_NAME)
 SEARCH_HDRS    ?= $(PACKAGE_DEPS)
-ifneq ($(NATIVE_BUILD), y)
+ifneq ($(NATIVE_BUILD),y)
 PACKAGE_ID     := $(PACKAGE_NAME)
 else
 PACKAGE_ID     := $(PACKAGE_NAME)-native
@@ -25,16 +25,16 @@ else
 OPTIMIZATION_FLAG   ?= -O2
 endif
 
-ifneq ($(ENV_BUILD_MODE), yocto)
+ifneq ($(ENV_BUILD_MODE),yocto)
 
-ifneq ($(NATIVE_BUILD), y)
+ifneq ($(NATIVE_BUILD),y)
 ENV_CROSS_ROOT ?= $(shell pwd)
 WORKDIR        ?= $(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_CROSS_ROOT)/sysroot
 ifneq ($(CROSS_DESTDIR), )
 INS_PREFIX      = $(CROSS_DESTDIR)
 endif
-ifneq ($(GLOBAL_SYSROOT), y)
+ifneq ($(GLOBAL_SYSROOT),y)
 DEP_PREFIX     ?= $(WORKDIR)/sysroot
 else
 DEP_PREFIX     ?= $(SYS_PREFIX)
@@ -46,7 +46,7 @@ SYS_PREFIX     ?= $(ENV_NATIVE_ROOT)/sysroot
 ifneq ($(NATIVE_DESTDIR), )
 INS_PREFIX      = $(NATIVE_DESTDIR)
 endif
-ifneq ($(GLOBAL_SYSROOT), y)
+ifneq ($(GLOBAL_SYSROOT),y)
 DEP_PREFIX     ?= $(WORKDIR)/sysroot-native
 else
 DEP_PREFIX     ?= $(SYS_PREFIX)
@@ -58,7 +58,7 @@ INS_TOPDIR     ?= $(WORKDIR)/image
 INS_PREFIX     ?= $(WORKDIR)/image
 OBJ_SUBDIR     ?=
 OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
-ifneq ($(GLOBAL_SYSROOT), y)
+ifneq ($(GLOBAL_SYSROOT),y)
 PATH_PREFIX    ?= $(WORKDIR)/sysroot-native
 else
 PATH_PREFIX    ?= $(ENV_NATIVE_ROOT)/sysroot
@@ -68,7 +68,7 @@ else # ENV_BUILD_MODE
 
 # WORKDIR should be exported by yocto recipe.
 # Yocto doesn't have SYS_PREFIX INS_TOPDIR INS_SUBDIR
-ifneq ($(NATIVE_BUILD), y)
+ifneq ($(NATIVE_BUILD),y)
 INS_PREFIX     ?= $(WORKDIR)/image
 DEP_PREFIX     ?= $(WORKDIR)/recipe-sysroot
 else # NATIVE_BUILD
@@ -95,20 +95,20 @@ DEP_PREFIX      = $(DEPDIR)
 endif
 
 define link_hdrs
-$(addprefix  -I,$(wildcard \
-	$(addprefix $(DEP_PREFIX),/include /usr/include /usr/local/include) \
+$(addprefix  -I,$(addprefix $(DEP_PREFIX),/include /usr/include /usr/local/include) \
+	$(if $(SEARCH_HDRS),$(wildcard \
 	$(addprefix $(DEP_PREFIX)/include/,$(SEARCH_HDRS)) \
 	$(addprefix $(DEP_PREFIX)/usr/include/,$(SEARCH_HDRS)) \
 	$(addprefix $(DEP_PREFIX)/usr/local/include/,$(SEARCH_HDRS)) \
-))
+)))
 endef
 
 ifeq ($(KERNELRELEASE), )
 
 comma          :=,
 define link_libs
-$(addprefix -L,$(wildcard $(addprefix $(DEP_PREFIX),/lib /usr/lib /usr/local/lib))) \
-$(addprefix -Wl$(comma)-rpath-link=,$(wildcard $(addprefix $(DEP_PREFIX),/lib /usr/lib /usr/local/lib)))
+$(addprefix -L,$(addprefix $(DEP_PREFIX),/lib /usr/lib /usr/local/lib)) \
+$(addprefix -Wl$(comma)-rpath-link=,$(addprefix $(DEP_PREFIX),/lib /usr/lib /usr/local/lib))
 endef
 
 ifneq ($(filter y,$(NATIVE_DEPEND) $(NATIVE_BUILD)), )
@@ -117,8 +117,8 @@ export LD_LIBRARY_PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/lib /usr/lib /u
 endif
 
 ifneq ($(LICFILE), )
-ifneq ($(ENV_BUILD_MODE), yocto)
-ifneq ($(NATIVE_BUILD), y)
+ifneq ($(ENV_BUILD_MODE),yocto)
+ifneq ($(NATIVE_BUILD),y)
 LICPATH        ?= $(SRC_PATH)
 LICDEST        ?= $(INS_PREFIX)
 define install_lics
@@ -136,17 +136,17 @@ endif
 
 # yocto envs should be exported by yocto recipe.
 
-ifneq ($(ENV_BUILD_MODE), yocto)
+ifneq ($(ENV_BUILD_MODE),yocto)
 
 PREPARE_SYSROOT = -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
                   NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
 
-ifneq ($(DIS_PC_EXPORT), y)
+ifneq ($(DIS_PC_EXPORT),y)
 export PKG_CONFIG_LIBDIR=$(DEP_PREFIX)/usr/lib/pkgconfig
 export PKG_CONFIG_PATH=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib /usr/local/lib))) | sed 's@ @:@g')
 endif
 
-ifneq ($(NATIVE_BUILD), y)
+ifneq ($(NATIVE_BUILD),y)
 
 ifneq ($(ENV_BUILD_ARCH), )
 ARCH           := $(ENV_BUILD_ARCH)

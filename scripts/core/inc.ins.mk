@@ -70,8 +70,8 @@ install_tofile_%:
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
 	install -d $$(dirname $${idst}) && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
 
-ifneq ($(ENV_BUILD_MODE), yocto)
-ifneq ($(DIS_LICENSE), y)
+ifneq ($(ENV_BUILD_MODE),yocto)
+ifneq ($(DIS_LICENSE),y)
 .PHONY: license
 SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
 SRC_PATH        ?= .
