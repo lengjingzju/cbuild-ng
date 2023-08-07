@@ -10,16 +10,22 @@ PACKAGE_NAME     = ljson
 
 LICENSE          = MIT
 HOMEPAGE         = https://github.com/lengjingzju/json
-DESCRIPTION      = Ultralightweight JSON parser in ANSI C.
+DESCRIPTION      = LJSON is a C implemented JSON library that is much faster than cJSON and substantially faster \
+                   than RapidJSON, it is currently the fastest general-purpose JSON library. LJSON supports JSON \
+                   parsing, printing and editing, provides DOM and SAX APIs, and I/O supports string and file, \
+                   it fully supports the test cases of nativejson-benchmark. By default, LJSON uses the personally \
+                   developed ldouble algorithm to print double to string. Compared with the standard library, \
+                   it may only be the 15th decimal place difference. It is currently the fastest double to string \
+                   algorithm; users can also choose the personally optimized grisu2 algorithm or dragonbox algorithm.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 1.0.0
+VERSION          = 1.3.2
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/json.git
-SRC_REV          = c3bbf895f911c1a6b45061784ea080e6dc62ccf0
+SRC_REV          = 4b3e08d8537f55b25900df2ff700346045b554c7
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

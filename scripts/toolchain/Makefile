@@ -18,14 +18,14 @@ PATCH_SCRIPT    := $(ENV_TOOL_DIR)/exec_patch.sh
 CACHE_SCRIPT    := $(ENV_TOOL_DIR)/process_cache.sh
 MACHINE_SCRIPT  := $(ENV_TOOL_DIR)/process_machine.sh
 
-GMP_VER         ?= 6.2.1
+GMP_VER         ?= 6.3.0
 MPFR_VER        ?= 4.2.0
 MPC_VER         ?= 1.3.1
 ISL_VER         ?= 0.26
 LINUX_VER       ?= $(shell $(MACHINE_SCRIPT) linux_version)
-BINUTILS_VER    ?= 2.40
+BINUTILS_VER    ?= 2.41
 GCC_VER         ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GLIBC_VER       ?= 2.37
+GLIBC_VER       ?= 2.38
 GDB_VER         ?= 13.2
 
 GMP_URL         := http://ftp.gnu.org/gnu/gmp/gmp-$(GMP_VER).tar.xz
@@ -210,6 +210,8 @@ GCC_COMMON_OPTIONS      += --disable-multiarch
 GLIBC_COMMON_OPTIONS    += --disable-multi-arch
 GDB_COMMON_OPTIONS      += gl_cv_c_multiarch=no
 endif
+
+GLIBC_COMMON_OPTIONS    += --enable-crypt # from glibc 2.38
 
 GCC_EXTRA_OPTIONS       ?= \
 	--enable-nls \

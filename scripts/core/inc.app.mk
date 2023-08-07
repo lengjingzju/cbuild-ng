@@ -188,7 +188,7 @@ $(CHECK_FILE).tmp:
 .PHONY: clean_objs
 
 clean_objs:
-	@rm -rf $(OBJS) $(DEPS) $(OBJ_PREFIX)/checkinfo
+	@rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)/checkinfo
 
 define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)

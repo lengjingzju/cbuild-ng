@@ -21,8 +21,8 @@ linux_arch=
 cross_target=
 gcc_arch_option=
 
-linux_version=5.15.120
-gcc_version=13.1.0
+linux_version=5.15.124
+gcc_version=13.2.0
 
 if [ ! -z $soc ]; then
     case $soc in
