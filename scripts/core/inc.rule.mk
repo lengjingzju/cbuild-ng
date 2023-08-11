@@ -6,7 +6,7 @@
 ############################################
 
 ifeq ($(KERNELRELEASE), )
-COLORECHO       ?= $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
+COLORECHO       := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 FETCH_SCRIPT    := $(ENV_TOOL_DIR)/fetch_package.sh
 PATCH_SCRIPT    := $(ENV_TOOL_DIR)/exec_patch.sh
 CACHE_SCRIPT    := $(ENV_TOOL_DIR)/process_cache.sh
@@ -158,14 +158,45 @@ endif
 
 ifeq ($(CACHE_BUILD),y)
 
-.PHONY: checksum psysroot cachebuild setforce set1force unsetforce
-
-checksum:
-	@$(CACHE_SCRIPT) -m check -r $(CACHE_STATUS) -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+define do_checksum
+	$(CACHE_SCRIPT) -m check -r $(CACHE_STATUS) -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
 		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
 		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
 		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)') \
 		$(if $(CACHE_URL),-u '$(CACHE_URL)')
+endef
+
+define do_pushcache
+	$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
+		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
+		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)')
+endef
+
+define do_pullcache
+	$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE)
+endef
+
+define do_setforce
+	$(CACHE_SCRIPT) -m setforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+endef
+
+define do_set1force
+	$(CACHE_SCRIPT) -m set1force -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+endef
+
+define do_unsetforce
+	$(CACHE_SCRIPT) -m unsetforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -v $(CACHE_VERBOSE)
+endef
+
+.PHONY: checksum psysroot cachebuild setforce set1force unsetforce
+
+checksum:
+	@$(call do_checksum)
 
 psysroot:
 	@$(if $(wildcard $(CACHE_STATUS)),,$(MAKE) $(PREPARE_SYSROOT))
@@ -173,31 +204,24 @@ psysroot:
 cachebuild:
 ifeq ($(wildcard $(CACHE_STATUS)), )
 	@$(MAKE) -f $(MAKE_FNAME) build
-	@$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
-		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
-		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)')
+	@$(call do_pushcache)
 	@$(COLORECHO) "\033[33mUpdate $(PACKAGE_ID) Cache.\033[0m"
 else
-	@$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE)
+	@$(call do_pullcache)
 	@$(COLORECHO) "\033[33mMatch $(PACKAGE_ID) Cache.\033[0m"
 endif
-	rm -f $(CACHE_STATUS)
+	@rm -f $(CACHE_STATUS)
 
 setforce:
-	@$(CACHE_SCRIPT) -m setforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+	@$(call do_setforce)
 	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build.\033[0m"
 
 set1force:
-	@$(CACHE_SCRIPT) -m set1force -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+	@$(call do_set1force)
 	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build Once.\033[0m"
 
 unsetforce:
-	@$(CACHE_SCRIPT) -m unsetforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -v $(CACHE_VERBOSE)
+	@$(call do_unsetforce)
 	@$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Force Build.\033[0m"
 
 else # CACHE_BUILD
