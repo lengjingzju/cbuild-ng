@@ -730,6 +730,8 @@ Note: The reason for providing the above functions is that multiple libraries or
 * CXXFLAGS: Sets the global compilation flags for C++ (standard)
 * AFLAGS: Sets the global assembly flags (standard)
 * LDFLAGS: Sets the global link flags (standard)
+* IMAKE_CPFLAGS: Passes the global compilation flags for C and C++ from make or environment
+* IMAKE_LDFLAGS: Passes the global link flags from make or environment
 
 
 ### Configuration Template inc.conf.mk
@@ -800,6 +802,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * IGNORE_PATH: The ignored directory names when searching, its default value is `.git scripts output`
     * SRCS: All source code files, its default value is all files with suffix of `REG_SUFFIX` (`*.c` `*.S`) in the `$(src)`
     * `ccflags-y` `asflags-y` `ldflags-y`: The parameters for kernel module compilation, assembly and linking
+    * IMAKE_CCFLAGS: Passes the kernel module compilation flags from make or environment
 <br>
 
 * Functions of Kbuild Part

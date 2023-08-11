@@ -212,7 +212,6 @@
 
 * 变量计算
     * 整数计算: 不支持浮点型，`expression` 的运算符和表达式符合C语言运算规则即可
-        * `${var:+expression}`  : 如果 var 有值且不为空，则使用 `expression` 的值
         * `$[ expression ]`     : 取运算 `expression` 的值(注意 `expression` 前后有空格)，出现在 `[  ]` 中的变量名之前可加可不加 `$`
         * `$(( expression ))`   : 取运算 `expression` 的值，出现在 `((  ))` 中的变量名之前可加可不加 `$`
         * `$(expr expression)`  : 取运算 `expression` 的值，出现在 `(  )` 中的变量名之前要加 `$` (注意 `expression` 变量和运算符之间必须有空格)
@@ -652,7 +651,7 @@ done
     123
     lengjing@lengjing:~$ echo 123123 | grep -P -o '[0-9]+3'
     123123
-    lengjing@lengjing:~$ echo 123123 | grep -P -o '[0-9]+3'
+    lengjing@lengjing:~$ echo 123123 | grep -P -o '[0-9]++3'
     lengjing@lengjing:~$
     ```
 

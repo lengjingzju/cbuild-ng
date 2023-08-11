@@ -5,7 +5,7 @@
 # https://github.com/lengjingzju/cbuild-ng #
 ############################################
 
-COLORECHO      ?= $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
+COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 LOGOUTPUT      ?= $(if $(filter y,$(BUILDVERBOSE)),,1>/dev/null)
 
 INSTALL_HDR    ?= $(PACKAGE_NAME)
@@ -32,7 +32,7 @@ ENV_CROSS_ROOT ?= $(shell pwd)
 WORKDIR        ?= $(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_CROSS_ROOT)/sysroot
 ifneq ($(CROSS_DESTDIR), )
-INS_PREFIX      = $(CROSS_DESTDIR)
+INS_PREFIX     := $(CROSS_DESTDIR)
 endif
 ifneq ($(GLOBAL_SYSROOT),y)
 DEP_PREFIX     ?= $(WORKDIR)/sysroot
@@ -44,7 +44,7 @@ ENV_NATIVE_ROOT?= $(shell pwd)
 WORKDIR        ?= $(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)
 SYS_PREFIX     ?= $(ENV_NATIVE_ROOT)/sysroot
 ifneq ($(NATIVE_DESTDIR), )
-INS_PREFIX      = $(NATIVE_DESTDIR)
+INS_PREFIX     := $(NATIVE_DESTDIR)
 endif
 ifneq ($(GLOBAL_SYSROOT),y)
 DEP_PREFIX     ?= $(WORKDIR)/sysroot-native
@@ -83,15 +83,15 @@ PATH_PREFIX    ?= $(WORKDIR)/recipe-sysroot-native
 endif # ENV_BUILD_MODE
 
 ifneq ($(O), )
-OBJ_PREFIX      = $(O)$(OBJ_SUBDIR)
+OBJ_PREFIX     := $(O)$(OBJ_SUBDIR)
 endif
 
 ifneq ($(DESTDIR), )
-INS_PREFIX      = $(DESTDIR)
+INS_PREFIX     := $(DESTDIR)
 endif
 
 ifneq ($(DEPDIR), )
-DEP_PREFIX      = $(DEPDIR)
+DEP_PREFIX     := $(DEPDIR)
 endif
 
 define link_hdrs
@@ -138,12 +138,12 @@ endif
 
 ifneq ($(ENV_BUILD_MODE),yocto)
 
-PREPARE_SYSROOT = -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
+PREPARE_SYSROOT := -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
                   NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
 
 ifneq ($(DIS_PC_EXPORT),y)
-export PKG_CONFIG_LIBDIR=$(DEP_PREFIX)/usr/lib/pkgconfig
-export PKG_CONFIG_PATH=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib /usr/local/lib))) | sed 's@ @:@g')
+export PKG_CONFIG_LIBDIR:=$(DEP_PREFIX)/usr/lib/pkgconfig
+export PKG_CONFIG_PATH:=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib /usr/local/lib))) | sed 's@ @:@g')
 endif
 
 ifneq ($(NATIVE_BUILD),y)
@@ -201,25 +201,25 @@ endif # ENV_BUILD_MODE
 # Meson: https://mesonbuild.com/Builtin-options.html#directories
 # Yocto: https://git.yoctoproject.org/poky/tree/meta/conf/bitbake.conf
 
-base_bindir     = /bin
-base_sbindir    = /sbin
-base_libdir     = /lib
-bindir          = /usr/bin
-sbindir         = /usr/sbin
-libdir          = /usr/lib
-libexecdir      = /usr/libexec
-hdrdir          = /usr/include/$(INSTALL_HDR)
-includedir      = /usr/include
-datarootdir     = /usr/share
-datadir         = $(datarootdir)
-infodir         = $(datadir)/info
-localedir       = $(datadir)/locale
-mandir          = $(datadir)/man
-docdir          = $(datadir)/doc
-sysconfdir      = /etc
-servicedir      = /srv
-sharedstatedir  = /com
-localstatedir   = /var
-runstatedir     = /run
+base_bindir    := /bin
+base_sbindir   := /sbin
+base_libdir    := /lib
+bindir         := /usr/bin
+sbindir        := /usr/sbin
+libdir         := /usr/lib
+libexecdir     := /usr/libexec
+hdrdir         := /usr/include/$(INSTALL_HDR)
+includedir     := /usr/include
+datarootdir    := /usr/share
+datadir        := $(datarootdir)
+infodir        := $(datadir)/info
+localedir      := $(datadir)/locale
+mandir         := $(datadir)/man
+docdir         := $(datadir)/doc
+sysconfdir     := /etc
+servicedir     := /srv
+sharedstatedir := /com
+localstatedir  := /var
+runstatedir    := /run
 
 endif # KERNELRELEASE

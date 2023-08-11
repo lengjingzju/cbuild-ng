@@ -21,7 +21,7 @@ TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\
 PROGRESS_SCRIPT:= python3 $(ENV_TOOL_DIR)/show_progress.py
 MAKESILENT     ?= $(if $(filter y,$(BUILDVERBOSE)),,-s)
 
-.PHONY: all clean distclean toolchain deps all-deps total_time time_statistics progress_init
+.PHONY: all clean distclean toolchain deps all-deps total_time time_statistics progress_init progress_stop
 
 all: loadconfig
 	@$(PROGRESS_SCRIPT) start &
@@ -34,10 +34,12 @@ all: loadconfig
 -include $(ENV_MAKE_DIR)/inc.conf.mk
 
 clean:
+	@$(PROGRESS_SCRIPT) stop
 	@rm -rf $(ENV_CROSS_ROOT)/objects $(ENV_CROSS_ROOT)/sysroot $(ENV_NATIVE_ROOT)
 	@echo "Clean Done."
 
 distclean:
+	@$(PROGRESS_SCRIPT) stop
 	@rm -rf $(ENV_CROSS_ROOT) $(ENV_NATIVE_ROOT)
 	@echo "Distclean Done."
 
@@ -66,7 +68,7 @@ total_time: loadconfig
 
 time_statistics:
 	@mkdir -p $(WORKDIR)
-	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
+	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(TIME_OUTPUT)
 	@make $(MAKESILENT) PRECMD="$(TIME_FORMAT) " total_time
 	@echo "time statistics file is $(TIME_OUTPUT)"
 
@@ -74,6 +76,9 @@ ifneq ($(progress_cmd), )
 
 progress_init:
 	@$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) total=$(words $(ALL_TARGETS))
+
+progress_stop:
+	@$(PROGRESS_SCRIPT) stop
 
 $(ALL_TARGETS): progress_init
 
@@ -99,9 +104,9 @@ KEYWORDS       := none
 MAXLEVEL       := 3
 
 IMAGE_NAME     ?= $(if $(i),$(i),cbuild-image)
-IMAGE_PKG_PATH  = $(WORKDIR)/cbuild-image.inc
-PATCH_PKG_PATH  = $(WORKDIR)/prepare-patch.inc
-USER_METAS     ?= meta-example
+IMAGE_PKG_PATH := $(WORKDIR)/cbuild-image.inc
+PATCH_PKG_PATH := $(WORKDIR)/prepare-patch.inc
+USER_METAS     := meta-example
 
 .PHONY: all clean incs deps
 

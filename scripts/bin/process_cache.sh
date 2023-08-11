@@ -394,13 +394,11 @@ get_checksum() {
 
     mkdir -p ${outdir}
     if [ -e "${forcefile}" ]; then
-        if [ -z "$(cat ${forcefile})" ]; then
-            echo force > ${checktmp1}
+        if [ $(cat ${forcefile} | grep -c once) -eq 0 ]; then
+            cp -f ${forcefile} ${checktmp1}
         else
             rm -f ${forcefile}
         fi
-    else
-        : > ${checktmp1}
     fi
 
     get_source_checksum
@@ -509,7 +507,7 @@ push_cache() {
 
 set_force() {
     mkdir -p ${outdir}
-    echo -n "$1" > ${forcefile}
+    echo "$(date +'%Y-%m-%d.%H:%M:%S.%N') $1" > ${forcefile}
 }
 
 unset_force() {

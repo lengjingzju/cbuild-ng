@@ -94,8 +94,9 @@
 
 * 调试命令
     * `make -n`         : `--just-print, --dry-run, --recon`，只打印不执行要执行的命令，可能命令还会执行，例如 shell 多条件判断
+    * `make -d`         : 打印各种调试信息，考虑更新哪些文件，哪些文件正在比较文件时间和结果，当前正在干什么
     * `make --trace`    : 打印并执行要执行的命令和打印执行的原因
-    * `make -w`         : `--print-directory`，打印执行的 Makefile 的工作目录
+    * `make -w`         : `--print-directory`，打印执行的 Makefile 的工作目录，默认已经打开，除非指定了 `-s` 选项
     * `make -W <file>`  : `--what-if=file, --new-file=file, --assume-new=file`，假装文件被更新，和 `-n` 命令合用看看文件更新会发生什么
     * `make -p`         : `--print-database`，打印读取 Makefile 产生的数据库(规则和变量值)，然后照常执行
     * 注: Makefile 中可以使用 `$(info text)` `$(warning text)` `$(error text)` 打印信息，其中 error 会停止执行 Makefile
@@ -105,11 +106,12 @@
 * 第一阶段: 解析，make 读取 Makefile、包含的子 Makefile 等，并解析所有变量及其值以及隐式和显式规则，并构建所有目标及其先决条件的依赖图
     * 读入完整的逻辑行，包括反斜杠转义的行，扫描该行以查找分隔符和关键字，以确定该行属性
         * 如果是注释行，删除该行
-        * 如果是变量赋值行，定义的变量立即展开，赋值给变量的值有参考如下展开规则:
+        * 如果是变量赋值行，定义的变量立即展开，赋值给变量的值则参考如下展开规则:
             * `= ?=`    : 延迟展开: 递归扩展，取最后的值
             * `:= ::=`  : 立即展开: 简单扩展，取当前位置的值
+                * make v4.4 每次替换延迟展开变量都会重新计算，所以最好使用立即展开的赋值方式
             * `+=`      : 如果该变量先前定义的是简单变量(使用 `:= ::= !=` 赋值的变量)则立即展开，否则延迟展开
-            * `!=`      : shell 赋值运算符，立即展开
+            * `!=`      : shell 赋值运算符，立即展开，`val != cmd` `val = $(shell cmd)` 的作用基本相同
         * 如果是规则定义行，规则中的目标和依赖立即展开
         * 如果是规则下命令块的行，延迟展开，且将该行添加到当前规则
         * 如果是函数定义行(`define ... endef`)，函数名立即展开
@@ -162,6 +164,7 @@ clean:
 * 例子: [隐式规则](https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html#Catalogue-of-Rules)
     * 隐式规则会自动为 `xxx.o` 的目标推导 `$(CC) $(CPPFLAGS) $(CFLAGS) -c xxx.c` 的命令
     * 隐式规则会自动为 `xxx.o` 的目标推导 `$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c xxx.cpp` 的命令 (源文件也可能是 xxx.cc xxx.C)
+
 ```makefile
 main: main.o stack.o maze.o
 	gcc $^ -o $@
@@ -219,7 +222,7 @@ targets ...: target-pattern: dep-patterns ...
         * prerequisites : 依赖，多个依赖可以用空格隔开，生成 target 所需要的文件或目标
             * 一个目标的所有依赖不一定非得写在一条规则中，也可以拆开写
             * 多线程编译时依赖是并行执行的，所以注意依赖关系，写的不好就可能单线程编的过，多线程却失败
-        * command       : 命令块，一般来说，make 会使用 sh 来执行命令
+        * command       : 命令块，一般来说，make 会使用 `/bin/sh` 来执行命令，Ubuntu 上它默认是指向 `/bin/dash` 的符号链接
             * 命令行另起一行时，必须以制表符 TAB 开头，不能用空格
             * 命令前加 `@` 表示不显示命令本身而只显示它的结果
             * 命令前加 `-` 表示忽略命令执行失败
@@ -249,6 +252,8 @@ targets ...: target-pattern: dep-patterns ...
         * `$^`          : 表示规则中的所有依赖组成一个列表，以空格分隔
         * `$?`          : 表示规则中所有比目标新的依赖组成一个列表，以空格分隔
         * 以下是某些不常用的自动变量，不是全部
+        * `$*`          : 表示规则中的目标文件名去掉后缀
+        * `$+`          : 表示规则中的所有依赖组成一个列表，按Makefile 中出现的顺序列出，以空格分隔
         * `$(@D)`       : 表示规则中的目标文件名的目录部分(末尾没有斜杠)，相当于 `$(patsubst %/,%,$(dir $@))`
         * `$(@F)`       : 表示规则中的目标文件名的文件部分，相当于 `$(notdir $@)`
         * `$(<D)` `$(<F)`: 表示规则中的第1个依赖的文件名的目录部分和文件部分，相当于 `$(patsubst %/,%,$(dir $<)) $(notdir $<)`
@@ -269,7 +274,7 @@ targets ...: target-pattern: dep-patterns ...
         * `gcc -MM -MT xxx.o -MF xxx.d xxx.c`
             * `-MM` / `-M`  : 根据源代码中的 #include 语句推导出依赖，`-MM` / `-M` 分别表示依赖 `不包含/包含` 标准库的头文件
             * `-MT xxx.o`   : 指定规则中的目标
-            * `-MT xxx.d`   : 指定规则保存的文件，不指定时输出到终端
+            * `-MF xxx.d`   : 指定规则保存的文件，不指定时输出到终端
 
     * 高级特性(很少用到)
         * [内建目标](https://www.gnu.org/software/make/manual/html_node/Special-Targets.html#Special-Targets)
@@ -362,10 +367,9 @@ hello world
     * 目标和依赖列出的文件默认只会在当前目录中查找，如果指定搜索目录，还会在搜索目录查找，按顺序找到的第一个文件作为结果
     * `VPATH = dir1:dir2`   : `VPATH` 变量为所有类型的文件指定搜索目录，多个目录之间要使用 `空格` 或是 `:` 隔开
     * `vpath`               : `vpath` 指令为特定类型的文件创建搜索目录规则，文件类型使用 `%` 模式替换
-        * `vpath pattern dir1:dir2`     : 为符合模式 pattern 的文件指定搜索目录 dir1 和 dir2，例如 `vpath %.h include:src`
-        * `vpath dir1:dir2`             : 为所有类型的文件指定搜索目录 dir1 和 dir2
-        * `vpath <pattern>`             : 清除符合模式 pattern 的文件的搜索目录
-        * `vpath`                       : 清除所有类型的文件的搜索目录
+        * `vpath pattern dir1:dir2` : 为符合模式 pattern 的文件指定搜索目录 dir1 和 dir2，例如 `vpath %.h include:src`
+        * `vpath pattern`           : 清除符合模式 pattern 的文件的搜索目录
+        * `vpath`                   : 清除所有类型的文件的搜索目录
 
 * 使用条件
     * `ifdef` `ifndef` `ifeq` `ifneq` 和 `else` `endif` 类似C语言中的条件编译，这些关键字都要顶格写
@@ -412,6 +416,7 @@ endif
     * 变量在使用时，需要给在变量名前加上 `$` 符号，最好用小括号 `()` 或是大括号 `{}` 把变量给包起来，否则只会将 `$` 后的单个字符视为变量名
     * 真实的 `$` 字符需要用 `$$` 来表示；如果启用了二次扩展真实的 `$` 字符需要用 `$$$$` 来表示
     * 变量可以使用在许多地方，如规则中的目标、依赖、命令块以及变量名、变量值、函数参数等
+    * 变量可以嵌套，例如 `$($(var))`
 
 * 扩展方式
     * 递归扩展 : 引用变量时变量的值延迟展开，即取变量最终的值
@@ -778,7 +783,7 @@ $(call set_flags,CFLAGS,a.c b.c,-DDEBUG)
     * 功能: 如果 `condition` 展开后非空，则条件为真，执行 `then-part` 部分，否则执行 `else-part` (如果有)部分，返回值是执行分支的表达式值，无此分支时返回空
 * `$(or condition1[,condition2[,condition3…]])` : 短路或求值
     * 功能: 如果 `conditionN` 参数扩展为非空字符串，停止扩展且返回该值，否则继续 `conditionN+1` 参数扩展，所有 `condition` 都为空时返回空
-* `$(or condition1[,condition2[,condition3…]])` : 短路与求值
+* `$(and condition1[,condition2[,condition3…]])` : 短路与求值
     * 功能: 如果 `conditionN` 参数扩展为空字符串，停止扩展且返回空，否则继续 `conditionN+1` 参数扩展，直到最后的 `condition` 不为空时，返回最后的 `condition` 的值
 * `$(foreach var,list,cmd)`             : 循环求值
     * 功能: 对 list 中的每一个单词赋值给变量 var ，var 作为 cmd 命令运行的变量循环执行 cmd，多次的运行结果使用空格相互连接

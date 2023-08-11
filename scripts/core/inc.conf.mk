@@ -17,10 +17,10 @@ CONF_PREFIX      ?= srctree=$(shell pwd)
 CONF_HEADER      ?= $(shell echo __$(PACKAGE_NAME)_CONFIG_H__ | tr '[:lower:]' '[:upper:]')
 CONF_APPEND_CMD  ?=
 
-CONFIG_PATH       = $(CONF_OUT)/.config
-AUTOCONFIG_PATH   = $(CONF_OUT)/autoconfig/auto.conf
-AUTOHEADER_PATH   = $(CONF_OUT)/config.h
-CONF_OPTIONS      = $(KCONFIG) --configpath $(CONFIG_PATH) \
+CONFIG_PATH      := $(CONF_OUT)/.config
+AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
+AUTOHEADER_PATH  := $(CONF_OUT)/config.h
+CONF_OPTIONS     := $(KCONFIG) --configpath $(CONFIG_PATH) \
 					--autoconfigpath $(AUTOCONFIG_PATH) \
 					--autoheaderpath $(AUTOHEADER_PATH)
 
@@ -44,7 +44,7 @@ define sync_config_header
 endef
 
 ifneq ($(DEF_CONFIG), )
-config_hash_file  = $(CONFIG_PATH)-md5-$(shell md5sum $(CONF_SAVE_PATH)/$(DEF_CONFIG) | cut -d ' ' -f 1)
+config_hash_file := $(CONFIG_PATH)-md5-$(shell md5sum $(CONF_SAVE_PATH)/$(DEF_CONFIG) | cut -d ' ' -f 1)
 define process_config_hash
 	rm -f $(CONFIG_PATH)-md5-* && echo > $(config_hash_file)
 endef
@@ -67,7 +67,9 @@ endef
 
 ifneq ($(ENV_BUILD_MODE),yocto)
 
-CONF_MAKES       ?= -s O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
+ifeq ($(CONF_MAKES), )
+CONF_MAKES       := -s O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
+endif
 
 buildkconfig:
 ifeq ($(wildcard $(CONF_PATH)/mconf), )

@@ -709,6 +709,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * CXXFLAGS: 用户可以设置C++的一些全局编译标记
 * AFLAGS: 用户可以设置一些全局汇编标记
 * LDFLAGS: 用户可以设置一些全局链接标记
+* IMAKE_CPFLAGS: 用户可以从make或环境传入C和C++共有的一些全局编译标记
+* IMAKE_LDFLAGS: 用户可以从make或环境传入一些全局链接标记
 
 
 ### 配置模板 inc.conf.mk
@@ -782,6 +784,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * IGNORE_PATH: 查找源码文件时，忽略搜索的目录名集合，默认已忽略 `.git scripts output` 文件夹
     * SRCS: 所有的 C 和汇编源码文件，默认是当前目录下的所有的 `*.c *.S` 文件
     * `ccflags-y` `asflags-y` `ldflags-y`: 分别对应内核模块编译、汇编、链接时的参数
+    * IMAKE_CCFLAGS: 用户可以从make或环境传入内核模块编译的一些全局编译标记
 <br>
 
 * 提供的函数

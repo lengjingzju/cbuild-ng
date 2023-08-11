@@ -10,10 +10,12 @@ ifneq ($(KERNELRELEASE), )
 MOD_NAME       ?= hello
 obj-m          := $(patsubst %,%.o,$(MOD_NAME))
 
-ccflags-y      += $(patsubst %,-I%,$(src) $(src)/include $(obj))
-ccflags-y      += $(call link_hdrs)
-ccflags-y      += $(OPTIMIZATION_FLAG)
-ccflags-y      += $(IMAKE_CCFLAGS)
+imake_ccflags  := $(patsubst %,-I%,$(src) $(src)/include $(obj))
+imake_ccflags  += $(call link_hdrs)
+imake_ccflags  += $(OPTIMIZATION_FLAG)
+imake_ccflags  += $(IMAKE_CCFLAGS)
+
+ccflags-y      += $(imake_ccflags)
 
 define translate_obj
 $(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))
@@ -27,11 +29,14 @@ ifeq ($(words $(MOD_NAME)),1)
 
 IGNORE_PATH    ?= .git .pc scripts output
 REG_SUFFIX     ?= c S
-SRCS           ?= $(filter-out %.mod.c,$(shell find $(src) \
+
+ifeq ($(SRCS), )
+SRCS           := $(filter-out %.mod.c,$(shell find $(src) \
                           $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
                           $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
                      | xargs))
-OBJS            = $(call translate_obj,$(SRCS))
+endif
+OBJS           := $(call translate_obj,$(SRCS))
 
 ifneq ($(words $(OBJS))-$(OBJS),1-$(MOD_NAME).o)
 $(MOD_NAME)-y  := $(OBJS)
@@ -48,7 +53,12 @@ else # KERNELRELEASE
 
 KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
 MOD_PATH       ?= $(shell pwd)
+
+ifeq ($(MOD_MAKES), )
+MOD_MAKES      := -C $(KERNEL_SRC)
+else
 MOD_MAKES      += -C $(KERNEL_SRC)
+endif
 
 ifneq ($(ENV_BUILD_MODE),yocto)
 MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
@@ -59,7 +69,7 @@ MOD_MAKES      += M=$(MOD_PATH)
 else
 
 MOD_MAKES      += M=$(OBJ_PREFIX) src=$(MOD_PATH)
-KBUILD_MK       = $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
+KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
 
 modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
 
