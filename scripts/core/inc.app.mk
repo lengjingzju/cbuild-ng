@@ -196,7 +196,7 @@ clean_objs:
 define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := -fPIC $(4)
-$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3)
+$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3) $(5)
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
 	@rm -f $$@
 	@$$(AR) r $$@ $$(call translate_obj,$(2)) -c
@@ -215,7 +215,7 @@ libso_names := $(call all_ver_obj,$(1))
 LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
 
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): PRIVATE_CPFLAGS := -fPIC $(4)
-$$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2))
+$$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2)) $(5)
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
 	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
 		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
@@ -240,7 +240,7 @@ endef
 define add-bin-build
 BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := $(if $(filter y,$(ENV_SECURITY)),-fPIE) $(4)
-$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2))
+$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(5)
 	@$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m"
 	@$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
 endef

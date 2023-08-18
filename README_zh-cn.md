@@ -658,16 +658,19 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * `$(eval $(call add-liba-build,静态库名,源文件列表,依赖的静态库路径列表))`
         * 打包新静态库时会将依赖的静态库追加到这个生成的新静态库
     * `$(eval $(call add-liba-build,静态库名,源文件列表,依赖的静态库路径列表,私有的CFLAGS参数))`
+    * `$(eval $(call add-liba-build,静态库名,源文件列表,依赖的静态库路径列表,私有的CFLAGS参数,额外的依赖列表))`
 * add-libso-build: 创建一条编译动态库规则
     * `$(eval $(call add-libso-build,动态库名,源文件列表))`
         * 动态库名可以设置为 `库名 主版本号 次版本号 补丁版本号` 格式，参考 LIBSO_NAME 的说明
     * `$(eval $(call add-libso-build,动态库名,源文件列表,链接参数))`
         * 注意函数中有逗号要用变量覆盖，例如 `$(eval $(call add-libso-build,动态库名,源文件列表,-Wl$(comma)-soname=libxxxx.so))`
     * `$(eval $(call add-libso-build,动态库名,源文件列表,链接参数,私有的CFLAGS参数))`
+    * `$(eval $(call add-libso-build,动态库名,源文件列表,链接参数,私有的CFLAGS参数,额外的依赖列表))`
 * add-libso-build: 创建一条编译可执行文件规则
     * `$(eval $(call add-bin-build,可执行文件名,源文件列表))`
     * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数))`
     * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数,私有的CFLAGS参数))`
+    * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数,私有的CFLAGS参数,额外的依赖列表))`
 * set_flags: 单独为指定源码集合设置编译标记
     * `$(call set_flags,标记名称,源文件列表,标记值)`
         * 编译标志可以是C/C++编译标记(CFLAGS)或汇编标记(AFLAGS)

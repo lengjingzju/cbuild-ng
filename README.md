@@ -679,16 +679,19 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>))`
         * It will append the content of dependent static libraries to the generated static library 
     * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>,<private CFLAGS>))`
+    * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>,<private CFLAGS>,<extra dependencies>))`
 * add-libso-build: Creates a rule for compiling shared library
     * `$(eval $(call add-libso-build,<shared library name>,<source files>))`
         * `<shared library name>` can be set to the format of `<library name> <major version> <minor version> <patch version>, refer to `LIBSO_NAME`
     * `$(eval $(call add-libso-build,<shared library name>,<source files>,<link parameters>))`
         * Note that the commas in the function should be overridden with the comma variable, for example: `$(eval $(call add-libso-build,<shared library name>,<source files>,-Wl$(comma)-soname=libxxxx.so))`
     * `$(eval $(call add-libso-build,<shared library name>,<source files>,<link parameters>,<private CFLAGS>))`
+    * `$(eval $(call add-libso-build,<shared library name>,<source files>,<link parameters>,<private CFLAGS>,<extra dependencies>))`
 * add-bin-build: Creates a rule for compiling executable
     * `$(eval $(call add-bin-build,<executable name>,<source files>))`
     * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>))`
     * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>,<private CFLAGS>))`
+    * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>,<private CFLAGS>,<extra dependencies>))`
 * set_flags: Sets the compilation flags for the specified source codes
     * `$(call set_flags,<Flag Type>,<source files>,<value>)`
         * `Flag Type` can be `CFLAGS` and `AFLAGS`
