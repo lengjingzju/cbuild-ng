@@ -70,9 +70,10 @@ class Deps:
 
 
     def get_env_vars(self, local_config):
+        regex = re.compile(r'([\w\-\./]+)\s*=\s*"(.*)"')
         with open(local_config, 'r') as fp:
             for per_line in fp.read().splitlines():
-                ret = re.match(r'([\w\-\./]+)\s*=\s*"(.*)"', per_line)
+                ret = regex.match(per_line)
                 if ret:
                     self.VarDict[ret.groups()[0]] = ret.groups()[1]
 
@@ -272,6 +273,8 @@ class Deps:
         last_group = ''
         ret = None
 
+        regex = re.compile(r'#VDEPS\s*\(\s*(\w+)\s*\)\s*([\w\-]+)\s*\(([\s\w\-\./]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,]*)')
+
         with open(vir_path, 'r') as fp:
             for per_line in fp.read().splitlines():
                 per_line = per_line.strip()
@@ -282,7 +285,7 @@ class Deps:
                     else:
                         last_group = '%s %s' % (last_group, per_line.strip())
                 else:
-                    ret = re.match(r'#VDEPS\s*\(\s*(\w+)\s*\)\s*([\w\-]+)\s*\(([\s\w\-\./]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,]*)', per_line)
+                    ret = regex.match(per_line)
                     if ret:
                         match_type = 'VDEPS'
                         if ret.groups()[3] and ret.groups()[3][-1] == '\\':
@@ -494,7 +497,16 @@ class Deps:
             last_group = ''
             ret = None
 
+            regexes = {}
+            regexes['DEPS'] = re.compile(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)')
+            regexes['INCDEPS'] = re.compile(r'#INCDEPS\s*:\s*([\s\w\\\-\./${}]+)')
+            regexes['CACHE'] = re.compile(r'CACHE_BUILD\s*[\?:]*=\s*y')
+            regexes['INCRULE'] = re.compile(r'include\s+.*inc\.rule\.mk')
+            regexes['PACKAGE'] = re.compile(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)')
+            regexes['VARS'] = re.compile(r'(\w+)\s*[\?:]*=\s*(.+)')
+            VARS = ['VERSION', 'LICENSE', 'LICFILE', 'HOMEPAGE', 'DESCRIPTION']
             LINE_MATCHES = ['DESCRIPTION']
+
             for per_line in fp.read().splitlines():
                 per_line = per_line.strip()
                 if match_type:
@@ -505,7 +517,7 @@ class Deps:
                     else:
                         last_group = '%s%s%s' % (last_group, split_str, per_line.strip())
                 else:
-                    ret = re.match(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)', per_line)
+                    ret = regexes['DEPS'].match(per_line)
                     if ret:
                         match_type = 'DEPS'
                         if ret.groups()[3] and ret.groups()[3][-1] == '\\':
@@ -515,7 +527,7 @@ class Deps:
                             last_group = ret.groups()[3].strip()
 
                     if not ret:
-                        ret = re.match(r'#INCDEPS\s*:\s*([\s\w\\\-\./${}]+)', per_line)
+                        ret = regexes['INCDEPS'].match(per_line)
                         if ret:
                             match_type = 'INCDEPS'
                             if ret.groups()[0] and ret.groups()[0][-1] == '\\':
@@ -525,7 +537,18 @@ class Deps:
                                 last_group = ret.groups()[0].strip()
 
                     if not ret:
-                        ret = re.match(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)', per_line)
+                        ret = regexes['CACHE'].match(per_line)
+                        if ret:
+                            attrs.add('cache')
+                            continue
+                    if not ret:
+                        ret = regexes['INCRULE'].match(per_line)
+                        if ret:
+                            attrs.add('unified')
+                            continue
+
+                    if not ret:
+                        ret = regexes['PACKAGE'].match(per_line)
                         if ret:
                             package = ret.groups()[0].strip('"').strip()
                             if package not in self.InfoDict.keys():
@@ -533,65 +556,17 @@ class Deps:
                                 self.InfoDict[package]['NAME'] = package
                             continue
 
-                    if package:
-                        if not ret:
-                            ret = re.match(r'VERSION\s*[\?:]*=\s*(.+)', per_line)
-                            if ret:
-                                match_type = 'VERSION'
-                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
-                                    last_group = ret.groups()[0][:-1].strip()
-                                    continue
-                                else:
-                                    last_group = ret.groups()[0].strip()
-                        if not ret:
-                            ret = re.match(r'LICENSE\s*[\?:]*=\s*(.+)', per_line)
-                            if ret:
-                                match_type = 'LICENSE'
-                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
-                                    last_group = ret.groups()[0][:-1].strip()
-                                    continue
-                                else:
-                                    last_group = ret.groups()[0].strip()
-                        if not ret:
-                            ret = re.match(r'LICFILE\s*[\?:]*=\s*(.+)', per_line)
-                            if ret:
-                                match_type = 'LICFILE'
-                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
-                                    last_group = ret.groups()[0][:-1].strip()
-                                    continue
-                                else:
-                                    last_group = ret.groups()[0].strip()
-                        if not ret:
-                            ret = re.match(r'HOMEPAGE\s*[\?:]*=\s*(.+)', per_line)
-                            if ret:
-                                match_type = 'HOMEPAGE'
-                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
-                                    last_group = ret.groups()[0][:-1].strip()
-                                    continue
-                                else:
-                                    last_group = ret.groups()[0].strip()
-                        if not ret:
-                            ret = re.match(r'DESCRIPTION\s*[\?:]*=\s*(.+)', per_line)
-                            if ret:
-                                match_type = 'DESCRIPTION'
-                                if ret.groups()[0] and ret.groups()[0][-1] == '\\':
-                                    last_group = ret.groups()[0][:-1].strip()
-                                    continue
-                                else:
-                                    last_group = ret.groups()[0].strip()
+                    if package and not ret:
+                        ret = regexes['VARS'].match(per_line)
+                        if ret and ret.groups()[0] in VARS:
+                            match_type = ret.groups()[0]
+                            if ret.groups()[1] and ret.groups()[1][-1] == '\\':
+                                last_group = ret.groups()[1][:-1].strip()
+                                continue
+                            else:
+                                last_group = ret.groups()[1].strip()
 
-                    if not ret:
-                        ret = re.match(r'CACHE_BUILD\s*[\?:]*=\s*y', per_line)
-                        if ret:
-                            attrs.add('cache')
-                            continue
-                    if not ret:
-                        ret = re.match(r'include\s+.*inc\.rule\.mk', per_line)
-                        if ret:
-                            attrs.add('unified')
-                            continue
-
-                    if not ret:
+                    if not match_type:
                         continue
 
                 if match_type == 'DEPS':
@@ -689,7 +664,6 @@ class Deps:
                             if debug_mode and '${' not in sub_path:
                                 print('WARNING: ignore: %s' % sub_pathpair[0])
 
-
                 elif match_type == 'VERSION':
                     match_type = ''
                     version = last_group.strip('"').strip()
@@ -697,19 +671,9 @@ class Deps:
                     if vname in version:
                         version = subprocess.getoutput('bash %s %s' % (os.path.join(os.getenv('ENV_TOOL_DIR'), 'process_machine.sh'), vname))
                     self.InfoDict[package]['VERSION'] = version
-                elif match_type == 'LICENSE':
+                elif match_type:
+                    self.InfoDict[package][match_type] = last_group.strip('"').strip()
                     match_type = ''
-                    self.InfoDict[package]['LICENSE'] = last_group.strip('"').strip()
-                elif match_type == 'LICFILE':
-                    match_type = ''
-                    self.InfoDict[package]['LICFILE'] = last_group.strip('"').strip()
-                elif match_type == 'HOMEPAGE':
-                    match_type = ''
-                    self.InfoDict[package]['HOMEPAGE'] = last_group.strip('"').strip()
-                elif match_type == 'DESCRIPTION':
-                    match_type = ''
-                    self.InfoDict[package]['DESCRIPTION'] = last_group.strip('"').strip()
-
 
             if ItemDict:
                 keys = [t for t in ItemDict.keys()]
@@ -759,13 +723,18 @@ class Deps:
         item['make'] = pathpair[3]
         item['target'] = item['make'] [0:item['make'].rindex('_') if '_' in item['make'] else item['make'].rindex('.')]
 
+        regexes = {}
+        regexes['DEPENDS'] = re.compile(r'DEPENDS\s*\+?=\s*"(.*)"')
+        regexes['EXTRADEPS'] = re.compile(r'EXTRADEPS\s*\+?=\s*"(.*)"')
+        regexes['EXTERNALSRC'] = re.compile(r'EXTERNALSRC\s*=\s*"(.*)"')
+
         fullname = os.path.join(pathpair[0], pathpair[3])
         with open(fullname, 'r') as fp:
             for per_line in fp.read().splitlines():
-                ret = re.match(r'DEPENDS\s*\+?=\s*"(.*)"', per_line)
+                ret = regexes['DEPENDS'].match(per_line)
                 if ret:
                     item['asdeps'] += [dep for dep in ret.groups()[0].strip().split() if '-native' not in dep]
-                ret = re.match(r'EXTRADEPS\s*\+?=\s*"(.*)"', per_line)
+                ret = regexes['EXTRADEPS'].match(per_line)
                 if ret:
                     extra_deps += [dep for dep in ret.groups()[0].strip().split() if '-native' not in dep]
 
@@ -773,7 +742,7 @@ class Deps:
         if os.path.exists(bbappend_path):
             with open(bbappend_path, 'r') as fp:
                 for per_line in fp.read().splitlines():
-                    ret = re.match(r'EXTERNALSRC_BUILD\s*=\s*"(.*)"', per_line)
+                    ret = regexes['EXTERNALSRC'].match(per_line)
                     if ret:
                         src = ret.groups()[0]
                         for key in self.VarDict.keys():
@@ -1771,7 +1740,9 @@ def do_image_analysis(args):
     if args.ignore_dirs:
         ignore_recipes = [s.strip() for s in args.ignore_dirs.split(':')]
 
+    regex = re.compile(r'CONFIG_(.*)=y')
     recipe_list = []
+
     with open(target_out, 'r') as rfp:
         for per_line in rfp.read().splitlines():
             recipe = per_line.split('=')[0].strip()
@@ -1781,7 +1752,7 @@ def do_image_analysis(args):
         wfp.write('IMAGE_INSTALL:append = " \\\n')
         with open(conf_name, 'r') as rfp:
             for per_line in rfp.read().splitlines():
-                ret = re.match(r'CONFIG_(.*)=y', per_line)
+                ret = regex.match(per_line)
                 if ret:
                     item = escape_tolower(ret.groups()[0])
                     if (not ignore_recipes or item not in ignore_recipes) and item in recipe_list:
@@ -1794,7 +1765,7 @@ def do_image_analysis(args):
             wfp.write('DEPENDS += " \\\n')
             with open(conf_name, 'r') as rfp:
                 for per_line in rfp.read().splitlines():
-                    ret = re.match(r'CONFIG_(.*)=y', per_line)
+                    ret = regex.match(per_line)
                     if ret:
                         item = escape_tolower(ret.groups()[0])
                         strs = item.split('-')
