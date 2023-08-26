@@ -30,6 +30,7 @@ class Deps:
         self.KconfigDict = {}
         self.PathList = []
         self.PokyList = []
+        self.PokyMoved = []
         self.ItemList = []
         self.ActualList = []
         self.VirtualList = []
@@ -780,7 +781,7 @@ class Deps:
         self.ActualList.append(item)
 
 
-    def check_item(self, item_list, target_list):
+    def check_item(self, item_list, target_list, poky_list = []):
         for item in item_list[:]:
             if item['wrule']:
                 for rule in item['wrule'][:]:
@@ -827,17 +828,30 @@ class Deps:
                 depid = 'targets'
                 if item[depid]:
                     deps = item[depid]
-                    item[depid] = [dep for dep in deps if dep in target_list]
-                if debug_mode:
-                    if item['select']:
-                        item['select'] = []
+                    item[depid] = []
+                    for dep in deps:
+                        if dep in target_list:
+                            item[depid].append(dep)
+                        elif dep in poky_list:
+                            for poky_item in self.PokyList:
+                                if dep == poky_item['target']:
+                                    item[depid].append(dep)
+                                    item['member'].append(poky_item)
+                                    self.PokyMoved.append(poky_item)
+                                    self.PokyList.remove(poky_item)
+                                    break
+
+                if item['select']:
+                    item['select'] = []
+                    if debug_mode:
                         print('WARNING: choice item in %s:%s has "select" attr' % (item['target'], item['path']))
-                    if item['imply']:
-                        item['imply'] = []
+                if item['imply']:
+                    item['imply'] = []
+                    if debug_mode:
                         print('WARNING: choice item in %s:%s has "imply" attr' % (item['target'], item['path']))
 
             if item['member']:
-                self.check_item(item['member'], target_list)
+                self.check_item(item['member'], target_list, poky_list)
             else:
                 if 'choice' in item['vtype'] or 'menu' in item['vtype']:
                     item_list.remove(item)
@@ -1164,7 +1178,7 @@ class Deps:
 
     def gen_yocto_target(self, filename):
         with open(filename, 'w') as fp:
-            for item in self.PokyList:
+            for item in self.PokyList + self.PokyMoved:
                 fp.write('%s="" # localsrc\n' % (item['target']))
             for item in self.ActualList:
                 fp.write('%s="%s" # %s\n' % (item['target'], ' '.join(item['asdeps'] + item['awdeps']), item['src']))
@@ -1719,7 +1733,8 @@ def do_yocto_analysis(args):
         deps.add_yocto_item(pathpair, refs)
     target_list = [item['target'] for item in deps.ActualList] \
                 + [item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']]
-    deps.check_item(deps.ItemList, target_list)
+    poky_list = [item['target'] for item in deps.PokyList]
+    deps.check_item(deps.ItemList, target_list, poky_list)
 
     with open(kconfig_out, 'w') as fp:
         fp.write('mainmenu "Build Configuration"\n\n')
