@@ -522,6 +522,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * GLOBAL_SYSROOT    : 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
 * PREPARE_SYSROOT   : Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
 * DIS_PC_EXPORT     : 是否禁止导出 [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html) 的环境变量
+* COMPILER_COLLECTION: 如果设置为 clang，将使用 clang 编译链编译(初步支持)，否则默认使用 gcc 编译
 
 
 ### 安装模板 inc.ins.mk
@@ -675,6 +676,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * `$(call set_flags,标记名称,源文件列表,标记值)`
         * 编译标志可以是C/C++编译标记(CFLAGS)或汇编标记(AFLAGS)
         * 例如 `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
+* set_links: 设置链接库，加上 `-l`，此函数用于一个库同时提供静态库和动态库时，强制链接它的静态库
+    * `$(call set_links,静态库列表)`
+    * `$(call set_links,静态库列表,动态库列表)`
+
 
 注: 提供上述函数的原因是可以在一个 Makefile 中编译出多个库或可执行文件
 

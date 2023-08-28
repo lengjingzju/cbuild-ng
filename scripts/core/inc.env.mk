@@ -95,7 +95,7 @@ DEP_PREFIX     := $(DEPDIR)
 endif
 
 define link_hdrs
-$(addprefix  -I,$(addprefix $(DEP_PREFIX),/include /usr/include /usr/local/include) \
+$(addprefix -I,$(addprefix $(DEP_PREFIX),/include /usr/include /usr/local/include) \
 	$(if $(SEARCH_HDRS),$(wildcard \
 	$(addprefix $(DEP_PREFIX)/include/,$(SEARCH_HDRS)) \
 	$(addprefix $(DEP_PREFIX)/usr/include/,$(SEARCH_HDRS)) \
@@ -164,6 +164,17 @@ endif
 export CROSS_COMPILE
 endif
 
+ifeq ($(COMPILER_COLLECTION),clang)
+CC             := $(CROSS_COMPILE)clang
+CPP            := $(CROSS_COMPILE)clang -E
+CXX            := $(CROSS_COMPILE)clang++
+AS             := $(CROSS_COMPILE)llvm-as
+LD             := $(CROSS_COMPILE)lld
+AR             := $(CROSS_COMPILE)llvm-ar
+RANLIB         := $(CROSS_COMPILE)llvm-ranlib
+OBJCOPY        := $(CROSS_COMPILE)llvm-objcopy
+STRIP          := $(CROSS_COMPILE)llvm-strip
+else
 CC             := $(CROSS_COMPILE)gcc
 CPP            := $(CROSS_COMPILE)gcc -E
 CXX            := $(CROSS_COMPILE)g++
@@ -173,6 +184,7 @@ AR             := $(CROSS_COMPILE)ar
 RANLIB         := $(CROSS_COMPILE)ranlib
 OBJCOPY        := $(CROSS_COMPILE)objcopy
 STRIP          := $(CROSS_COMPILE)strip
+endif
 export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
 
 else # NATIVE_BUILD
@@ -180,6 +192,17 @@ else # NATIVE_BUILD
 undefine ARCH CROSS_COMPILE
 unexport ARCH CROSS_COMPILE
 
+ifeq ($(COMPILER_COLLECTION),clang)
+CC             := clang
+CPP            := clang -E
+CXX            := clang++
+AS             := llvm-as
+LD             := lld
+AR             := llvm-ar
+RANLIB         := llvm-ranlib
+OBJCOPY        := llvm-objcopy
+STRIP          := llvm-strip
+else
 CC             := gcc
 CPP            := gcc -E
 CXX            := g++
@@ -189,6 +212,7 @@ AR             := ar
 RANLIB         := ranlib
 OBJCOPY        := objcopy
 STRIP          := strip
+endif
 export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
 
 endif # NATIVE_BUILD

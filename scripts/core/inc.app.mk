@@ -85,10 +85,20 @@ endif
 imake_cpflags  += $(SANITIZER_FLAG)
 imake_ldflags  += $(SANITIZER_FLAG)
 
+ifeq ($(ENV_ANALYZER),y)
+ifneq ($(filter %gcc,$(CC)), )
 # For more description, refer to https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html
-ifeq ($(ENV_ANALYZER)-$(shell expr `$(CC) -dumpversion` \>= 10),y-1)
+ifeq ($(shell expr `PATH=$(PATH) $(CC) -dumpversion` \>= 10),1)
 imake_cpflags  += -fanalyzer
 imake_ldflags  += -fanalyzer
+endif
+else
+# For more description, refer to https://clang.llvm.org/docs/ClangStaticAnalyzer.html
+# clang --analyze -Xanalyzer -analyzer-checker=<package> <source-files>
+# <package> can be got from `clang -cc1 -analyzer-checker-help`
+imake_cpflags  += --analyze
+imake_ldflags  += --analyze
+endif
 endif
 
 imake_cpflags  += $(IMAKE_CPFLAGS)
@@ -115,6 +125,10 @@ endef
 
 define set_flags
 $(foreach v,$(2),$(eval $(1)_$(patsubst %,%.o,$(basename $(v))) := $(3)))
+endef
+
+define set_links
+-Wl,-Bstatic $(addprefix -l,$(1)) -Wl,-Bdynamic $(addprefix -l,$(2))
 endef
 
 define all_ver_obj
@@ -199,7 +213,7 @@ $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := -fPIC $(4)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3) $(5)
 	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m"
 	@rm -f $$@
-	@$$(AR) r $$@ $$(call translate_obj,$(2)) -c
+	@$$(AR) rc $$@ $$(call translate_obj,$(2))
 ifneq ($(3), )
 	@echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
 	@echo ADDLIB $(lib) >> $$@.mri)

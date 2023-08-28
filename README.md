@@ -543,6 +543,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * GLOBAL_SYSROOT    : When set to y, indicates using dependency sysroot in global sysroot `SYS_PREFIX` instead of the directory under WORKDIR
 * PREPARE_SYSROOT   : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build (command is `$(MAKE) $(PREPARE_SYSROOT)`)
 * DIS_PC_EXPORT     : Whether to disable exporting the environment of the [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html)
+* COMPILER_COLLECTION: If it is set to clang, it uses clang/llvm to compile (preliminary support), otherwise it uses gcc by default
 
 
 ### Installation Template inc.ins.mk
@@ -696,6 +697,9 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * `$(call set_flags,<Flag Type>,<source files>,<value>)`
         * `Flag Type` can be `CFLAGS` and `AFLAGS`
         * For example: `$(call set_flags,CFLAGS,main.c src/read.c src/write.c,-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE)`
+* set_links: Sets linked libraries with adding `-l`. It is used to force link the static library when a library provides both static and shared libraries
+    * `$(call set_links,<static libraries>)`
+    * `$(call set_links,<static libraries>,<shared libraries>)`
 
 Note: The reason for providing the above functions is that multiple libraries or executables can be compiled in a single Makefile
 
