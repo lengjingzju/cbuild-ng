@@ -1198,6 +1198,14 @@ class Deps:
             fp.write('SYSROOT_SCRIPT := $(ENV_TOOL_DIR)/process_sysroot.sh\n')
             fp.write('\n')
 
+            if self.FinallyList:
+                for dep in target_list:
+                    if dep not in self.FinallyList and not dep.endswith('-native'):
+                        fp.write('ifeq ($(CONFIG_%s), y)\n' % (escape_toupper(dep)))
+                        fp.write('finaldeps: %s\n' % (dep))
+                        fp.write('endif\n')
+                fp.write('.PHONY: finaldeps\n\n')
+
             for item in self.ActualList:
                 #### process variables #####
                 real_targets = [t for t in item['targets'] if t not in ignore_targets]
@@ -1278,15 +1286,6 @@ class Deps:
                 fp.write('%s-reldeps :=\n' % (item['target']))
                 fp.write('\n')
 
-                if pkg_flags['finally']:
-                    ignore_deps = self.FinallyList + item['asdeps'] + item['awdeps'] + ideps
-                    for dep in target_list:
-                        if dep not in ignore_deps and not dep.endswith('-native'):
-                            fp.write('ifeq ($(CONFIG_%s), y)\n' % (escape_toupper(dep)))
-                            fp.write('%s: %s\n' % (item['target'], dep))
-                            fp.write('endif\n')
-                    fp.write('\n')
-
                 if item['awdeps'] or item['ideps']:
                     pkg_flags['deps'] = True
                     for dep in item['awdeps'] + item['ideps']:
@@ -1336,6 +1335,8 @@ class Deps:
                 compile_str += '\t@$(if $(progress_cmd),$(progress_cmd),echo "Build %s Done.")\n' % (item['target'])
 
                 phony.append(item['target'])
+                if pkg_flags['finally']:
+                    fp.write('%s: finaldeps\n' % (item['target']))
                 if pkg_flags['deps']:
                     if pkg_flags['psysroot']:
                         fp.write('%s: $(%s-deps)\n' % (item['target'], item['target']))
@@ -1757,36 +1758,36 @@ def do_image_analysis(args):
 
     regex = re.compile(r'CONFIG_(.*)=y')
     recipe_list = []
+    config_list = []
 
     with open(target_out, 'r') as rfp:
         for per_line in rfp.read().splitlines():
             recipe = per_line.split('=')[0].strip()
             recipe_list.append(recipe)
 
+    with open(conf_name, 'r') as rfp:
+        for per_line in rfp.read().splitlines():
+            ret = regex.match(per_line)
+            if ret:
+                item = escape_tolower(ret.groups()[0])
+                if item in recipe_list:
+                    config_list.append(item)
+
     with open(image_out, 'w') as wfp:
         wfp.write('IMAGE_INSTALL:append = " \\\n')
-        with open(conf_name, 'r') as rfp:
-            for per_line in rfp.read().splitlines():
-                ret = regex.match(per_line)
-                if ret:
-                    item = escape_tolower(ret.groups()[0])
-                    if (not ignore_recipes or item not in ignore_recipes) and item in recipe_list:
-                        wfp.write('\t\t\t%s \\\n' % item)
+        for item in config_list:
+            if item not in ignore_recipes:
+                wfp.write('\t\t\t%s \\\n' % item)
         wfp.write('\t\t\t"\n')
     print('\033[32mGenerate %s OK.\033[0m' % image_out)
 
     if patch_out:
         with open(patch_out, 'w') as wfp:
             wfp.write('DEPENDS += " \\\n')
-            with open(conf_name, 'r') as rfp:
-                for per_line in rfp.read().splitlines():
-                    ret = regex.match(per_line)
-                    if ret:
-                        item = escape_tolower(ret.groups()[0])
-                        strs = item.split('-')
-                        if ('patch' in strs or 'unpatch' in strs) and item in recipe_list:
-                            wfp.write('\t\t\t%s \\\n' % item)
-            wfp.write('\t\t\t"')
+            for item in config_list:
+                if '-patch-' in item or '-unpatch-' in item:
+                    wfp.write('\t\t\t%s \\\n' % item)
+            wfp.write('\t\t\t"\n')
         print('\033[32mGenerate %s OK.\033[0m' % patch_out)
 
 

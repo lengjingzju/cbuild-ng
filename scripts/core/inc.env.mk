@@ -157,7 +157,7 @@ ifneq ($(ENV_BUILD_TOOL), )
 ifneq ($(findstring /,$(ENV_BUILD_TOOL)), )
 CROSS_TOOLPATH := $(shell dirname $(ENV_BUILD_TOOL))
 CROSS_COMPILE  := $(shell basename $(ENV_BUILD_TOOL))
-export PATH:=$(PATH):$(CROSS_TOOLPATH)
+export PATH:=$(CROSS_TOOLPATH):$(PATH)
 else
 CROSS_COMPILE  := $(ENV_BUILD_TOOL)
 endif
