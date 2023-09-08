@@ -31,9 +31,9 @@ prior_ldflags  :=
 imake_cpflags  += $(call link_hdrs)
 imake_ldflags  += $(call link_libs)
 
-imake_cpflags  += $(OPTIMIZATION_FLAG)
+imake_cpflags  += $(OPTIMIZER_FLAG)
 imake_ldflags  += -Wl,-O1
-ifeq ($(ENV_OPTIMIZATION),release)
+ifeq ($(ENV_OPTIMIZER),release)
 imake_cpflags  += -ffunction-sections -fdata-sections
 imake_ldflags  += -Wl,--gc-sections
 endif
@@ -105,7 +105,7 @@ imake_cpflags  += $(IMAKE_CPFLAGS)
 imake_ldflags  += $(IMAKE_LDFLAGS)
 prior_ldflags  += $(PRIOR_LDFLAGS)
 
-CHECK_INFO     += ENV_OPTIMIZATION=$(ENV_OPTIMIZATION)  \
+CHECK_INFO     += ENV_OPTIMIZER=$(ENV_OPTIMIZER)        \
                   ENV_SECURITY=$(ENV_SECURITY)          \
                   ENV_SANITIZER=$(ENV_SANITIZER)        \
                   ENV_ANALYZER=$(ENV_ANALYZER)          \

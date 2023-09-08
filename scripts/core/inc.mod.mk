@@ -12,7 +12,7 @@ obj-m          := $(patsubst %,%.o,$(MOD_NAME))
 
 imake_ccflags  := $(patsubst %,-I%,$(src) $(src)/include $(obj))
 imake_ccflags  += $(call link_hdrs)
-imake_ccflags  += $(OPTIMIZATION_FLAG)
+imake_ccflags  += $(OPTIMIZER_FLAG)
 imake_ccflags  += $(IMAKE_CCFLAGS)
 
 ccflags-y      += $(imake_ccflags)

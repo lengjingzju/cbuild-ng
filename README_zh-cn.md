@@ -492,11 +492,11 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * SEARCH_HDRS       : 查找头文件子目录列表，默认值等于 PACKAGE_DEPS 的值
 <br>
 
-* ENV_OPTIMIZATION  : CC 优化等级选项，总共3个选项:
-    * release       : OPTIMIZATION_FLAG 默认取值 `-O2`
-    * speed         : OPTIMIZATION_FLAG 默认取值 `-O3`
-    * debug         : OPTIMIZATION_FLAG 默认取值 `-O0 -g -ggdb`
-* OPTIMIZATION_FLAG : 优化等级值
+* ENV_OPTIMIZER     : CC 优化等级选项，总共3个选项:
+    * release       : OPTIMIZER_FLAG 默认取值 `-O2`
+    * speed         : OPTIMIZER_FLAG 默认取值 `-O3`
+    * debug         : OPTIMIZER_FLAG 默认取值 `-O0 -g -ggdb`
+* OPTIMIZER_FLAG    : 优化等级值
 <br>
 
 * WORKDIR           : 工作目录
@@ -522,7 +522,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * GLOBAL_SYSROOT    : 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
 * PREPARE_SYSROOT   : Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
 * DIS_PC_EXPORT     : 是否禁止导出 [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html) 的环境变量
-* COMPILER_COLLECTION: 如果设置为 clang，将使用 clang 编译链编译(初步支持)，否则默认使用 gcc 编译
+* CC_TOOL           : 如果设置为 clang，将使用 clang 编译链编译(初步支持)，否则默认使用 gcc 编译
 
 
 ### 安装模板 inc.ins.mk

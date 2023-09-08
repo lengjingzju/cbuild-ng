@@ -512,11 +512,11 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * SEARCH_HDRS       : Sub-folders to search headers, its default value is equal to `PACKAGE_DEPS`
 <br>
 
-* ENV_OPTIMIZATION  : CC optimization option, it has three options:
-    * release       : the default value od OPTIMIZATION_FLAG is `-O2`
-    * speed         : the default value od OPTIMIZATION_FLAG is `-O3`
-    * debug         : the default value od OPTIMIZATION_FLAG is `-O0 -g -ggdb`
-* OPTIMIZATION_FLAG : CC optimization value
+* ENV_OPTIMIZER     : CC optimization option, it has three options:
+    * release       : the default value od OPTIMIZER_FLAG is `-O2`
+    * speed         : the default value od OPTIMIZER_FLAG is `-O3`
+    * debug         : the default value od OPTIMIZER_FLAG is `-O0 -g -ggdb`
+* OPTIMIZER_FLAG    : CC optimization value
 <br>
 
 * WORKDIR           : Top-level work directory
@@ -543,7 +543,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * GLOBAL_SYSROOT    : When set to y, indicates using dependency sysroot in global sysroot `SYS_PREFIX` instead of the directory under WORKDIR
 * PREPARE_SYSROOT   : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build (command is `$(MAKE) $(PREPARE_SYSROOT)`)
 * DIS_PC_EXPORT     : Whether to disable exporting the environment of the [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html)
-* COMPILER_COLLECTION: If it is set to clang, it uses clang/llvm to compile (preliminary support), otherwise it uses gcc by default
+* CC_TOOL           : If it is set to clang, it uses clang/llvm to compile (preliminary support), otherwise it uses gcc by default
 
 
 ### Installation Template inc.ins.mk

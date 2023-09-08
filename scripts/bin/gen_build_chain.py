@@ -25,6 +25,7 @@ def re_replace_env(matchobj):
 
 class Deps:
     def __init__(self):
+        self.RegexDict = {}
         self.VarDict = {}
         self.InfoDict = {}
         self.KconfigDict = {}
@@ -274,8 +275,6 @@ class Deps:
         last_group = ''
         ret = None
 
-        regex = re.compile(r'#VDEPS\s*\(\s*(\w+)\s*\)\s*([\w\-]+)\s*\(([\s\w\-\./]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,]*)')
-
         with open(vir_path, 'r') as fp:
             for per_line in fp.read().splitlines():
                 per_line = per_line.strip()
@@ -286,7 +285,7 @@ class Deps:
                     else:
                         last_group = '%s %s' % (last_group, per_line.strip())
                 else:
-                    ret = regex.match(per_line)
+                    ret = self.RegexDict['VDEPS'].match(per_line)
                     if ret:
                         match_type = 'VDEPS'
                         if ret.groups()[3] and ret.groups()[3][-1] == '\\':
@@ -498,13 +497,6 @@ class Deps:
             last_group = ''
             ret = None
 
-            regexes = {}
-            regexes['DEPS'] = re.compile(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)')
-            regexes['INCDEPS'] = re.compile(r'#INCDEPS\s*:\s*([\s\w\\\-\./${}]+)')
-            regexes['CACHE'] = re.compile(r'CACHE_BUILD\s*[\?:]*=\s*y')
-            regexes['INCRULE'] = re.compile(r'include\s+.*inc\.rule\.mk')
-            regexes['PACKAGE'] = re.compile(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)')
-            regexes['VARS'] = re.compile(r'(\w+)\s*[\?:]*=\s*(.+)')
             VARS = ['VERSION', 'LICENSE', 'LICFILE', 'HOMEPAGE', 'DESCRIPTION']
             LINE_MATCHES = ['DESCRIPTION']
 
@@ -518,7 +510,7 @@ class Deps:
                     else:
                         last_group = '%s%s%s' % (last_group, split_str, per_line.strip())
                 else:
-                    ret = regexes['DEPS'].match(per_line)
+                    ret = self.RegexDict['DEPS'].match(per_line)
                     if ret:
                         match_type = 'DEPS'
                         if ret.groups()[3] and ret.groups()[3][-1] == '\\':
@@ -528,7 +520,7 @@ class Deps:
                             last_group = ret.groups()[3].strip()
 
                     if not ret:
-                        ret = regexes['INCDEPS'].match(per_line)
+                        ret = self.RegexDict['INCDEPS'].match(per_line)
                         if ret:
                             match_type = 'INCDEPS'
                             if ret.groups()[0] and ret.groups()[0][-1] == '\\':
@@ -538,18 +530,18 @@ class Deps:
                                 last_group = ret.groups()[0].strip()
 
                     if not ret:
-                        ret = regexes['CACHE'].match(per_line)
+                        ret = self.RegexDict['CACHE'].match(per_line)
                         if ret:
                             attrs.add('cache')
                             continue
                     if not ret:
-                        ret = regexes['INCRULE'].match(per_line)
+                        ret = self.RegexDict['INCRULE'].match(per_line)
                         if ret:
                             attrs.add('unified')
                             continue
 
                     if not ret:
-                        ret = regexes['PACKAGE'].match(per_line)
+                        ret = self.RegexDict['PACKAGE'].match(per_line)
                         if ret:
                             package = ret.groups()[0].strip('"').strip()
                             if package not in self.InfoDict.keys():
@@ -558,7 +550,7 @@ class Deps:
                             continue
 
                     if package and not ret:
-                        ret = regexes['VARS'].match(per_line)
+                        ret = self.RegexDict['VARS'].match(per_line)
                         if ret and ret.groups()[0] in VARS:
                             match_type = ret.groups()[0]
                             if ret.groups()[1] and ret.groups()[1][-1] == '\\':
@@ -724,18 +716,13 @@ class Deps:
         item['make'] = pathpair[3]
         item['target'] = item['make'] [0:item['make'].rindex('_') if '_' in item['make'] else item['make'].rindex('.')]
 
-        regexes = {}
-        regexes['DEPENDS'] = re.compile(r'DEPENDS\s*\+?=\s*"(.*)"')
-        regexes['EXTRADEPS'] = re.compile(r'EXTRADEPS\s*\+?=\s*"(.*)"')
-        regexes['EXTERNALSRC'] = re.compile(r'EXTERNALSRC\s*=\s*"(.*)"')
-
         fullname = os.path.join(pathpair[0], pathpair[3])
         with open(fullname, 'r') as fp:
             for per_line in fp.read().splitlines():
-                ret = regexes['DEPENDS'].match(per_line)
+                ret = self.RegexDict['DEPENDS'].match(per_line)
                 if ret:
                     item['asdeps'] += [dep for dep in ret.groups()[0].strip().split() if '-native' not in dep]
-                ret = regexes['EXTRADEPS'].match(per_line)
+                ret = self.RegexDict['EXTRADEPS'].match(per_line)
                 if ret:
                     extra_deps += [dep for dep in ret.groups()[0].strip().split() if '-native' not in dep]
 
@@ -743,7 +730,7 @@ class Deps:
         if os.path.exists(bbappend_path):
             with open(bbappend_path, 'r') as fp:
                 for per_line in fp.read().splitlines():
-                    ret = regexes['EXTERNALSRC'].match(per_line)
+                    ret = self.RegexDict['EXTERNALSRC'].match(per_line)
                     if ret:
                         src = ret.groups()[0]
                         for key in self.VarDict.keys():
@@ -1643,6 +1630,14 @@ def do_normal_analysis(args):
     deps.keywords = keywords
     deps.prepend_flag = prepend_flag
 
+    deps.RegexDict['VDEPS'] = re.compile(r'#VDEPS\s*\(\s*(\w+)\s*\)\s*([\w\-]+)\s*\(([\s\w\-\./]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,]*)')
+    deps.RegexDict['DEPS'] = re.compile(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)')
+    deps.RegexDict['INCDEPS'] = re.compile(r'#INCDEPS\s*:\s*([\s\w\\\-\./${}]+)')
+    deps.RegexDict['CACHE'] = re.compile(r'CACHE_BUILD\s*[\?:]*=\s*y')
+    deps.RegexDict['INCRULE'] = re.compile(r'include\s+.*inc\.rule\.mk')
+    deps.RegexDict['PACKAGE'] = re.compile(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)')
+    deps.RegexDict['VARS'] = re.compile(r'(\w+)\s*[\?:]*=\s*(.+)')
+
     deps.search_normal_depends(dep_name, vir_name, search_dirs, ignore_dirs, go_on_dirs)
     if not deps.PathList:
         print('ERROR: can not find any %s in %s.' % (dep_name, ':'.join(search_dirs)))
@@ -1717,6 +1712,11 @@ def do_yocto_analysis(args):
     deps.keywords = keywords
     deps.prepend_flag = prepend_flag
     deps.yocto_flag = True
+
+    deps.RegexDict['VDEPS'] = re.compile(r'#VDEPS\s*\(\s*(\w+)\s*\)\s*([\w\-]+)\s*\(([\s\w\-\./]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,]*)')
+    deps.RegexDict['DEPENDS'] = re.compile(r'DEPENDS\s*\+?=\s*"(.*)"')
+    deps.RegexDict['EXTRADEPS'] = re.compile(r'EXTRADEPS\s*\+?=\s*"(.*)"')
+    deps.RegexDict['EXTERNALSRC'] = re.compile(r'EXTERNALSRC\s*=\s*"(.*)"')
 
     deps.get_env_vars('conf/local.conf')
     search_dirs = deps.get_search_dirs('conf/bblayers.conf')

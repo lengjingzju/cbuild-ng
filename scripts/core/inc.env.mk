@@ -16,13 +16,13 @@ else
 PACKAGE_ID     := $(PACKAGE_NAME)-native
 endif
 
-ENV_OPTIMIZATION    ?= release
-ifeq ($(ENV_OPTIMIZATION),debug)
-OPTIMIZATION_FLAG   ?= -O0 -g -ggdb
-else ifeq ($(ENV_OPTIMIZATION),speed)
-OPTIMIZATION_FLAG   ?= -O3
+ENV_OPTIMIZER  ?= release
+ifeq ($(ENV_OPTIMIZER),debug)
+OPTIMIZER_FLAG ?= -O0 -g -ggdb
+else ifeq ($(ENV_OPTIMIZER),speed)
+OPTIMIZER_FLAG ?= -O3
 else
-OPTIMIZATION_FLAG   ?= -O2
+OPTIMIZER_FLAG ?= -O2
 endif
 
 ifneq ($(ENV_BUILD_MODE),yocto)
@@ -164,7 +164,7 @@ endif
 export CROSS_COMPILE
 endif
 
-ifeq ($(COMPILER_COLLECTION),clang)
+ifeq ($(CC_TOOL),clang)
 CC             := $(CROSS_COMPILE)clang
 CPP            := $(CROSS_COMPILE)clang -E
 CXX            := $(CROSS_COMPILE)clang++
@@ -192,7 +192,7 @@ else # NATIVE_BUILD
 undefine ARCH CROSS_COMPILE
 unexport ARCH CROSS_COMPILE
 
-ifeq ($(COMPILER_COLLECTION),clang)
+ifeq ($(CC_TOOL),clang)
 CC             := clang
 CPP            := clang -E
 CXX            := clang++
