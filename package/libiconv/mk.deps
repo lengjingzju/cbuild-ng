@@ -18,7 +18,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 1.17
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://ftp.gnu.org/gnu/libiconv/$(SRC_NAME)
+SRC_URL          = https://ftp.gnu.org/gnu/libiconv/$(SRC_NAME)
 SRC_MD5          = d718cd5a59438be666d1575855be72c3
 
 CACHE_BUILD      = y

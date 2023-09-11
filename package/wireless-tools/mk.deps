@@ -17,7 +17,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 29
 SRC_DIR          = $(subst -,_,$(PACKAGE_NAME)).$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://hewlettpackard.github.io/wireless-tools/$(SRC_NAME)
+SRC_URL          = https://hewlettpackard.github.io/wireless-tools/$(SRC_NAME)
 SRC_MD5          = e06c222e186f7cc013fd272d023710cb
 PATCH_FOLDER     = $(shell pwd)/patch
 

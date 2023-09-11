@@ -9,8 +9,8 @@
 PACKAGE_NAME     = lua
 
 LICENSE          = MIT
-LICFILE          = file://doc/readme.html;line=306-327
-HOMEPAGE         = http://www.lua.org/
+LICFILE          = file://doc/readme.html;line=285-327
+HOMEPAGE         = https://www.lua.org/
 DESCRIPTION      = Lua is a powerful, efficient, lightweight, embeddable scripting language. \
                    It supports procedural programming, object-oriented programming, functional programming, data-driven \
                    programming, and data description. Lua combines simple procedural syntax with powerful data \
@@ -21,11 +21,11 @@ DESCRIPTION      = Lua is a powerful, efficient, lightweight, embeddable scripti
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 5.4.4
+VERSION          = 5.4.6
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://www.lua.org/ftp/$(SRC_NAME)
-SRC_MD5          = bd8ce7069ff99a400efd14cf339a727b
+SRC_URL          = https://www.lua.org/ftp/$(SRC_NAME)
+SRC_MD5          = 25a429319dff20dfbfb9956c2b5be911
 PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y

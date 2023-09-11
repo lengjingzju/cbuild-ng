@@ -7,7 +7,6 @@
 #DEPS(mk.deps) glib(native psysroot): unselect libffi zlib pcre2
 
 PACKAGE_NAME     = glib
-SEARCH_HDRS      = libffi zlib pcre2
 
 LICENSE          = LGPL-2.1-or-later
 LICFILE          = file://COPYING
@@ -17,11 +16,11 @@ DESCRIPTION      = GLib is a general-purpose, portable utility library, which pr
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.75.3
+VERSION          = 2.78.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = http://download.gnome.org/sources/glib/$(shell echo $(VERSION) | sed -E 's/([0-9]+).([0-9]+).([0-9]+)/\1.\2/g')/$(SRC_NAME)
-SRC_MD5          = 2255253ed0794b99d19b7f61c7628929
+SRC_URL          = https://download.gnome.org/sources/glib/$(shell echo $(VERSION) | sed -E 's/([0-9]+).([0-9]+).([0-9]+)/\1.\2/g')/$(SRC_NAME)
+SRC_MD5          = fbddfac52807161670a11023965f1176
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

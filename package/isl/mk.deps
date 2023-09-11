@@ -23,7 +23,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 0.26
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = http://libisl.sourceforge.io/$(SRC_NAME)
+SRC_URL          = https://libisl.sourceforge.io/$(SRC_NAME)
 SRC_MD5          = f2b56e8da688eba89838d414470da85f
 
 CACHE_BUILD      = y

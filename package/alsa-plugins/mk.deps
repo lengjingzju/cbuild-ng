@@ -27,7 +27,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 1.2.7.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
-SRC_URL          = http://www.alsa-project.org/files/pub/plugins/$(SRC_NAME)
+SRC_URL          = https://www.alsa-project.org/files/pub/plugins/$(SRC_NAME)
 SRC_MD5          = 8fb7e05b84c87f30655a8997a9a983d1
 INS_SUBDIR       =
 INS_FULLER       = y

@@ -826,8 +826,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 * 用法 `fetch_package.sh <method> <urls> <package> [outdir] [outname]`
     * method: 包下载方式，目前支持 4 种方式
-        * tar: 可用 `tar` 命令解压的包，使用 `curl` 下载包，后缀名为 `tar.gz` `tar.bz2` `tar.xz` `tar` 等
-        * zip: 使用 `unzip` 命令解压的包，使用 `curl` 下载包，后缀名为 `gz` `zip` 等
+        * tar: 可用 `tar` 命令解压的包，使用 `wget` 下载包，后缀名为 `tar.gz` `tar.bz2` `tar.xz` `tar` 等
+        * zip: 使用 `unzip` 命令解压的包，使用 `wget` 下载包，后缀名为 `gz` `zip` 等
         * git: 使用 `git clone` 下载包
         * svn: 使用 `svn checkout` 下载包
     * urls: 下载链接
@@ -1056,36 +1056,36 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     make[1]: Entering directory '/home/lengjing/data/cbuild-ng/scripts/toolchain'
     make[2]: Entering directory '/home/lengjing/data/cbuild-ng/scripts/toolchain'
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz" gmp-6.2.1.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs gmp-6.2.1
-    curl http://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gmp-6.2.1.tar.xz
+    wget http://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gmp-6.2.1.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gmp-6.2.1.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/mpfr/mpfr-4.2.0.tar.xz" mpfr-4.2.0.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs mpfr-4.2.0
-    curl http://ftp.gnu.org/gnu/mpfr/mpfr-4.2.0.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/mpfr-4.2.0.tar.xz
+    wget http://ftp.gnu.org/gnu/mpfr/mpfr-4.2.0.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/mpfr-4.2.0.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/mpfr-4.2.0.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz" mpc-1.3.1.tar.gz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs mpc-1.3.1
-    curl http://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/mpc-1.3.1.tar.gz
+    wget http://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/mpc-1.3.1.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/mpc-1.3.1.tar.gz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/exec_patch.sh patch patch/mpc /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs/mpc-1.3.1
     patching file src/mpc.h
     Patch patch/mpc/0001-mpc-Fix-configuring-gcc-failed.patch to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs/mpc-1.3.1 Done.
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://libisl.sourceforge.io/isl-0.25.tar.xz" isl-0.25.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs isl-0.25
-    curl http://libisl.sourceforge.io/isl-0.25.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/isl-0.25.tar.xz
+    wget http://libisl.sourceforge.io/isl-0.25.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/isl-0.25.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/isl-0.25.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.88.tar.xz" linux-5.15.88.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs linux-5.15.88
-    curl http://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.88.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/linux-5.15.88.tar.xz
+    wget http://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.88.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/linux-5.15.88.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/linux-5.15.88.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/binutils/binutils-2.40.tar.xz" binutils-2.40.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs binutils-2.40
-    curl http://ftp.gnu.org/gnu/binutils/binutils-2.40.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/binutils-2.40.tar.xz
+    wget http://ftp.gnu.org/gnu/binutils/binutils-2.40.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/binutils-2.40.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/binutils-2.40.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/gcc/gcc-12.2.0/gcc-12.2.0.tar.xz" gcc-12.2.0.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs gcc-12.2.0
-    curl http://ftp.gnu.org/gnu/gcc/gcc-12.2.0/gcc-12.2.0.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gcc-12.2.0.tar.xz
+    wget http://ftp.gnu.org/gnu/gcc/gcc-12.2.0/gcc-12.2.0.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gcc-12.2.0.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gcc-12.2.0.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     sed -i 's@print-multi-os-directory@print-multi-directory@g' \
         `find /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs/gcc-12.2.0 -name configure -o -name configure.ac -o -name Makefile.in | xargs`
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/glibc/glibc-2.36.tar.xz" glibc-2.36.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs glibc-2.36
-    curl http://ftp.gnu.org/gnu/glibc/glibc-2.36.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/glibc-2.36.tar.xz
+    wget http://ftp.gnu.org/gnu/glibc/glibc-2.36.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/glibc-2.36.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/glibc-2.36.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     /home/lengjing/data/cbuild-ng/scripts/bin/fetch_package.sh tar "http://ftp.gnu.org/gnu/gdb/gdb-13.1.tar.xz" gdb-13.1.tar.xz /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs gdb-13.1
-    curl http://ftp.gnu.org/gnu/gdb/gdb-13.1.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gdb-13.1.tar.xz
+    wget http://ftp.gnu.org/gnu/gdb/gdb-13.1.tar.xz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gdb-13.1.tar.xz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/gdb-13.1.tar.xz to /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs
     mkdir -p /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/objs/gmp && cd /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/objs/gmp; \
         /home/lengjing/data/cbuild-ng/output/x86_64-native/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/srcs/gmp-6.2.1/configure --prefix=/home/lengjing/data/cbuild-ng/output/toolchain/cortex-a78-toolchain-gcc12.2.0-linux5.15/host --disable-shared && \
@@ -1137,18 +1137,18 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     Generate /home/lengjing/data/cbuild-ng/output/cortex-a78/config/Kconfig OK.
     Generate /home/lengjing/data/cbuild-ng/output/cortex-a78/config/Target OK.
     Generate /home/lengjing/data/cbuild-ng/output/cortex-a78/config/auto.mk OK.
-    curl http://www.busybox.net/downloads/busybox-1.36.0.tar.bz2 to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/busybox-1.36.0.tar.bz2
+    wget http://www.busybox.net/downloads/busybox-1.36.0.tar.bz2 to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/busybox-1.36.0.tar.bz2
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/busybox-1.36.0.tar.bz2 to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/busybox
     /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/busybox/busybox-1.36.0/applets/usage.c: In function 'main':
     /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/busybox/busybox-1.36.0/applets/usage.c:52:3: warning: ignoring return value of 'write', declared with attribute warn_unused_result [-Wunused-result]
     ...
     Push busybox Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build busybox Done.
-    curl http://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.15.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/cJSON-1.7.15.tar.gz
+    wget http://github.com/DaveGamble/cJSON/archive/refs/tags/v1.7.15.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/cJSON-1.7.15.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/cJSON-1.7.15.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/cjson
     Push cjson Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build cjson Done.
-    curl http://www.tcpdump.org/release/libpcap-1.10.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/libpcap-1.10.3.tar.gz
+    wget http://www.tcpdump.org/release/libpcap-1.10.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/libpcap-1.10.3.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/libpcap-1.10.3.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/libpcap
     configure: WARNING: using cross tools not prefixed with host triplet
     configure: WARNING: We couldn't find DPDK with pkg-config.  If
@@ -1167,7 +1167,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     copy /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ljson to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/ljson
     Push ljson Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build ljson Done.
-    curl http://www.lua.org/ftp/lua-5.4.4.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/lua-5.4.4.tar.gz
+    wget http://www.lua.org/ftp/lua-5.4.4.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/lua-5.4.4.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/lua-5.4.4.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/lua
     patching file Makefile
     patching file src/Makefile
@@ -1176,7 +1176,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     Patch /home/lengjing/data/cbuild-ng/package/lua/patch/CVE-2022-28805.patch to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/lua/lua-5.4.4 Done.
     Push lua Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build lua Done.
-    curl http://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ncurses-6.4.tar.gz
+    wget http://ftp.gnu.org/pub/gnu/ncurses/ncurses-6.4.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ncurses-6.4.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ncurses-6.4.tar.gz to /home/lengjing/data/cbuild-ng/output/x86_64-native/objects/ncurses
     configure: WARNING: expected --with-xterm-kbs=DEL for linux-gnu
     ...
@@ -1188,7 +1188,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ...
     Push ncurses Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build ncurses Done.
-    curl http://www.tcpdump.org/release/tcpdump-4.99.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/tcpdump-4.99.3.tar.gz
+    wget http://www.tcpdump.org/release/tcpdump-4.99.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/tcpdump-4.99.3.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/tcpdump-4.99.3.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/tcpdump
     configure: WARNING: using cross tools not prefixed with host triplet
     Push tcpdump Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
@@ -1370,7 +1370,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     Load /home/lengjing/data/cbuild-ng/configs/test_config to .config
     lengjing@lengjing:~/data/cbuild-ng$ make toolchain
     make[1]: Entering directory '/home/lengjing/data/cbuild-ng/scripts/toolchain'
-    curl http://127.0.0.1:8888/build-cache/x86_64--cortex-a78-toolchain-gcc12.2.0-linux5.15-native--2e5b5abe663d08564d5b94291f7eec61.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/x86_64--cortex-a78-toolchain-gcc12.2.0-linux5.15-native--2e5b5abe663d08564d5b94291f7eec61.tar.gz
+    wget http://127.0.0.1:8888/build-cache/x86_64--cortex-a78-toolchain-gcc12.2.0-linux5.15-native--2e5b5abe663d08564d5b94291f7eec61.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/x86_64--cortex-a78-toolchain-gcc12.2.0-linux5.15-native--2e5b5abe663d08564d5b94291f7eec61.tar.gz
     Use cortex-a78-toolchain-gcc12.2.0-linux5.15 Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build cortex-a78-toolchain-gcc12.2.0-linux5.15 Done.
     make[1]: Leaving directory '/home/lengjing/data/cbuild-ng/scripts/toolchain'
@@ -1378,28 +1378,28 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     Generate /home/lengjing/data/cbuild-ng/output/cortex-a78/config/Kconfig OK.
     Generate /home/lengjing/data/cbuild-ng/output/cortex-a78/config/Target OK.
     Generate /home/lengjing/data/cbuild-ng/output/cortex-a78/config/auto.mk OK.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz
     Use busybox Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build busybox Done.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--cjson--0084dbce5c330914b1bc2e7e464fddf7.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--cjson--0084dbce5c330914b1bc2e7e464fddf7.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--cjson--0084dbce5c330914b1bc2e7e464fddf7.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--cjson--0084dbce5c330914b1bc2e7e464fddf7.tar.gz
     Use cjson Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build cjson Done.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--libpcap--78037355bc63e1223a1b4cf824b719da.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--libpcap--78037355bc63e1223a1b4cf824b719da.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--libpcap--78037355bc63e1223a1b4cf824b719da.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--libpcap--78037355bc63e1223a1b4cf824b719da.tar.gz
     Use libpcap Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build libpcap Done.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--ljson--63b18b37e44719b592983e6bb289e693.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--ljson--63b18b37e44719b592983e6bb289e693.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--ljson--63b18b37e44719b592983e6bb289e693.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--ljson--63b18b37e44719b592983e6bb289e693.tar.gz
     Use ljson Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build ljson Done.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz
     Use lua Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build lua Done.
-    curl http://127.0.0.1:8888/build-cache/x86_64--ncurses-native--1d44d017e5988e03641ac72980c61b7d.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/x86_64--ncurses-native--1d44d017e5988e03641ac72980c61b7d.tar.gz
+    wget http://127.0.0.1:8888/build-cache/x86_64--ncurses-native--1d44d017e5988e03641ac72980c61b7d.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/x86_64--ncurses-native--1d44d017e5988e03641ac72980c61b7d.tar.gz
     Use ncurses-native Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build ncurses-native Done.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--ncurses--2ffe9c30f4067951508597db301f6f40.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--ncurses--2ffe9c30f4067951508597db301f6f40.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--ncurses--2ffe9c30f4067951508597db301f6f40.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--ncurses--2ffe9c30f4067951508597db301f6f40.tar.gz
     Use ncurses Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build ncurses Done.
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--tcpdump--ee3d0fe4f2172aac780acad29181669c.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--tcpdump--ee3d0fe4f2172aac780acad29181669c.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--tcpdump--ee3d0fe4f2172aac780acad29181669c.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--tcpdump--ee3d0fe4f2172aac780acad29181669c.tar.gz
     Use tcpdump Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build tcpdump Done.
     Build cbuild Done.
@@ -1457,7 +1457,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     lengjing@lengjing:~/data/cbuild-ng$ make lua
     WARNING: Force Build lua.
     WARNING: Force Build lua.
-    curl http://127.0.0.1:8888/downloads/lua-5.4.4.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/lua-5.4.4.tar.gz
+    wget http://127.0.0.1:8888/downloads/lua-5.4.4.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/lua-5.4.4.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/lua-5.4.4.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/lua
     patching file Makefile
     patching file src/Makefile
@@ -1479,7 +1479,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     lengjing@lengjing:~/data/cbuild-ng$ make lua_unsetforce
     Unset lua Force Build.
     lengjing@lengjing:~/data/cbuild-ng$ make lua
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--lua--d1e572a28e61a06ece48f2fcb552083f.tar.gz
     Use lua Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build lua Done.
     lengjing@lengjing:~/data/cbuild-ng$ make lua
@@ -1491,7 +1491,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
     ```sh
     lengjing@lengjing:~/data/cbuild-ng$ make ljson
-    curl http://127.0.0.1:8888/downloads/ljson-git-br.-rev.7b2f6ae6cf7011e94682b073669f5ff8f69095cc.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ljson-git-br.-rev.7b2f6ae6cf7011e94682b073669f5ff8f69095cc.tar.gz
+    wget http://127.0.0.1:8888/downloads/ljson-git-br.-rev.7b2f6ae6cf7011e94682b073669f5ff8f69095cc.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ljson-git-br.-rev.7b2f6ae6cf7011e94682b073669f5ff8f69095cc.tar.gz
     copy /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/ljson to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/ljson
     Push ljson Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build ljson Done.
@@ -1504,7 +1504,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
     ```sh
     lengjing@lengjing:~/data/cbuild-ng$ make busybox_menuconfig
-    curl http://127.0.0.1:8888/downloads/busybox-1.36.0.tar.bz2 to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/busybox-1.36.0.tar.bz2
+    wget http://127.0.0.1:8888/downloads/busybox-1.36.0.tar.bz2 to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/busybox-1.36.0.tar.bz2
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/busybox-1.36.0.tar.bz2 to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/busybox
       GEN     /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/busybox/build/Makefile
     #
@@ -1541,7 +1541,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ...
     Unset busybox Force Build.
     lengjing@lengjing:~/data/cbuild-ng$ make busybox
-    curl http://127.0.0.1:8888/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz
+    wget http://127.0.0.1:8888/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache/cortex-a78--busybox--5a9ba182810246e3ef88f6a4304cbd84.tar.gz
     Use busybox Cache in /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build busybox Done.
     lengjing@lengjing:~/data/cbuild-ng$ make busybox
@@ -1553,7 +1553,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
     ```sh
     lengjing@lengjing:~/data/cbuild-ng$ make tcpdump
-    curl http://127.0.0.1:8888/downloads/libpcap-1.10.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/libpcap-1.10.3.tar.gz
+    wget http://127.0.0.1:8888/downloads/libpcap-1.10.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/libpcap-1.10.3.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/libpcap-1.10.3.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/libpcap
     configure: WARNING: using cross tools not prefixed with host triplet
     configure: WARNING: We couldn't find DPDK with pkg-config.  If
@@ -1562,7 +1562,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     .pc file.
     Push libpcap Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.
     Build libpcap Done.
-    curl http://127.0.0.1:8888/downloads/tcpdump-4.99.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/tcpdump-4.99.3.tar.gz
+    wget http://127.0.0.1:8888/downloads/tcpdump-4.99.3.tar.gz to /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/tcpdump-4.99.3.tar.gz
     untar /home/lengjing/data/cbuild-ng/output/mirror-cache/downloads/tcpdump-4.99.3.tar.gz to /home/lengjing/data/cbuild-ng/output/cortex-a78/objects/tcpdump
     configure: WARNING: using cross tools not prefixed with host triplet
     Push tcpdump Cache to /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache.

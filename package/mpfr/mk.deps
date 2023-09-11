@@ -21,11 +21,11 @@ DESCRIPTION      = The MPFR library is a C library for multiple-precision floati
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 4.2.0
+VERSION          = 4.2.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = http://ftp.gnu.org/gnu/mpfr/$(SRC_NAME)
-SRC_MD5          = a25091f337f25830c16d2054d74b5af7
+SRC_URL          = https://ftp.gnu.org/gnu/mpfr/$(SRC_NAME)
+SRC_MD5          = 523c50c6318dde6f9dc523bc0244690a
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

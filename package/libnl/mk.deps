@@ -9,7 +9,7 @@
 PACKAGE_NAME     = libnl
 
 LICENSE          = LGPL-2.1-only
-HOMEPAGE         = http://www.infradead.org/~tgr/libnl/
+HOMEPAGE         = https://www.infradead.org/~tgr/libnl/
 DESCRIPTION      = Netlink Library Suite. \
                    The libnl suite is a collection of libraries providing APIs to netlink protocol based Linux kernel \
                    interfaces. Netlink is a IPC mechanism primarly between the kernel and user space processes. It was \
@@ -18,11 +18,11 @@ DESCRIPTION      = Netlink Library Suite. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.7.0
+VERSION          = 3.8.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://github.com/thom311/libnl/releases/download/libnl$(subst .,_,$(VERSION))/$(SRC_NAME)
-SRC_MD5          = b381405afd14e466e35d29a112480333
+SRC_URL          = https://github.com/thom311/libnl/releases/download/libnl$(subst .,_,$(VERSION))/$(SRC_NAME)
+SRC_MD5          = 86a4245274aae0a1cfdbd85ce88eede9
 INS_SUBDIR       =
 INS_FULLER       = y
 

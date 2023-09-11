@@ -49,8 +49,8 @@ do_check() {
         exit 1
     fi
 
-    if [ -z "$(which curl)" ]; then
-        echo "ERROR: please install curl first."
+    if [ -z "$(which wget)" ]; then
+        echo "ERROR: please install wget first."
         exit 1
     fi
 
@@ -90,9 +90,10 @@ do_fetch() {
         mkdir -p ${ENV_DOWN_DIR}
 
         # download package from mirror
-        if [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(curl -I -m 5 -s -w %{http_code} -o /dev/null ${ENV_MIRROR_URL}/downloads/$packname)" = "200" ]; then
-            echo -e "\033[32mcurl ${ENV_MIRROR_URL}/downloads/$packname to ${ENV_DOWN_DIR}/$packname\033[0m"
-            curl -s ${ENV_MIRROR_URL}/downloads/$packname -o ${ENV_DOWN_DIR}/$packname
+        mirror_url=${ENV_MIRROR_URL}/downloads/$packname
+        if [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(wget --spider -nv ${mirror_url} 2>&1 | grep -wc 200)" = "1" ]; then
+            echo -e "\033[32mwget ${mirror_url} to ${ENV_DOWN_DIR}/$packname\033[0m"
+            wget -q ${mirror_url} -O ${ENV_DOWN_DIR}/$packname --no-check-certificate
             if [ "$packname" != "$package" ]; then
                 cd ${ENV_DOWN_DIR}
                 tar -xf $packname || rm -rf $packname $package
@@ -109,8 +110,8 @@ do_fetch() {
         case $method in
             zip|tar)
                 if [ ! -e ${ENV_DOWN_DIR}/$packname ]; then
-                    echo -e "\033[32mcurl $url to ${ENV_DOWN_DIR}/$package\033[0m"
-                    curl -s $url -JLo ${ENV_DOWN_DIR}/$package
+                    echo -e "\033[32mwget $url to ${ENV_DOWN_DIR}/$package\033[0m"
+                    wget -q $url -O ${ENV_DOWN_DIR}/$package --no-check-certificate
                     if [ $? -ne 0 ]; then
                         rm -f ${ENV_DOWN_DIR}/$package
                         echo "ERROR: failed to download $url."

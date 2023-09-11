@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) protobuf(native psysroot): unselect
+#DEPS(mk.deps) protobuf(native psysroot): unselect abseil-cpp
 
 PACKAGE_NAME     = protobuf
 
@@ -18,15 +18,22 @@ DESCRIPTION      = Protocol buffers are Google’s language-neutral, platform-ne
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.21.12
+VERSION          = 24.3
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
-SRC_NAME         = $(PACKAGE_NAME)-cpp-$(VERSION).tar.gz
-SRC_URL          = http://github.com/protocolbuffers/protobuf/releases/download/v$(shell echo $(VERSION) | sed -E 's/([0-9]+).([0-9]+).([0-9]+)/\2.\3/g')/$(SRC_NAME)
-SRC_MD5          = 6b4fd9cee2fa63834f29c7d433679855
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/protocolbuffers/protobuf/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 5cd5efd785e66a9be46f7c873175e89f
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-COMPILE_TOOL     = autotools
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -Dprotobuf_BUILD_TESTS=OFF \
+                   -Dprotobuf_BUILD_EXAMPLES=OFF \
+                   -Dprotobuf_WITH_ZLIB=OFF \
+                   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+                   -Dprotobuf_BUILD_SHARED_LIBS=ON \
+                   -Dprotobuf_ABSL_PROVIDER="package" \
+                   -DCMAKE_PREFIX_PATH="$(DEP_PREFIX)/usr"
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -22,11 +22,11 @@ DESCRIPTION      = D-Bus is a message bus system, a simple way for applications 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.15.4
+VERSION          = 1.15.8
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = http://dbus.freedesktop.org/releases/dbus/$(SRC_NAME)
-SRC_MD5          = 5f948b755ccd7c4d0a32d5b7fa423dd5
+SRC_URL          = https://dbus.freedesktop.org/releases/dbus/$(SRC_NAME)
+SRC_MD5          = 66a38f65320762e0734340fb6facdcce
 INS_SUBDIR       =
 INS_FULLER       = y
 INS_HASRUN       = y
@@ -34,7 +34,12 @@ INS_HASRUN       = y
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
-COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config --without-x --disable-tests
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DDBUS_BUILD_TESTS=OFF \
+                   -DDBUS_BUILD_X11=OFF \
+                   -DDBUS_WITH_GLIB=OFF \
+                   -DDBUS_SESSION_SOCKET_DIR=$(INS_TOPDIR)/tmp \
+                   -DDBUS_ENABLE_PKGCONFIG=ON \
+                   -DPKG_CONFIG_EXECUTABLE=pkg-config
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

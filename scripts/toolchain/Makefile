@@ -19,7 +19,7 @@ CACHE_SCRIPT    := $(ENV_TOOL_DIR)/process_cache.sh
 MACHINE_SCRIPT  := $(ENV_TOOL_DIR)/process_machine.sh
 
 GMP_VER         ?= 6.3.0
-MPFR_VER        ?= 4.2.0
+MPFR_VER        ?= 4.2.1
 MPC_VER         ?= 1.3.1
 ISL_VER         ?= 0.26
 LINUX_VER       ?= $(shell $(MACHINE_SCRIPT) linux_version)
@@ -28,15 +28,15 @@ GCC_VER         ?= $(shell $(MACHINE_SCRIPT) gcc_version)
 GLIBC_VER       ?= 2.38
 GDB_VER         ?= 13.2
 
-GMP_URL         := http://ftp.gnu.org/gnu/gmp/gmp-$(GMP_VER).tar.xz
-MPFR_URL        := http://ftp.gnu.org/gnu/mpfr/mpfr-$(MPFR_VER).tar.xz
-MPC_URL         := http://ftp.gnu.org/gnu/mpc/mpc-$(MPC_VER).tar.gz
-ISL_URL         := http://libisl.sourceforge.io/isl-$(ISL_VER).tar.xz
-LINUX_URL       := http://cdn.kernel.org/pub/linux/kernel/v$(shell echo $(LINUX_VER) | cut -d '.' -f 1).x/linux-$(LINUX_VER).tar.xz
-BINUTILS_URL    := http://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VER).tar.xz
-GCC_URL         := http://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VER)/gcc-$(GCC_VER).tar.xz
-GLIBC_URL       := http://ftp.gnu.org/gnu/glibc/glibc-$(GLIBC_VER).tar.xz
-GDB_URL         := http://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VER).tar.xz
+GMP_URL         := https://ftp.gnu.org/gnu/gmp/gmp-$(GMP_VER).tar.xz
+MPFR_URL        := https://ftp.gnu.org/gnu/mpfr/mpfr-$(MPFR_VER).tar.xz
+MPC_URL         := https://ftp.gnu.org/gnu/mpc/mpc-$(MPC_VER).tar.gz
+ISL_URL         := https://libisl.sourceforge.io/isl-$(ISL_VER).tar.xz
+LINUX_URL       := https://cdn.kernel.org/pub/linux/kernel/v$(shell echo $(LINUX_VER) | cut -d '.' -f 1).x/linux-$(LINUX_VER).tar.xz
+BINUTILS_URL    := https://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VER).tar.xz
+GCC_URL         := https://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VER)/gcc-$(GCC_VER).tar.xz
+GLIBC_URL       := https://ftp.gnu.org/gnu/glibc/glibc-$(GLIBC_VER).tar.xz
+GDB_URL         := https://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VER).tar.xz
 
 CROSS_TARGET     = $(shell $(MACHINE_SCRIPT) cross_target)
 CROSS_DIR        = $(shell $(MACHINE_SCRIPT) toolchain_dir)

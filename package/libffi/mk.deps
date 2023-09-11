@@ -25,7 +25,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 3.4.4
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://github.com/libffi/libffi/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_URL          = https://github.com/libffi/libffi/releases/download/v$(VERSION)/$(SRC_NAME)
 SRC_MD5          = 0da1a5ed7786ac12dcbaf0d499d8a049
 
 CACHE_BUILD      = y

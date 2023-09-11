@@ -16,11 +16,11 @@ DESCRIPTION      = A library providing the API to access POSIX capabilities. The
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.67
+VERSION          = 2.69
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/$(SRC_NAME)
-SRC_MD5          = 06333f4301657298890fd8d6f1fb4793
+SRC_URL          = https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/$(SRC_NAME)
+SRC_MD5          = 4667bacb837f9ac4adb4a1a0266f4b65
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

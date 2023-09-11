@@ -1,0 +1,39 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) cmake-native(psysroot): unselect
+
+PACKAGE_NAME     = cmake
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://Copyright.txt
+HOMEPAGE         = https://cmake.org/
+DESCRIPTION      = CMake is an open-source, cross-platform family of tools designed to build, test and package software. \
+                   CMake is used to control the software compilation process using simple platform and compiler independent \
+                   configuration files, and generate native makefiles and workspaces that can be used in the compiler \
+                   environment of your choice. The suite of CMake tools were created by Kitware in response to the need \
+                   for a powerful, cross-platform build environment for open-source projects such as ITK and VTK.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.26.5
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/Kitware/CMake/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 9ee1536202da1e803fbc71464825b9c2
+
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DBUILD_TESTING=OFF
+
+CUSTOM_TARGETS   = install
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+install:
+	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR)$(bindir) $(INS_PREFIX)$(bindir)

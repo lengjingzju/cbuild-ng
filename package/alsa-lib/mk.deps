@@ -22,11 +22,11 @@ DESCRIPTION      = The Advanced Linux Sound Architecture (ALSA) provides audio a
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.2.8
+VERSION          = 1.2.9
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
-SRC_URL          = http://www.alsa-project.org/files/pub/lib/$(SRC_NAME)
-SRC_MD5          = ab32de4b6054d7ab23723f8d85e50a27
+SRC_URL          = https://www.alsa-project.org/files/pub/lib/$(SRC_NAME)
+SRC_MD5          = d29f5ebe9a4ff1be70508ecbf6655318
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

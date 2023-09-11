@@ -39,11 +39,11 @@ DESCRIPTION      = ICU is a mature, widely used set of C/C++ and Java libraries 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 72.1
+VERSION          = 73.2
 SRC_DIR          = $(PACKAGE_NAME)-release-$(subst .,-,$(VERSION))
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://github.com/unicode-org/icu/archive/refs/tags/release-$(subst .,-,$(VERSION)).tar.gz
-SRC_MD5          = cbfd3e149b3afbae7c992dad3e704a0d
+SRC_URL          = https://github.com/unicode-org/icu/archive/refs/tags/release-$(subst .,-,$(VERSION)).tar.gz
+SRC_MD5          = 2fc030d5f0316be527a46bc0730b8580
 SRC_PATH         = $(WORKDIR)/$(SRC_DIR)/icu4c/source
 CFG_PATH         = $(OBJ_PREFIX)/icu-cfg
 

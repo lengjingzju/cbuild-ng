@@ -21,7 +21,7 @@ linux_arch=
 cross_target=
 gcc_arch_option=
 
-linux_version=5.15.124
+linux_version=5.15.131
 gcc_version=13.2.0
 
 if [ ! -z $soc ]; then

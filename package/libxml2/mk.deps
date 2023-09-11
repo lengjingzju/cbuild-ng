@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) libxml2(native psysroot): unselect
+#DEPS(mk.deps) libxml2(native psysroot): unselect cmake-native
 
 PACKAGE_NAME     = libxml2
 
@@ -20,16 +20,19 @@ DESCRIPTION      = Libxml2 is the XML C parser and toolkit developed for the Gno
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.9.12
+VERSION          = 2.11.5
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://xmlsoft.org/sources/$(SRC_NAME)
-SRC_MD5          = f433a39be087a9f0b197eb2307ad9f75
+SRC_URL          = https://github.com/GNOME/libxml2/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 7766f37281ef61bb8704f6e94ce3f522
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS  = --without-zlib --without-python
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DLIBXML2_WITH_TESTS=OFF \
+                   -DLIBXML2_WITH_ZLIB=OFF \
+                   -DLIBXML2_WITH_LZMA=OFF \
+                   -DLIBXML2_WITH_PYTHON=OFF
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

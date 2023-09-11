@@ -146,8 +146,8 @@ echo_params() {
 }
 
 check_env() {
-    if [ -z "$(which curl)" ]; then
-        wlog "ERROR: please install curl first."
+    if [ -z "$(which wget)" ]; then
+        wlog "ERROR: please install wget first."
         exit 1
     fi
 
@@ -438,16 +438,17 @@ check_cache() {
         cachefile=${cache_prefix}--${packname}--$(cat ${checkfile}).tar.gz
         wlog "INFO: cachefile: ${cachefile}"
 
+        mirror_url=${ENV_MIRROR_URL}/build-cache/${cachefile}
         if [ -e "${ENV_CACHE_DIR}/${cachefile}" ]; then
             wlog "INFO: cachefile: MATCH"
             echo > ${matchfile}
-        elif [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(curl -I -m 5 -s -w %{http_code} -o /dev/null ${ENV_MIRROR_URL}/build-cache/${cachefile})" = "200" ]; then
+        elif [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(wget --spider -nv ${mirror_url} 2>&1 | grep -wc 200)" = "1" ]; then
             del_cache
             rm -rf ${insdir}
             mkdir -p ${ENV_CACHE_DIR}
-            curl -s ${ENV_MIRROR_URL}/build-cache/${cachefile} -o ${ENV_CACHE_DIR}/${cachefile} || exit 1
-            echo -e "\033[32mcurl ${ENV_MIRROR_URL}/build-cache/${cachefile} to ${ENV_CACHE_DIR}/${cachefile}\033[0m"
-            wlog "INFO: fetchcmd: curl -s ${ENV_MIRROR_URL}/build-cache/${cachefile} -o ${ENV_CACHE_DIR}/${cachefile}"
+            wget -q ${mirror_url} -O ${ENV_CACHE_DIR}/${cachefile} --no-check-certificate || exit 1
+            echo -e "\033[32mwget ${mirror_url} to ${ENV_CACHE_DIR}/${cachefile}\033[0m"
+            wlog "INFO: fetchcmd: wget -q ${mirror_url} -O ${ENV_CACHE_DIR}/${cachefile} --no-check-certificate"
             wlog "INFO: cachefile: MATCH"
             echo > ${matchfile}
         else

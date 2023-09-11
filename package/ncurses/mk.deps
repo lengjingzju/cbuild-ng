@@ -21,7 +21,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 6.4
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = http://ftp.gnu.org/pub/gnu/ncurses/$(SRC_NAME)
+SRC_URL          = https://ftp.gnu.org/pub/gnu/ncurses/$(SRC_NAME)
 SRC_MD5          = 5a62487b5d4ac6b132fe2bf9f8fad29b
 
 CACHE_BUILD      = y

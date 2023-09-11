@@ -27,7 +27,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 6.3.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = http://ftp.gnu.org/gnu/gmp/$(SRC_NAME)
+SRC_URL          = https://ftp.gnu.org/gnu/gmp/$(SRC_NAME)
 SRC_MD5          = 956dc04e864001a9c22429f761f2c283
 
 CACHE_BUILD      = y

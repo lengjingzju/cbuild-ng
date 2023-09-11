@@ -1,18 +1,19 @@
-From aea39953d0eb8d46998754a0aa5b98bf591f58b4 Mon Sep 17 00:00:00 2001
+From 5b530831b94fc17fe82f4885a36ed67869546597 Mon Sep 17 00:00:00 2001
 From: Jing Leng <lengjingzju@163.com>
-Date: Fri, 3 Dec 2022 14:03:25 +0800
+Date: Sun, 10 Sep 2023 15:19:30 +0800
 Subject: [PATCH] lua: Support dynamic library compilation
 
+Signed-off-by: Jing Leng <lengjingzju@163.com>
 ---
  Makefile     |  6 ++++++
  src/Makefile | 19 ++++++++++++++++---
  2 files changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index fef1af4..9dd5fbd 100644
+index 8efa2eb..470b429 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -42,11 +42,14 @@ PLATS= guess aix bsd c89 freebsd generic linux linux-readline macosx mingw posix
+@@ -42,11 +42,14 @@ PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw p
  TO_BIN= lua luac
  TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
  TO_LIB= liblua.a
@@ -22,7 +23,7 @@ index fef1af4..9dd5fbd 100644
  # Lua version and release.
 +M= 5
  V= 5.4
- R= $V.4
+ R= $V.6
 +export M V R
  
  # Targets start here.
@@ -51,7 +52,7 @@ index fef1af4..9dd5fbd 100644
  	@echo "INSTALL_TOP= $(INSTALL_TOP)"
  	@echo "INSTALL_BIN= $(INSTALL_BIN)"
 diff --git a/src/Makefile b/src/Makefile
-index 1907381..8a7b4f2 100644
+index b771196..3d1b9b0 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -7,7 +7,7 @@
@@ -64,7 +65,7 @@ index 1907381..8a7b4f2 100644
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  
 @@ -33,6 +33,7 @@ CMCFLAGS=
- PLATS= guess aix bsd c89 freebsd generic linux linux-readline macosx mingw posix solaris
+ PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw posix solaris
  
  LUA_A=	liblua.a
 +LUA_SO=	liblua.so.$(R) liblua.so.$(M) liblua.so
@@ -104,7 +105,7 @@ index 1907381..8a7b4f2 100644
  $(LUA_T): $(LUA_O) $(LUA_A)
  	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
  
-@@ -141,7 +154,7 @@ SunOS solaris:
+@@ -144,7 +157,7 @@ SunOS solaris:
  	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN -D_REENTRANT" SYSLIBS="-ldl"
  
  # Targets that do not create files (not all makes understand .PHONY).
@@ -114,5 +115,5 @@ index 1907381..8a7b4f2 100644
  # Compiler modules may use special flags.
  llex.o:
 -- 
-2.17.1
+2.25.1
 
