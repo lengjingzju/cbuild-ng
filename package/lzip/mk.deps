@@ -1,0 +1,36 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) lzip(native psysroot): unselect
+
+PACKAGE_NAME     = lzip
+
+LICENSE          = GPL-2.0-or-later
+LICFILE          = file://COPYING
+HOMEPAGE         = https://lzip.nongnu.org/lzip.html
+DESCRIPTION      = Lzip is a lossless data compressor with a user interface similar to the one of gzip or bzip2. \
+                   Lzip uses a simplified form of the 'Lempel-Ziv-Markov chain-Algorithm' (LZMA) stream format and \
+                   provides a 3 factor integrity checking to maximize interoperability and optimize safety. \
+                   Lzip can compress about as fast as gzip (lzip -0) or compress most files more than bzip2 (lzip -9). \
+                   Decompression speed is intermediate between gzip and bzip2. Lzip is better than gzip and bzip2 from \
+                   a data recovery perspective. Lzip has been designed, written, and tested with great care to replace \
+                   gzip and bzip2 as the standard general-purpose compressed format for unix-like systems.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.23
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://download.savannah.gnu.org/releases/lzip/$(SRC_NAME)
+SRC_MD5          = c47878da4af44ce7ab4115a75640a99d
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = CXX="$(CXX)" CC="$(CC)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

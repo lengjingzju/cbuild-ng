@@ -25,7 +25,6 @@ SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/Kitware/CMake/releases/download/v$(VERSION)/$(SRC_NAME)
 SRC_MD5          = 9ee1536202da1e803fbc71464825b9c2
 
-
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 

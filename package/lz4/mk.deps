@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) lz4(native psysroot): unselect
+
+PACKAGE_NAME     = lz4
+
+LICENSE          = BSD-2-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/lz4/lz4
+DESCRIPTION      = LZ4 is lossless compression algorithm, providing compression speed > 500 MB/s per core, scalable with \
+                   multi-cores CPU. It features an extremely fast decoder, with speed in multiple GB/s per core, typically \
+                   reaching RAM speed limits on multi-core systems. \
+                   Speed can be tuned dynamically, selecting an "acceleration" factor which trades compression ratio for \
+                   faster speed. On the other end, a high compression derivative, LZ4_HC, is also provided, trading CPU time \
+                   for improved compression ratio. All versions feature the same decompression speed. \
+                   LZ4 is also compatible with dictionary compression, both at API and CLI levels. It can ingest any input file \
+                   as dictionary, though only the final 64KB are used. This capability can be combined with the Zstandard \
+                   Dictionary Builder, in order to drastically improve compression performance on small files.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.9.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/lz4/lz4/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = e9286adb64040071c5e23498bf753261
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+MAKE_FLAGS       = -C $(SRC_PATH) CC=$(CC) AR=$(AR) PREFIX=/usr DESTDIR=$(INS_TOPDIR)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
