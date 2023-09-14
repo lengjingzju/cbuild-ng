@@ -1,0 +1,46 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) glib-networking(native psysroot): unselect glib openssl
+
+PACKAGE_NAME     = glib-networking
+
+LICENSE          = LGPL-2.1-only
+LICFILE          = file://COPYING
+HOMEPAGE         = https://gitlab.gnome.org/GNOME/glib-networking
+DESCRIPTION      = Network-related giomodules for glib. \
+                   glib-networking contains the implementations of certain GLib networking features that cannot be \
+                   implemented directly in GLib itself because of their dependencies. \
+                   Currently it contains GnuTLS and OpenSSL-based implementations of GTlsBackend, a libproxy-based \
+                   implementation of GProxyResolver, GLibproxyResolver, and a GNOME GProxyResolver that uses the proxy \
+                   information from the GSettings schemas in gsettings-desktop-schemas.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.76.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://gitlab.gnome.org/GNOME/glib-networking/-/archive/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = fd7c14dbb7a9c3964ad3079b909e7bb2
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = meson
+MESON_FLAGS      = -Dgnome_proxy=disabled \
+                   -Dgnutls=disabled \
+                   -Dopenssl=enabled \
+                   -Dlibproxy=disabled \
+                   -Dinstalled_tests=false
+
+ifneq ($(NATIVE_BUILD),y)
+CUSTOM_TARGETS   = prepend
+endif
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+# FAILED: install script '.../gio-querymodules ...' could not be run, stopped
+prepend:
+	@sed -i '/gnome.post_install/ d' $(SRC_PATH)/meson.build

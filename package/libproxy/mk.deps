@@ -1,0 +1,38 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libproxy(native psysroot): unselect glib curl
+
+PACKAGE_NAME     = libproxy
+
+LICENSE          = LGPL-2.1-or-later
+LICFILE          = file://COPYING
+HOMEPAGE         = https://github.com/libproxy/libproxy
+DESCRIPTION      = libproxy is a library that provides automatic proxy configuration management.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.5.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/libproxy/libproxy/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = bc744f1f6bb0569bcb0e4c7eb9c920f7
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = meson
+MESON_FLAGS      = -Dconfig-gnome=false \
+                   -Dconfig-kde=false \
+                   -Dconfig-osx=false \
+                   -Dconfig-sysconfig=false \
+                   -Dconfig-windows=false \
+                   -Dintrospection=false \
+                   -Dpacrunner-duktape=false \
+                   -Dtests=false \
+                   -Ddocs=false
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

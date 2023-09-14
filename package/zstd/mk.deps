@@ -1,0 +1,41 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) zstd(native psysroot): unselect
+
+PACKAGE_NAME     = zstd
+
+LICENSE          = BSD-3-Clause & GPL-2.0-only
+LICFILE          = file://LICENSE file://COPYING
+HOMEPAGE         = https://facebook.github.io/zstd/
+DESCRIPTION      = Zstandard is a fast compression algorithm, providing high compression ratios. It also offers a special \
+                   mode for small data, called dictionary compression. The reference library offers a very wide range of \
+                   speed / compression trade-off, and is backed by an extremely fast decoder (see benchmarks below). \
+                   Zstandard library is provided as open source software using a BSD license. Its format is stable and \
+                   published as IETF RFC 8878.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.5
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/facebook/zstd/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 63251602329a106220e0a5ad26ba656f
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+MAKE_FLAGS       = HAVE_ZLIB=0 HAVE_LZMA=0 HAVE_LZ4=0 ZSTD_LEGACY_SUPPORT=4
+MAKE_FLAGSA      = -C $(SRC_PATH) DESTDIR=$(INS_TOPDIR) prefix=$(INS_SUBDIR) $(MAKE_FLAGS)
+MAKE_FLAGSB      = -C $(SRC_PATH)/contrib/pzstd DESTDIR=$(INS_TOPDIR) PREFIX=$(INS_SUBDIR) $(MAKE_FLAGS)
+
+CUSTOM_TARGETS   = compile
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+compile:
+	@$(MAKE) $(MAKE_FLAGSA) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGSA) install $(LOGOUTPUT)
+	@$(MAKE) $(MAKE_FLAGSB) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGSB) install $(LOGOUTPUT)
+	@sed -i 's@prefix=/usr/local@prefix=\$${pcfiledir}/../..@g' $(INS_TOPDIR)$(INS_SUBDIR)/lib/pkgconfig/libzstd.pc
