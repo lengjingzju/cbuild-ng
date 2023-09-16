@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libusb(psysroot native): unselect
+
+PACKAGE_NAME     = libusb
+
+LICENSE          = LGPL-2.1-or-later
+HOMEPAGE         = https://libusb.info/
+DESCRIPTION      = libusb is a C library that provides generic access to USB devices. It is intended to be used by \
+                   developers to facilitate the production of applications that communicate with USB hardware.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.0.26
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://github.com/libusb/libusb/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 9c75660dfe1d659387c37b28c91e3160
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --disable-udev
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

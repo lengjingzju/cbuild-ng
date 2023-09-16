@@ -114,7 +114,7 @@ do_fetch() {
                     wget -q $url -O ${ENV_DOWN_DIR}/$package --no-check-certificate
                     if [ $? -ne 0 ]; then
                         rm -f ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: failed to download $url."
+                        echo "ERROR: failed to download $url"
                         exit 1
                     fi
                 fi
@@ -122,7 +122,7 @@ do_fetch() {
                     rmd5=$(md5sum ${ENV_DOWN_DIR}/$package | cut -d ' ' -f 1)
                     if [ "$md5" != "$rmd5" ]; then
                         rm -f ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: md5sum of $package: $md5 != $rmd5."
+                        echo "ERROR: md5sum of $package: set($md5)!=actual($rmd5)"
                         exit 1
                     fi
                 fi
@@ -135,7 +135,7 @@ do_fetch() {
                     git clone $url ${ENV_DOWN_DIR}/$package
                     if [ $? -ne 0 ]; then
                         rm -rf ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: failed to clone git $url."
+                        echo "ERROR: failed to clone git $url"
                         exit 1
                     fi
                     if [ "$branch-$tag-$rev" != "--" ]; then
@@ -183,7 +183,7 @@ do_fetch() {
                     svn checkout -q $url ${ENV_DOWN_DIR}/$package
                     if [ $? -ne 0 ]; then
                         rm -rf ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: failed to checkout svn $url."
+                        echo "ERROR: failed to checkout svn $url"
                         exit 1
                     fi
                     if [ ! -z "$rev" ]; then

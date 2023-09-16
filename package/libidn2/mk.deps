@@ -33,4 +33,8 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@rm -rf $(OBJ_PREFIX) && mkdir -p $(OBJ_PREFIX)

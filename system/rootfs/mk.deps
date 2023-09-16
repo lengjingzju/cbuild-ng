@@ -51,8 +51,8 @@ packages: cleanroot licenses
 	@mkdir -p $(FAKEROOT_DIR)
 	@make -s -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_releases
 ifneq ($(ENV_BUILD_TOOL), )
-	@echo "    glibc from $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot)"
-	@$(SYSROOT_SCRIPT) release $(shell $(ENV_BUILD_TOOL)gcc -print-sysroot) $(FAKEROOT_DIR)
+	@echo "    glibc from $(shell PATH=$(PATH) $(CC) -print-sysroot)"
+	@$(SYSROOT_SCRIPT) release $(shell PATH=$(PATH) $(CC) -print-sysroot) $(FAKEROOT_DIR)
 endif
 	@echo "----------------------------------------"
 

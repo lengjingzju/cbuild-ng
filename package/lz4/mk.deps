@@ -34,4 +34,8 @@ CACHE_DEPENDS    = none
 
 MAKE_FLAGS       = -C $(SRC_PATH) CC=$(CC) AR=$(AR) PREFIX=/usr DESTDIR=$(INS_TOPDIR)
 
+CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@sed -i 's@prefix=/usr@prefix=\$${pcfiledir}/../..@g' $(INS_TOPDIR)$(INS_SUBDIR)/lib/pkgconfig/*.pc

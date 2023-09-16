@@ -158,11 +158,11 @@ pc_fn = lambda x: "\${pcfiledir}/" + os.path.relpath(x.group(0), pc_path)
 pcs = "$(find $src -name '*.pc' | xargs)".strip().split()
 
 for pc in pcs:
+    pc_path = os.path.dirname(pc)
     pc_content = ""
     with open(pc, "r") as fp:
         pc_content = fp.read()
         if "$src" in pc_content:
-            pc_path = os.path.dirname(pc)
             pc_content = re.sub(r"($src[\w\.\-/]*)", pc_fn, pc_content)
         else:
             pc_content = ""

@@ -1,0 +1,66 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) util-linux(native psysroot): unselect zlib libcap-ng ncurses pcre2
+
+#sudo apt install autopoint
+
+PACKAGE_NAME     = util-linux
+
+LICENSE          = GPL-2.0-or-later & LGPL-2.1-or-later & BSD-3-Clause & BSD-4-Clause
+LICFILE          = file://Documentation/licenses/COPYING*
+HOMEPAGE         = https://github.com/util-linux/util-linux
+DESCRIPTION      = util-linux is a random collection of Linux utilities.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.39.2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/util-linux/util-linux/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 1e7bd7d5b7444aa4daab4c309018140f
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+
+AUTOTOOLS_FLAGS  = --enable-libuuid \
+                   --enable-libblkid \
+                   --enable-fsck \
+                   --enable-kill \
+                   --enable-last \
+                   --enable-mesg \
+                   --enable-mount \
+                   --enable-partx \
+                   --enable-rfkill \
+                   --enable-unshare \
+                   --enable-write \
+                   --disable-bfs \
+                   --disable-login \
+                   --disable-makeinstall-chown \
+                   --disable-minix \
+                   --disable-newgrp \
+                   --disable-use-tty-group \
+                   --disable-vipw \
+                   --disable-raw \
+                   --without-udev \
+                   --without-cap-ng \
+                   --disable-setpriv \
+                   --disable-hwclock-gplv3 \
+                   \
+                   --disable-su --disable-runuser \
+                   --without-systemd --without-systemdsystemunitdir \
+                   --without-python --disable-pylibmount \
+                   --without-readline \
+                   --without-cryptsetup \
+                   --disable-chfn-chsh
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && ./autogen.sh

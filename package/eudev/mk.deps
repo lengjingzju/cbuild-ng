@@ -1,0 +1,39 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) eudev(psysroot): unselect gperf-native
+
+PACKAGE_NAME     = eudev
+
+LICENSE          = GPL-2.0-only
+HOMEPAGE         = https://github.com/eudev-project/eudev
+DESCRIPTION      = eudev is a standalone dynamic and persistent device naming support (aka userspace devfs) daemon \
+                   that runs independently from the init system. eudev strives to remain init system and linux \
+                   distribution neutral. It is currently used as the devfs manager for more than a dozen different \
+                   linux distributions. This git repo is a fork of git://anongit.freedesktop.org/systemd/systemd \
+                   with the aim of isolating udev from any particular flavor of system initialization. In this case, \
+                   the isolation is from systemd.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.2.12
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/eudev-project/eudev/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 6f1559ca7c27013ff68816e2732498a3
+INS_SUBDIR       =
+INS_FULLER       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+CUSTOM_TARGETS   = append
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@cd $(INS_TOPDIR)/sbin && ln -sf ../bin/udevadm

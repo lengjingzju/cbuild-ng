@@ -25,7 +25,15 @@ SRC_MD5          = 4667bacb837f9ac4adb4a1a0266f4b65
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-MAKE_FLAGS       = -C $(SRC_PATH) FAKEROOT=$(INS_TOPDIR) lib=lib
+MAKE_FLAGS       = -C $(SRC_PATH) FAKEROOT=$(INS_TOPDIR)$(INS_SUBDIR) lib=lib
 MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) BUILD_CC=gcc)
 
+CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@sed -i -e 's@^prefix=.*@prefix=\$${pcfiledir}/../..@g' \
+			-e 's@^exec_prefix=.*@exec_prefix=\$${prefix}@g'\
+			-e 's@^libdir=.*@libdir=\$${prefix}/lib@g'\
+			-e 's@^includedir=.*@includedir=\$${prefix}/include@g'\
+			$(INS_TOPDIR)$(INS_SUBDIR)/lib/pkgconfig/*.pc
