@@ -17,11 +17,11 @@ DESCRIPTION      = HarfBuzz is a text shaping engine. It primarily supports Open
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 8.2.0
+VERSION          = 8.3.0
 SRC_DIR          = harfbuzz-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://github.com/harfbuzz/harfbuzz/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 43e94912c25bfaaea2701f89bab74ced
+SRC_MD5          = 7bf11a21c51a4f3ce0728decc4c557d4
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

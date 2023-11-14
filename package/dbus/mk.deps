@@ -39,6 +39,7 @@ CMAKE_FLAGS      = -DDBUS_BUILD_TESTS=OFF \
                    -DDBUS_BUILD_X11=OFF \
                    -DDBUS_WITH_GLIB=OFF \
                    -DDBUS_SESSION_SOCKET_DIR=$(INS_TOPDIR)/tmp \
+                   -DCMAKE_PREFIX_PATH=$(DEP_PREFIX)/usr \
                    -DDBUS_ENABLE_PKGCONFIG=ON \
                    -DPKG_CONFIG_EXECUTABLE=pkg-config
 

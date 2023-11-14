@@ -18,11 +18,11 @@ DESCRIPTION      = Protocol buffers are Google’s language-neutral, platform-ne
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 24.3
+VERSION          = 25.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/protocolbuffers/protobuf/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 5cd5efd785e66a9be46f7c873175e89f
+SRC_MD5          = 89d015d0b274a0aa0feb2ae483cbbc27
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
@@ -34,6 +34,6 @@ CMAKE_FLAGS      = -Dprotobuf_BUILD_TESTS=OFF \
                    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
                    -Dprotobuf_BUILD_SHARED_LIBS=ON \
                    -Dprotobuf_ABSL_PROVIDER="package" \
-                   -DCMAKE_PREFIX_PATH="$(DEP_PREFIX)/usr"
+                   -DCMAKE_PREFIX_PATH=$(DEP_PREFIX)/usr
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) abseil-cpp(native psysroot norelease): unselect
+#DEPS(mk.deps) abseil-cpp(native psysroot release): unselect
 
 PACKAGE_NAME     = abseil-cpp
 
@@ -16,11 +16,11 @@ DESCRIPTION      = Abseil is an open-source collection of C++ library code desig
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 20230802.0
+VERSION          = 20230802.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/abseil/abseil-cpp/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = f40605e07aa804aa82e7090f12db7e34
+SRC_MD5          = 84665b6daa5dda7c9082b1a00057457a
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
@@ -31,3 +31,6 @@ CMAKE_FLAGS      = -DCMAKE_CXX_STANDARD=17 \
                    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+release:
+	@

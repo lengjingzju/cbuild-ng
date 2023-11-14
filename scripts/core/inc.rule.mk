@@ -156,6 +156,12 @@ install:
 	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
 endif
 
+ifneq ($(LICFILE), )
+define release_lics
+	$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR)/usr/share/license $(INS_PREFIX)/usr/share/license
+endef
+endif
+
 ifeq ($(CACHE_BUILD),y)
 
 define do_checksum

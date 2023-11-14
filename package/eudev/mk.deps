@@ -19,11 +19,11 @@ DESCRIPTION      = eudev is a standalone dynamic and persistent device naming su
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.2.12
+VERSION          = 3.2.14
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/eudev-project/eudev/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 6f1559ca7c27013ff68816e2732498a3
+SRC_MD5          = ee1789b524304dfe6d4775b4b39f6d3c
 INS_SUBDIR       =
 INS_FULLER       = y
 

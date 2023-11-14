@@ -19,11 +19,11 @@ DESCRIPTION      = CMake is an open-source, cross-platform family of tools desig
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.26.5
+VERSION          = 3.27.7
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/Kitware/CMake/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 9ee1536202da1e803fbc71464825b9c2
+SRC_MD5          = 0f11cf15c7f2fa6234b9fc415c78029c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

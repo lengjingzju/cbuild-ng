@@ -15,11 +15,11 @@ DESCRIPTION      = A robust, commercial-grade, full-featured toolkit for general
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.1.1v
+VERSION          = 1.1.1w
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://ftp.openssl.org/source/$(SRC_NAME)
-SRC_MD5          = 9edcfdd9b96523df82b312c404f4b169
+SRC_MD5          = 3f76825f195e52d4b10c70040681a275
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

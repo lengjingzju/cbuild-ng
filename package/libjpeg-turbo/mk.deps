@@ -21,11 +21,11 @@ DESCRIPTION      = libjpeg-turbo is a JPEG image codec that uses SIMD instructio
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.0.0
+VERSION          = 3.0.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = c84d907ace44d351fcce643c2b9d9492
+SRC_MD5          = 88a0b4f9ad57924ce064135a1717c703
 INS_FULLER       = n
 
 CACHE_BUILD      = y
