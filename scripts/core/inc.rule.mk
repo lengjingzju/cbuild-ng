@@ -53,6 +53,8 @@ INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR) $(foreach v,bin sbin lib
 else
 INS_CONFIG      ?= -DCMAKE_INSTALL_PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
 endif
+dep_config      ?=$(shell echo $(wildcard $(DEP_PREFIX) $(DEP_PREFIX)/usr) | sed 's@ @;@g')
+DEP_CONFIG      ?=$(if $(dep_config),-DCMAKE_PREFIX_PATH="$(dep_config)")
 
 else ifeq ($(COMPILE_TOOL),meson)
 MESON_WRAP_MODE ?= --wrap-mode=nodownload
@@ -111,7 +113,7 @@ ifeq ($(COMPILE_TOOL),autotools)
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT)
 else ifeq ($(COMPILE_TOOL),cmake)
 	@cd $(OBJ_PREFIX) && \
-		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT)
+		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT)
 else ifeq ($(COMPILE_TOOL),meson)
 	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
 	@$(if $(do_meson_cfg),$(call do_meson_cfg))

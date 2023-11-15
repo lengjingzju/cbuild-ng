@@ -33,7 +33,6 @@ CMAKE_FLAGS      = -Dprotobuf_BUILD_TESTS=OFF \
                    -Dprotobuf_WITH_ZLIB=OFF \
                    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
                    -Dprotobuf_BUILD_SHARED_LIBS=ON \
-                   -Dprotobuf_ABSL_PROVIDER="package" \
-                   -DCMAKE_PREFIX_PATH=$(DEP_PREFIX)/usr
+                   -Dprotobuf_ABSL_PROVIDER="package"
 
 include $(ENV_MAKE_DIR)/inc.rule.mk
