@@ -448,10 +448,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 注: Yocto Build 时，由于 BitBake 任务无法直接使用当前 shell 的环境变量，所以自定义环境变量应由配方文件导出，不需要 source 这个环境脚本
 
-* BUILDVERBOSE      : 是否编译启用详细信息编译模式，设为 y 时 MAKESILENT 和 LOGOUTPUT 的值会设置为空
-* MAKESILENT        : make 时安静模式，默认值为 `-s`，置为空时编译输出更多信息
-* LOGOUTPUT         : 编译输出信息重定向，默认值为 `1>/dev/null`，置为空时输出更多信息
-* UNPACKFLAG        : 默认值等于 BUILDVERBOSE 的值，置为 y 时 `make all_fetches` 会解压源码
+* MFLAG             : make 时安静模式，全部编译时默认值为 `-s`，单独编译某个包时置为空编译输出更多信息
+* TOLOG             : 编译输出信息重定向，MFLAG等于 `-s` 时默认值为 `1>/dev/null`，否则为空输出更多信息
 
 
 ## 编译模板

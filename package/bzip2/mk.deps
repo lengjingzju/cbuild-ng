@@ -36,5 +36,5 @@ CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 compile:
-	@$(MAKE) $(MAKE_FLAGS) -f Makefile-libbz2_so $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) -f Makefile-libbz2_so install $(LOGOUTPUT)
-	@$(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+	@$(MAKE) $(MAKE_FLAGS) -f Makefile-libbz2_so $(TOLOG) && $(MAKE) $(MAKE_FLAGS) -f Makefile-libbz2_so install $(TOLOG)
+	@$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)

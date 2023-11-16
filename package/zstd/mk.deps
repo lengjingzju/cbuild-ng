@@ -36,6 +36,6 @@ CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 compile:
-	@$(MAKE) $(MAKE_FLAGSA) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGSA) install $(LOGOUTPUT)
-	@$(MAKE) $(MAKE_FLAGSB) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGSB) install $(LOGOUTPUT)
+	@$(MAKE) $(MAKE_FLAGSA) $(TOLOG) && $(MAKE) $(MAKE_FLAGSA) install $(TOLOG)
+	@$(MAKE) $(MAKE_FLAGSB) $(TOLOG) && $(MAKE) $(MAKE_FLAGSB) install $(TOLOG)
 	@sed -i 's@prefix=/usr/local@prefix=\$${pcfiledir}/../..@g' $(INS_TOPDIR)$(INS_SUBDIR)/lib/pkgconfig/libzstd.pc

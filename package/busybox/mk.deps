@@ -43,7 +43,7 @@ prepend:
 	@if [ ! -f $(OBJ_PREFIX)/.config ]; then \
 		cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME); \
 		mkdir -p $(OBJ_PREFIX); \
-		$(MAKE) $(MAKE_FLAGS) $(CFG_NAME) $(LOGOUTPUT); \
+		$(MAKE) $(MAKE_FLAGS) $(CFG_NAME) $(TOLOG); \
 	fi
 
 append:

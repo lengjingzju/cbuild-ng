@@ -68,7 +68,8 @@ endef
 ifneq ($(ENV_BUILD_MODE),yocto)
 
 ifeq ($(CONF_MAKES), )
-CONF_MAKES       := -s O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
+CONF_MFLAG       ?= -s
+CONF_MAKES       := $(CONF_MFLAG) O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
 endif
 
 buildkconfig:

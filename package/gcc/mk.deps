@@ -78,7 +78,7 @@ prepend:
 	@sed -i 's@print-multi-os-directory@print-multi-directory@g' `find $(SRC_PATH) -name configure -o -name configure.ac -o -name Makefile.in | xargs`
 
 compile:
-	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) all-host $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install-host $(LOGOUTPUT)
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) all-host $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install-host $(TOLOG)
 
 append:
 	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/cpp $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)*

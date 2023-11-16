@@ -29,8 +29,8 @@ include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
 	@cd $(SRC_PATH) && \
-		./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(if $(CROSS_COMPILE),--cross-compile-prefix='') $(LOGOUTPUT)
+		./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(if $(CROSS_COMPILE),--cross-compile-prefix='') $(TOLOG)
 	@sed -i 's/ -m64//g' $(SRC_PATH)/Makefile
 
 compile:
-	@cd $(SRC_PATH) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+	@cd $(SRC_PATH) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)

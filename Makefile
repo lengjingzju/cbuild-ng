@@ -11,6 +11,7 @@ CONF_OUT       := $(WORKDIR)
 KCONFIG        := $(WORKDIR)/Kconfig
 CONF_SAVE_PATH := $(ENV_TOP_DIR)/configs
 CONF_HEADER    := __CBUILD_GLOBAL_CONFIG__
+CONF_MFLAG     := -s $(ENV_BUILD_JOBS)
 DEF_CONFIG     := def_config
 
 IGNORE_DIRS    := .git:.svn:scripts:output:build:configs:examples:notes
@@ -19,14 +20,14 @@ MAXLEVEL       := 3
 TIME_OUTPUT    := $(WORKDIR)/time_statistics.$(shell date +"%Y-%m-%d.%H-%M-%S.%N")
 TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
 PROGRESS_SCRIPT:= python3 $(ENV_TOOL_DIR)/show_progress.py
-MAKESILENT     ?= $(if $(filter y,$(BUILDVERBOSE)),,-s)
 
 .PHONY: all clean distclean toolchain deps all-deps total_time time_statistics progress_init progress_stop
 
+all: export MFLAG ?= -s
 all: loadconfig
 	@$(PROGRESS_SCRIPT) start &
 	@sleep 1
-	@make $(MAKESILENT) $(ENV_BUILD_JOBS) MAKEFLAGS= progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
+	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
 	@echo "Build done!"
 
 -include $(WORKDIR)/.config
@@ -44,7 +45,7 @@ distclean:
 	@echo "Distclean Done."
 
 toolchain:
-	@$(PRECMD)make $(MAKESILENT) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain
+	@$(PRECMD)make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain
 
 buildkconfig: deps
 deps:
@@ -63,13 +64,14 @@ all-deps:
 total_time: loadconfig
 	@$(PROGRESS_SCRIPT) start &
 	@sleep 1
-	@$(PRECMD)make $(MAKESILENT) progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
+	@$(PRECMD)make $(MFLAG) progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
 	@echo "Build done!"
 
+time_statistics: export MFLAG ?= -s
 time_statistics:
 	@mkdir -p $(WORKDIR)
 	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(TIME_OUTPUT)
-	@make $(MAKESILENT) PRECMD="$(TIME_FORMAT) " total_time
+	@make $(MFLAG) PRECMD="$(TIME_FORMAT) " total_time
 	@echo "time statistics file is $(TIME_OUTPUT)"
 
 ifneq ($(progress_cmd), )

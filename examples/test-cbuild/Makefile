@@ -10,6 +10,7 @@ CONF_OUT       := $(WORKDIR)
 KCONFIG        := $(WORKDIR)/Kconfig
 CONF_SAVE_PATH := $(ENV_TOP_DIR)/configs
 CONF_HEADER    := __CBUILD_GLOBAL_CONFIG__
+CONF_MFLAG     := -s $(ENV_BUILD_JOBS)
 DEF_CONFIG     := def_config
 export CONF_SRC
 
@@ -17,12 +18,12 @@ IGNORE_DIRS    := .git:.svn:scripts:output:configs
 KEYWORDS       := none
 MAXLEVEL       := 2
 TIME_FORMAT    := /usr/bin/time -a -o $(WORKDIR)/time_statistics -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
-MAKESILENT     ?= $(if $(filter y,$(BUILDVERBOSE)),,-s)
 
 .PHONY: all clean distclean deps all-deps total_time time_statistics
 
+all: export MFLAG ?= -s
 all: loadconfig
-	@make $(MAKESILENT) $(ENV_BUILD_JOBS) MAKEFLAGS= all_targets
+	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= all_targets
 	@echo "Build done!"
 
 -include $(WORKDIR)/.config
@@ -52,10 +53,11 @@ all-deps:
 	done
 
 total_time: loadconfig
-	@$(PRECMD)make $(MAKESILENT) all_targets
+	@$(PRECMD)make $(MFLAG) all_targets
 	@echo "Build done!"
 
+time_statistics: export MFLAG ?= -s
 time_statistics:
 	@mkdir -p $(WORKDIR)
 	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
-	@make $(MAKESILENT) PRECMD="$(TIME_FORMAT) " total_time
+	@make $(MFLAG) PRECMD="$(TIME_FORMAT) " total_time

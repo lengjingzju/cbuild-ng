@@ -465,13 +465,10 @@ Note: Users need to fill in the SOC-related parameters in the `process_machine.s
 
 Note: bitbake cann't directly use the environment variables of the current shell in Yocto Build, so the custom environment variables should be exported from the recipe
 
-* BUILDVERBOSE      : Whether to build with more details output
-    * When it is set to `y`, the default values of `MAKESILENT` and `LOGOUTPUT` are empty
-* MAKESILENT        : Silent make mode, its default value is `-s`
+* MFLAG             : Silent make mode, its default value is `-s` when doing `make all`, empty when making a single package
     * When it is set to empty, more compilation messages will be displayed
-* LOGOUTPUT         : Compilation output redirection, its default value is `1>/dev/null`
+* TOLOG             : Compilation output redirection, its default value is `1>/dev/null` when MFLAG is `-s`
     * When it is set to empty, more messages will be displayed
-* UNPACKFLAG        : Whether to unpack source code when doing `make all_fetches`, its default value is equal to `BUILDVERBOSE`
 
 
 ## Compilation Template

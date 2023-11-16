@@ -7,10 +7,8 @@
 ### Test Application Compilation Template inc.app.mk
 
 * Sets some variables
-    * `export LOGOUTPUT=`: Outputs more detailed compilation information
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export LOGOUTPUT=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export ENV_MAKE_DIR=/home/lengjing/data/cbuild-ng/scripts/core
     lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export outroot=`pwd`/output/objects
     lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export insroot=`pwd`/output/sysroot
@@ -167,7 +165,6 @@
 * Sets some variables
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export LOGOUTPUT=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export ENV_MAKE_DIR=/home/lengjing/data/cbuild-ng/scripts/core
     lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export outroot=`pwd`/output/objects
     lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export insroot=`pwd`/output/sysroot
@@ -372,7 +369,6 @@
 * Sets some variables
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export LOGOUTPUT=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export ENV_MAKE_DIR=/home/lengjing/data/cbuild-ng/scripts/core
     lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export outroot=`pwd`/output/objects
     lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export CONF_SRC=/home/lengjing/data/cbuild-ng/scripts/kconfig
@@ -445,7 +441,7 @@
 * Exports environment variables
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ export LOGOUTPUT=
+    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ export TOLOG=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ source scripts/test.env
     ============================================================
     ENV_BUILD_MODE   : classic

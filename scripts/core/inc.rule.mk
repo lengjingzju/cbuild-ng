@@ -22,7 +22,6 @@ else
 SRC_PATH        ?= $(shell pwd)
 endif
 
-UNPACKFLAG      ?= $(BUILDVERBOSE)
 BUILD_JOBS      ?= $(shell echo $(MAKEFLAGS) | grep -E '\-j[0-9]+' | sed -E 's/.*(-j[0-9]+).*/\1/g')
 MAKE_FNAME      ?= mk.deps
 
@@ -110,28 +109,28 @@ ifneq ($(filter prepend,$(CUSTOM_TARGETS)), )
 endif
 ifeq ($(COMPILE_TOOL),autotools)
 	@cd $(OBJ_PREFIX) && \
-		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(LOGOUTPUT)
+		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
 	@cd $(OBJ_PREFIX) && \
-		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(LOGOUTPUT)
+		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
 	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
 	@$(if $(do_meson_cfg),$(call do_meson_cfg))
 	@cd $(SRC_PATH) && \
-		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(OBJ_PREFIX) $(LOGOUTPUT)
+		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(OBJ_PREFIX) $(TOLOG)
 endif
 	@rm -rf $(INS_TOPDIR)
 ifneq ($(filter compile,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) compile
 else
 ifeq ($(COMPILE_TOOL),autotools)
-	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
-	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
-	@cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(LOGOUTPUT) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(LOGOUTPUT)
+	@cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(TOLOG) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(TOLOG)
 else
-	@$(MAKE) $(MAKE_FLAGS) $(LOGOUTPUT) && $(MAKE) $(MAKE_FLAGS) install $(LOGOUTPUT)
+	@$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 endif
 endif
 	@$(call install_lics)
@@ -249,7 +248,7 @@ endif # CACHE_BUILD
 dofetch:
 ifneq ($(SRC_URLS), )
 	@mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
-	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(if $(filter y,$(UNPACKFLAG)),$(WORKDIR) $(SRC_DIR))"
+	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
 else
 	@
 endif

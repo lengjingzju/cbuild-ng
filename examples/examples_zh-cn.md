@@ -7,10 +7,8 @@
 ### 测试应用编译模板 inc.app.mk
 
 * 设置变量
-    * `export LOGOUTPUT=` 的作用是输出更详细的编译信息
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export LOGOUTPUT=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export ENV_MAKE_DIR=/home/lengjing/data/cbuild-ng/scripts/core
     lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export outroot=`pwd`/output/objects
     lengjing@lengjing:~/data/cbuild-ng/examples/test-app$ export insroot=`pwd`/output/sysroot
@@ -167,7 +165,6 @@
 * 设置变量
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export LOGOUTPUT=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export ENV_MAKE_DIR=/home/lengjing/data/cbuild-ng/scripts/core
     lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export outroot=`pwd`/output/objects
     lengjing@lengjing:~/data/cbuild-ng/examples/test-mod$ export insroot=`pwd`/output/sysroot
@@ -372,7 +369,6 @@
 * 设置变量
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export LOGOUTPUT=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export ENV_MAKE_DIR=/home/lengjing/data/cbuild-ng/scripts/core
     lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export outroot=`pwd`/output/objects
     lengjing@lengjing:~/data/cbuild-ng/examples/test-conf$ export CONF_SRC=/home/lengjing/data/cbuild-ng/scripts/kconfig
@@ -445,7 +441,7 @@
 * 导出环境变量
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ export LOGOUTPUT=
+    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ export TOLOG=
     lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ source scripts/test.env
     ============================================================
     ENV_BUILD_MODE   : classic

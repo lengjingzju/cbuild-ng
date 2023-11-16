@@ -16,14 +16,15 @@ CONF_OBJS       = $(patsubst %.c,$(OBJ_PREFIX)/%.o,conf.c)
 MCONF_OBJS      = $(patsubst %.c,$(OBJ_PREFIX)/%.o,mconf.c)
 DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_OBJS) $(CONF_OBJS) $(MCONF_OBJS))
 
-CONF_CC         ?= gcc
-CONF_CFLAGS      = -I. -I./parser -I./lxdialog
-CONF_LDFLAGS     = -static $(EXTRA_LDFLAGS)
+CONF_CC        ?= gcc
+CONF_CFLAGS     = -I. -I./parser -I./lxdialog
+CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
 
-CONF_CFLAGS     += $(shell sh mconf-cfg.sh | grep "cflags=" | sed 's/cflags="\(.*\)"/\1/')
-CONF_LDFLAGS    += $(shell sh mconf-cfg.sh | grep "libs=" | sed 's/libs="\(.*\)"/\1/')
+CONF_CFLAGS    += $(shell sh mconf-cfg.sh | grep "cflags=" | sed 's/cflags="\(.*\)"/\1/')
+CONF_LDFLAGS   += $(shell sh mconf-cfg.sh | grep "libs=" | sed 's/libs="\(.*\)"/\1/')
 
 COLORECHO       = $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
+TOLOG          ?= $(if $(filter -s,$(MFLAG)),1>/dev/null)
 
 .PHONY: all clean install
 
@@ -42,24 +43,24 @@ install:
 
 $(AUTOGEN_BISON): autogen/parser.y
 	@-mkdir -p $(dir $@)
-	@$(COLORECHO) "\033[32mbison\033[0m	$@"
+	@$(COLORECHO) "\033[32mbison\033[0m	$@" $(TOLOG)
 	@bison -o $(basename $@).c --defines=$(basename $@).h -t -l $<
 
 $(AUTOGEN_FLEX): autogen/lexer.l $(AUTOGEN_BISON)
 	@-mkdir -p $(dir $@)
-	@$(COLORECHO) "\033[32mflex\033[0m	$@"
+	@$(COLORECHO) "\033[32mflex\033[0m	$@" $(TOLOG)
 	@flex -o $@ -L $<
 
 $(AUTOGEN_OBJS) : %.o:%.c $(OBJ_PREFIX)/autogen/parser.tab.h
 	@-mkdir -p $(dir $@)
 	@$(CONF_CC) $(CONF_CFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	@$(COLORECHO) "\033[32m$(CONF_CC)\033[0m	$<"
+	@$(COLORECHO) "\033[32m$(CONF_CC)\033[0m	$<" $(TOLOG)
 	@$(CONF_CC) $(CONF_CFLAGS) -c -o $@ $<
 
 $(PARSER_OBJS) $(LXDIALOG_OBJS) $(CONF_OBJS) $(MCONF_OBJS): $(OBJ_PREFIX)/%.o:%.c
 	@-mkdir -p $(dir $@)
 	@$(CONF_CC) $(CONF_CFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	@$(COLORECHO) "\033[32m$(CONF_CC)\033[0m	$<"
+	@$(COLORECHO) "\033[32m$(CONF_CC)\033[0m	$<" $(TOLOG)
 	@$(CONF_CC) $(CONF_CFLAGS) -c -o $@ $<
 
 $(OBJ_PREFIX)/conf: $(AUTOGEN_OBJS) $(PARSER_OBJS) $(CONF_OBJS)

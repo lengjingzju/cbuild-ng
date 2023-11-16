@@ -1198,10 +1198,10 @@ class Deps:
                 real_targets = [t for t in item['targets'] if t not in ignore_targets]
                 ideps = [re.split(r'@+', dep)[0] for dep in item['ideps']]
 
-                MAKEA = '@make $(MAKESILENT)'
+                MAKEA = '@make $(MFLAG)'
                 if 'singletask' not in item['targets']:
                     MAKEA += ' $(ENV_BUILD_JOBS)'
-                MAKEB = '@$(MAKE) $(MAKESILENT)'
+                MAKEB = '@$(MAKE) $(MFLAG)'
 
                 makes = ''
                 makes += ' -C $(%s-path)' % (item['target'])
