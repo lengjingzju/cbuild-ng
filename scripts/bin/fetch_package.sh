@@ -220,7 +220,7 @@ do_fetch() {
                     cd ${ENV_DOWN_DIR}/$package
                     rbranch=$(git symbolic-ref -q --short HEAD)
                     rrev=$(git log -1 --pretty=format:%H)
-                    rtag=$(git show-ref --tags | grep "$rrev" | cut -d ' ' -f 2 | sed 's:^refs/tags/::g')
+                    rtag=$(git show-ref --tags -d | grep "$rrev" | cut -d ' ' -f 2 | sed -e 's:^refs/tags/::g' -e 's:\^{}::g')
                     changed=0
 
                     if [ ! -z "$branch" ] && [ "$branch" != "$rbranch" ]; then
