@@ -21,7 +21,8 @@ TIME_OUTPUT    := $(WORKDIR)/time_statistics.$(shell date +"%Y-%m-%d.%H-%M-%S.%N
 TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
 PROGRESS_SCRIPT:= python3 $(ENV_TOOL_DIR)/show_progress.py
 
-.PHONY: all clean distclean toolchain deps all-deps total_time time_statistics progress_init progress_stop
+.PHONY: all clean distclean toolchain host-toolchain deps all-deps \
+	total_time time_statistics progress_init progress_stop
 
 all: export MFLAG ?= -s
 all: loadconfig
@@ -46,6 +47,9 @@ distclean:
 
 toolchain:
 	@$(PRECMD)make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain
+
+host-toolchain:
+	@$(PRECMD)make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain HOST_TOOLCHAIN=y
 
 buildkconfig: deps
 deps:

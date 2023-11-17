@@ -111,7 +111,7 @@ ifeq ($(COMPILE_TOOL),autotools)
 	@cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
-	@cd $(OBJ_PREFIX) && \
+	@cd $(OBJ_PREFIX) && rm -f CMakeCache.txt && \
 		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
 	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))

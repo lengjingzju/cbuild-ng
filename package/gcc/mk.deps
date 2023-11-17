@@ -42,7 +42,9 @@ AUTOTOOLS_FLAGS += --enable-languages=c,c++ \
                    --enable-threads=posix \
                    --enable-checking=release
 
+ifneq ($(CROSS_COMPILE), )
 AUTOTOOLS_FLAGS += $(shell $(MACHINE_SCRIPT) gcc_arch_option)
+endif
 
 AUTOTOOLS_FLAGS += --disable-bootstrap \
                    --disable-multilib \
