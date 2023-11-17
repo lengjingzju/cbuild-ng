@@ -6,6 +6,8 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
+mirrortool=${ENV_TOOL_DIR}/process_mirror.py
+
 method=$1
 urls=$2
 url=$2
@@ -109,15 +111,24 @@ do_fetch() {
 
         case $method in
             zip|tar)
-                if [ ! -e ${ENV_DOWN_DIR}/$packname ]; then
-                    echo -e "\033[32mwget $url to ${ENV_DOWN_DIR}/$package\033[0m"
-                    wget -q $url -O ${ENV_DOWN_DIR}/$package --no-check-certificate
-                    if [ $? -ne 0 ]; then
-                        rm -f ${ENV_DOWN_DIR}/$package
+                if [ ! -e ${ENV_DOWN_DIR}/$package ]; then
+                    for murl in $(python3 $mirrortool $url); do
+                        echo -e "\033[32mwget $murl to ${ENV_DOWN_DIR}/$package\033[0m"
+                        wget -q -t 3 -T 15 $murl -O ${ENV_DOWN_DIR}/$package --no-check-certificate
+                        if [ $? -ne 0 ]; then
+                            rm -f ${ENV_DOWN_DIR}/$package
+                            echo "Failed to download $murl"
+                        else
+                            break
+                        fi
+                    done
+
+                    if [ ! -e ${ENV_DOWN_DIR}/$package ]; then
                         echo "ERROR: failed to download $url"
                         exit 1
                     fi
                 fi
+
                 if [ ! -z "$md5" ]; then
                     rmd5=$(md5sum ${ENV_DOWN_DIR}/$package | cut -d ' ' -f 1)
                     if [ "$md5" != "$rmd5" ]; then
