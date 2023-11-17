@@ -80,7 +80,8 @@ CACHE_STATUS    = $(TOOLCHAIN_PATH)/MATCH-HOST.status
 endif
 
 define do_cache
-	$(CACHE_SCRIPT) -m $1 -r $(CACHE_STATUS) -p $(TOOLCHAIN_DIR) -n -o $(TOOLCHAIN_PATH) -i $(DEST_SYSROOT) -g 2 -v 0 -d none \
+	$(CACHE_SCRIPT) -m $1 -r $(CACHE_STATUS) -p $(TOOLCHAIN_DIR) -v $(GCC_VER) -n \
+		-o $(TOOLCHAIN_PATH) -i $(DEST_SYSROOT) -g 2 -V 0 -d none \
 		-c $(shell pwd)/Makefile -a '$(CACHE_APPENDS)'
 endef
 

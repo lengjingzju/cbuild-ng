@@ -8,15 +8,15 @@
 
 usage() {
     echo "========================================"
-    echo -e "\033[34mUsage: '$0 -m method -r result -p package -n -s srcfile -o outdir -i insdir -g grade -c checksum -d depends -a appends -u url -v verbose\033[0m"
+    echo -e "\033[34mUsage: '$0 -m method -r result -p package -v version -n -s srcfile -o outdir -i insdir -g grade -c checksum -d depends -a appends -u url -V verbose\033[0m"
     echo -e "\033[34moptions:\033[0m"
     echo -e "\033[34m-m method\033[0m       : Specify the method: check pull push force cache"
     echo                   "    check       : Check if cache is available, create result file if it is matched"
-    echo                   "                  Necessary options are '-m -p -o -i -g -r'; Optional options are '-s -c -d -u'"
+    echo                   "                  Necessary options are '-m -p -o -i -g -r'; Optional options are '-s -c -d -u -v'"
     echo                   "    pull        : Decompress the image package to outdir"
     echo                   "                  Necessary options are '-m -p -o -i -g'"
     echo                   "    push        : Compress the image dir in outdir to image package"
-    echo                   "                  Necessary options are '-m -p -o -i -g'; Optional options are '-s -c -d'"
+    echo                   "                  Necessary options are '-m -p -o -i -g'; Optional options are '-s -c -d -v'"
     echo                   "    setforce    : Set force build from source code"
     echo                   "                  Necessary options are '-m -p -o'"
     echo                   "    set1force   : Set force build from source code once"
@@ -24,7 +24,8 @@ usage() {
     echo                   "    unsetforce  : Unset force build from source code"
     echo                   "                  Necessary options are '-m -p -o -i'"
     echo -e "\033[34m-r result\033[0m       : Specify the result file to indicate MATCH status"
-    echo -e "\033[34m-p package\033[0m      : Specify the package name in DEPS statement"
+    echo -e "\033[34m-p package\033[0m      : Specify the package name"
+    echo -e "\033[34m-v version\033[0m      : Specify the package version"
     echo -e "\033[34m-n\033[0m              : Specify the package is native package"
     echo -e "\033[34m-s srcname\033[0m      : Specify the download package name"
     echo -e "\033[34m-o outdir\033[0m       : Specify the output path"
@@ -38,7 +39,7 @@ usage() {
     echo -e "\033[34m-a appends\033[0m      : Specify the append strings"
     echo -e "\033[34m-u url\033[0m          : Specify the package download url, the format needs to be '[type]url'"
     echo                   "    For Example : '[tar]url', '[zip]url', '[git]url', '[svn]url'"
-    echo -e "\033[34m-v verbose\033[0m      : Specify the verbose mode, log file is outdir/package-cache.log"
+    echo -e "\033[34m-V verbose\033[0m      : Specify the verbose mode, log file is outdir/package-cache.log"
     echo "========================================"
 }
 
@@ -50,6 +51,7 @@ method=
 matchfile=
 package=
 packname=
+version=
 cache_grades=noarch
 cache_prefix=
 native=""
@@ -63,11 +65,12 @@ appends=
 url=
 verbose=1
 
-while getopts "m:r:p:ns:o:i:g:c:d:a:u:v:h" opt; do
+while getopts "m:r:p:v:ns:o:i:g:c:d:a:u:V:h" opt; do
     case $opt in
         m) method=$OPTARG;;
         r) matchfile=$OPTARG;;
         p) package=$OPTARG;;
+        v) version=$OPTARG;;
         n) native=$(uname -m);;
         s) srcname=$OPTARG;;
         o) outdir=$OPTARG;;
@@ -77,7 +80,7 @@ while getopts "m:r:p:ns:o:i:g:c:d:a:u:v:h" opt; do
         d) depends=$OPTARG;;
         a) appends=$OPTARG;;
         u) url=$OPTARG;;
-        v) verbose=$OPTARG;;
+        V) verbose=$OPTARG;;
         h) usage; exit 0;;
         *) echo -e "\033[31mERROR: invalid option: '-$opt'\033[0m"; usage; exit 1;;
     esac
@@ -132,6 +135,7 @@ echo_params() {
     wlog "method   = ${method}"
     wlog "matchfile= ${matchfile}"
     wlog "package  = ${package}"
+    wlog "version  = ${version}"
     wlog "native   = ${native}"
     wlog "srcname  = ${srcname}"
     wlog "outdir   = ${outdir}"
@@ -251,18 +255,18 @@ get_one_depend_checksum() {
     if [ ! -z "${depname}" ]; then
         if [ -z "${native}" ] && [ "$(echo ${depname} | grep -c '\-native')" -eq 0 ]; then
             for prefixname in ${cache_grades}; do
-                depcache=$(ls ${ENV_CACHE_DIR}/${prefixname}--${depname}--*.tar.gz 2>/dev/null)
+                depcache=$(ls ${ENV_CACHE_DIR}/${prefixname}--${depname}--*--*.tar.gz 2>/dev/null)
                 if [ ! -z "${depcache}" ]; then
-                    echo ${depcache} | sed -E 's/.*--(\w+).tar.gz/\1/g' >> ${checktmp1}
+                    echo ${depcache} | sed -E 's/.*--.*--(\w+).tar.gz/\1/g' >> ${checktmp1}
                     break
                 else
                     depcache=""
                 fi
             done
         else
-            depcache=$(ls ${ENV_CACHE_DIR}/$(uname -m)--${depname}--*.tar.gz 2>/dev/null)
+            depcache=$(ls ${ENV_CACHE_DIR}/$(uname -m)--${depname}--*--*.tar.gz 2>/dev/null)
             if [ ! -z "${depcache}" ]; then
-                echo ${depcache} | sed -E 's/.*--(\w+).tar.gz/\1/g' >> ${checktmp1}
+                echo ${depcache} | sed -E 's/.*--.*--(\w+).tar.gz/\1/g' >> ${checktmp1}
             else
                 depcache=""
             fi
@@ -289,7 +293,7 @@ get_depend_checksum_auto() {
     depstr=$(cat ${targetpath} | grep "^${packname}=\".*\"")
     wlog "get_depend_checksum_auto: depstr: ${depstr}"
     if [ ! -z "${depstr}" ]; then
-        deps=$(echo "${depstr}" | sed -E "s/^${packname}=\"(.*)\"/\1/g")
+        deps=$(echo "${depstr}" | sed -E "s/^${packname}=\"(.*)\".*/\1/g")
         wlog "get_depend_checksum_auto: deps: ${deps}"
         if [ ! -z "${deps}" ]; then
             for dep in ${deps}; do
@@ -421,13 +425,13 @@ get_checksum() {
 del_cache() {
     if [ -z "${native}" ]; then
         for prefixname in ${cache_grades}; do
-            packcache=$(ls ${ENV_CACHE_DIR}/${prefixname}--${packname}--*.tar.gz 2>/dev/null)
+            packcache=$(ls ${ENV_CACHE_DIR}/${prefixname}--${packname}--*--*.tar.gz 2>/dev/null)
             if [ ! -z "${packcache}" ]; then
                 rm -f ${packcache}
             fi
         done
     else
-        rm -f ${ENV_CACHE_DIR}/${native}--${packname}--*.tar.gz
+        rm -f ${ENV_CACHE_DIR}/${native}--${packname}--*--*.tar.gz
     fi
 }
 
@@ -435,7 +439,7 @@ check_cache() {
     get_checksum check
 
     if [ -e ${checkfile} ]; then
-        cachefile=${cache_prefix}--${packname}--$(cat ${checkfile}).tar.gz
+        cachefile=${cache_prefix}--${packname}--${version}--$(cat ${checkfile}).tar.gz
         wlog "INFO: cachefile: ${cachefile}"
 
         mirror_url=${ENV_MIRROR_URL}/build-cache/${cachefile}
@@ -462,7 +466,7 @@ check_cache() {
 pull_cache() {
     if [ ! -e ${insdir} ]; then
         if [ -e ${checkfile} ]; then
-            cachefile=${cache_prefix}--${packname}--$(cat ${checkfile}).tar.gz
+            cachefile=${cache_prefix}--${packname}--${version}--$(cat ${checkfile}).tar.gz
             if [ -e "${ENV_CACHE_DIR}/${cachefile}" ]; then
                 mkdir -p ${outdir}
                 tar -xf ${ENV_CACHE_DIR}/${cachefile} -C ${outdir}
@@ -492,7 +496,7 @@ push_cache() {
         wlog "INFO: push_cache: redo checksum"
     fi
     if [ -e ${checkfile} ]; then
-        cachefile=${cache_prefix}--${packname}--$(cat ${checkfile}).tar.gz
+        cachefile=${cache_prefix}--${packname}--${version}--$(cat ${checkfile}).tar.gz
         cd $(dirname ${insdir})
         tar -zcf ${cachefile} $(basename ${insdir})
         del_cache

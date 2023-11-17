@@ -166,38 +166,38 @@ endif
 ifeq ($(CACHE_BUILD),y)
 
 define do_checksum
-	$(CACHE_SCRIPT) -m check -r $(CACHE_STATUS) -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
+	$(CACHE_SCRIPT) -m check -r $(CACHE_STATUS) -p $(PACKAGE_NAME) -v $(VERSION) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE) \
 		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
 		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)') \
 		$(if $(CACHE_URL),-u '$(CACHE_URL)')
 endef
 
 define do_pushcache
-	$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE) \
+	$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) -v $(VERSION) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE) \
 		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
 		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)')
 endef
 
 define do_pullcache
-	$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -v $(CACHE_VERBOSE)
+	$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) -v $(VERSION) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE)
 endef
 
 define do_setforce
 	$(CACHE_SCRIPT) -m setforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+		-o $(CACHE_OUTPATH) -V $(CACHE_VERBOSE)
 endef
 
 define do_set1force
 	$(CACHE_SCRIPT) -m set1force -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -v $(CACHE_VERBOSE)
+		-o $(CACHE_OUTPATH) -V $(CACHE_VERBOSE)
 endef
 
 define do_unsetforce
 	$(CACHE_SCRIPT) -m unsetforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -v $(CACHE_VERBOSE)
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -V $(CACHE_VERBOSE)
 endef
 
 .PHONY: checksum psysroot cachebuild setforce set1force unsetforce
