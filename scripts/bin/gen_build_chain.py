@@ -1312,14 +1312,14 @@ class Deps:
                 if pkg_flags['cache']:
                     cache_str = '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'checksum')
 
-                compile_str = ''
+                compile_str = '\t@$(if $(pgcmd),$(pgcmd) begin=$@)\n'
                 if 'prepare' in item['targets']:
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'prepare')
                 compile_str += '\t%s%s%s\n' % (MAKEA.replace('@', '@$(PRECMD)', 1), makes, ' %s%s' % (unionstr, 'all') if unionstr else '')
                 if pkg_flags['isysroot']:
                     compile_str += '\t@install -d %s\n' % (isys_dir)
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'install')
-                compile_str += '\t@$(if $(progress_cmd),$(progress_cmd),echo "Build %s Done.")\n' % (item['target'])
+                compile_str += '\t@$(if $(pgcmd),$(pgcmd) end=$@,echo "Build %s Done.")\n' % (item['target'])
 
                 phony.append(item['target'])
                 if pkg_flags['finally']:

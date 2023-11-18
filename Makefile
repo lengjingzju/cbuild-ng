@@ -28,7 +28,7 @@ all: export MFLAG ?= -s
 all: loadconfig
 	@$(PROGRESS_SCRIPT) start &
 	@sleep 1
-	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
+	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= pgcmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port)" all_targets
 	@echo "Build done!"
 
 -include $(WORKDIR)/.config
@@ -68,7 +68,7 @@ all-deps:
 total_time: loadconfig
 	@$(PROGRESS_SCRIPT) start &
 	@sleep 1
-	@$(PRECMD)make $(MFLAG) progress_cmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) \$$@" all_targets
+	@$(PRECMD)make $(MFLAG) pgcmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port)" all_targets
 	@echo "Build done!"
 
 time_statistics: export MFLAG ?= -s
@@ -78,7 +78,7 @@ time_statistics:
 	@make $(MFLAG) PRECMD="$(TIME_FORMAT) " total_time
 	@echo "time statistics file is $(TIME_OUTPUT)"
 
-ifneq ($(progress_cmd), )
+ifneq ($(pgcmd), )
 
 progress_init:
 	@$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) total=$(words $(ALL_TARGETS))
