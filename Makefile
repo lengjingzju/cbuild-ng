@@ -17,39 +17,52 @@ DEF_CONFIG     := def_config
 IGNORE_DIRS    := .git:.svn:scripts:output:build:configs:examples:notes
 KEYWORDS       := none
 MAXLEVEL       := 3
-TIME_OUTPUT    := $(WORKDIR)/time_statistics.$(shell date +"%Y-%m-%d.%H-%M-%S.%N")
+TIME_OUTPUT    := $(WORKDIR)/time_statistics/$(shell date +"%Y-%m-%d--%H-%M-%S.%N")
 TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
-PROGRESS_SCRIPT:= python3 $(ENV_TOOL_DIR)/show_progress.py
+
+# if PGTOUT is set to '!', it will show stdout; if it is set to ' ', it doesn't show stdout
+PGTOUT         ?=
+PGPATH         := $(WORKDIR)/log/objs
+PGPORT         := $(if $(PGCMD),$(shell cat $(WORKDIR)/log/port))
 
 .PHONY: all clean distclean toolchain host-toolchain deps all-deps \
-	total_time time_statistics progress_init progress_stop
+	time_statistics progress progress_init
 
 all: export MFLAG ?= -s
-all: loadconfig
-	@$(PROGRESS_SCRIPT) start &
-	@sleep 1
-	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= pgcmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port)" all_targets
+all: loadconfig progress
+	@$(PGPATH)/progress $(PGTOUT)$(WORKDIR)/log $(PRECMD)make $(MFLAG) $(if $(filter y,$(tsflag)),,$(ENV_BUILD_JOBS)) \
+		MAKEFLAGS= PGCMD="$(PGPATH)/progress \$$(PGPORT)" all_targets
 	@echo "Build done!"
+
+time_statistics: export MFLAG ?= -s
+time_statistics: export tsflag := y
+time_statistics:
+	@mkdir -p $(shell dirname $(TIME_OUTPUT))
+	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(TIME_OUTPUT)
+	@make $(MFLAG) PRECMD="$(TIME_FORMAT) "
+	@echo "time statistics file is $(TIME_OUTPUT)"
+
+progress:
+	@mkdir -p $(PGPATH)
+	@make -s -C $(ENV_TOP_DIR)/scripts/progress NATIVE_BUILD=y O=$(PGPATH)
 
 -include $(WORKDIR)/.config
 -include $(WORKDIR)/auto.mk
 -include $(ENV_MAKE_DIR)/inc.conf.mk
 
 clean:
-	@$(PROGRESS_SCRIPT) stop
-	@rm -rf $(ENV_CROSS_ROOT)/objects $(ENV_CROSS_ROOT)/sysroot $(ENV_NATIVE_ROOT)
+	@rm -rf $(ENV_CROSS_ROOT)/objects $(ENV_CROSS_ROOT)/sysroot $(WORKDIR)/log $(ENV_NATIVE_ROOT)
 	@echo "Clean Done."
 
 distclean:
-	@$(PROGRESS_SCRIPT) stop
 	@rm -rf $(ENV_CROSS_ROOT) $(ENV_NATIVE_ROOT)
 	@echo "Distclean Done."
 
 toolchain:
-	@$(PRECMD)make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain
+	@make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain
 
 host-toolchain:
-	@$(PRECMD)make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain HOST_TOOLCHAIN=y
+	@make $(MFLAG) $(ENV_BUILD_JOBS) -C $(ENV_TOP_DIR)/scripts/toolchain HOST_TOOLCHAIN=y
 
 buildkconfig: deps
 deps:
@@ -65,31 +78,15 @@ all-deps:
 		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config; \
 	done
 
-total_time: loadconfig
-	@$(PROGRESS_SCRIPT) start &
-	@sleep 1
-	@$(PRECMD)make $(MFLAG) pgcmd="$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port)" all_targets
-	@echo "Build done!"
-
-time_statistics: export MFLAG ?= -s
-time_statistics:
-	@mkdir -p $(WORKDIR)
-	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(TIME_OUTPUT)
-	@make $(MFLAG) PRECMD="$(TIME_FORMAT) " total_time
-	@echo "time statistics file is $(TIME_OUTPUT)"
-
-ifneq ($(pgcmd), )
+ifneq ($(PGCMD), )
 
 progress_init:
-	@$(PROGRESS_SCRIPT) $$(cat $(WORKDIR)/pg.port) total=$(words $(ALL_TARGETS))
-
-progress_stop:
-	@$(PROGRESS_SCRIPT) stop
+	@$(PGCMD) total=$(words $(ALL_TARGETS))
 
 $(ALL_TARGETS): progress_init
 
 all_targets:
-	@$(PROGRESS_SCRIPT) stop
+	@$(PGCMD) stop
 
 endif
 

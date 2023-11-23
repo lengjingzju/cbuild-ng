@@ -1312,14 +1312,14 @@ class Deps:
                 if pkg_flags['cache']:
                     cache_str = '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'checksum')
 
-                compile_str = '\t@$(if $(pgcmd),$(pgcmd) begin=$@)\n'
+                compile_str = '\t@$(if $(PGCMD),$(PGCMD) begin=$@)\n'
                 if 'prepare' in item['targets']:
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'prepare')
                 compile_str += '\t%s%s%s\n' % (MAKEA.replace('@', '@$(PRECMD)', 1), makes, ' %s%s' % (unionstr, 'all') if unionstr else '')
                 if pkg_flags['isysroot']:
                     compile_str += '\t@install -d %s\n' % (isys_dir)
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'install')
-                compile_str += '\t@$(if $(pgcmd),$(pgcmd) end=$@,echo "Build %s Done.")\n' % (item['target'])
+                compile_str += '\t@$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n' % (item['target'])
 
                 phony.append(item['target'])
                 if pkg_flags['finally']:
@@ -1376,7 +1376,7 @@ class Deps:
                     if 'norelease' in item['targets']:
                         fp.write('\t@\n\n')
                     else:
-                        fp.write('\t@echo "    %s"\n' % (item['target']))
+                        fp.write('\t@echo "    %s" >&2 \n' % (item['target']))
                         if pkg_flags['isysroot']:
                             fp.write('\t%s\n\n' % (isys_cmd.replace('$(INSTALL_OPTION)', 'release', 1)))
                         else:

@@ -22,7 +22,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 .PHONY: all clean install
 
 all:
-	@echo "Build $(PACKAGE_NAME) Done."
+	@echo "Build $(PACKAGE_ID) Done."
 
 clean:
 	@echo "Clean $(PACKAGE_NAME) Done."

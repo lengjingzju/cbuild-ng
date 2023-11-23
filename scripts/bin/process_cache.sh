@@ -115,7 +115,7 @@ targetpath=${ENV_CFG_ROOT}/Target
 wlog() {
     if [ $(echo "$1" | grep -c "ERROR:\|WARNING:") -ne 0 ]; then
         if [ $(echo "$1" | grep -c "ERROR:") -ne 0 ]; then
-            echo -e "\033[31m$1\033[0m"
+            echo -e "\033[31m$1\033[0m" >&2
         else
             echo -e "\033[33m$1\033[0m"
         fi

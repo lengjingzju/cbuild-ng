@@ -39,22 +39,22 @@ licenses: cleanroot
 	@mkdir -p $(LICENSE_PATH)
 	@cp -drf licenses/* $(LICENSE_PATH)
 	@$(call install_lics)
-	@python3 $(PACKAGE_SCRIPT) -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt \
+	@python3 $(PACKAGE_SCRIPT) -c $(ENV_CFG_ROOT)/.config -i $(ENV_CFG_ROOT)/info.txt -s licenses/spdx-licenses.html \
 		-o $(LICENSE_PATH)/index.txt -w $(LICENSE_PATH)/index.html -f 1:1
 
 spdxlist:
 	@python3 $(PACKAGE_SCRIPT)
 
 packages: cleanroot licenses
-	@echo "Install Packages:"
-	@echo "----------------------------------------"
+	@echo "Install Packages:" >&2
+	@echo "----------------------------------------" >&2
 	@mkdir -p $(FAKEROOT_DIR)
-	@make -s -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_releases
-ifneq ($(ENV_BUILD_TOOL), )
-	@echo "    glibc from $(shell PATH=$(PATH) $(CC) -print-sysroot)"
+	@make -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(FAKEROOT_DIR) INSTALL_OPTION=release all_releases
+ifneq ($(shell PATH=$(PATH) $(CC) -print-sysroot), )
+	@echo "    glibc from $(shell PATH=$(PATH) $(CC) -print-sysroot)" >&2
 	@$(SYSROOT_SCRIPT) release $(shell PATH=$(PATH) $(CC) -print-sysroot) $(FAKEROOT_DIR)
 endif
-	@echo "----------------------------------------"
+	@echo "----------------------------------------" >&2
 
 elfs: packages
 	@echo "Strip ELFs ..."

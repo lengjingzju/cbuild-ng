@@ -1,0 +1,858 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+# https://github.com/lengjingzju/cbuild-ng #
+############################################
+
+############# Date: 2023-11-16 #############
+
+# The default behavior only includes inc.env.mk and inc.ins.mk.
+# INC_MAKES can be set to a combination of `disenv` `conf` `app` `mod` `disins`.
+#   disenv: Excluding inc.env.mk
+#   conf  : Including inc.conf.mk
+#   app   : Including inc.app.mk
+#   mod   : Including inc.mod.mk
+#   disins: Excluding inc.ins.mk
+
+################ inc.env.mk ################
+
+ifeq ($(filter disenv,$(INC_MAKES)), )
+
+COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
+TOLOG          ?= $(if $(filter -s,$(MFLAG)),1>/dev/null)
+
+INSTALL_HDR    ?= $(PACKAGE_NAME)
+SEARCH_HDRS    ?= $(PACKAGE_DEPS)
+ifneq ($(NATIVE_BUILD),y)
+PACKAGE_ID     := $(PACKAGE_NAME)
+else
+PACKAGE_ID     := $(PACKAGE_NAME)-native
+endif
+
+ENV_OPTIMIZER  ?= release
+ifeq ($(ENV_OPTIMIZER),debug)
+OPTIMIZER_FLAG ?= -O0 -g -ggdb
+else ifeq ($(ENV_OPTIMIZER),speed)
+OPTIMIZER_FLAG ?= -O3
+else
+OPTIMIZER_FLAG ?= -O2
+endif
+
+ifneq ($(ENV_BUILD_MODE),yocto)
+
+ifneq ($(NATIVE_BUILD),y)
+ENV_CROSS_ROOT ?= $(shell pwd)
+WORKDIR        ?= $(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)
+SYS_PREFIX     ?= $(ENV_CROSS_ROOT)/sysroot
+ifneq ($(CROSS_DESTDIR), )
+INS_PREFIX     := $(CROSS_DESTDIR)
+endif
+ifneq ($(GLOBAL_SYSROOT),y)
+DEP_PREFIX     ?= $(WORKDIR)/sysroot
+else
+DEP_PREFIX     ?= $(SYS_PREFIX)
+endif
+else # NATIVE_BUILD
+ENV_NATIVE_ROOT?= $(shell pwd)
+WORKDIR        ?= $(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)
+SYS_PREFIX     ?= $(ENV_NATIVE_ROOT)/sysroot
+ifneq ($(NATIVE_DESTDIR), )
+INS_PREFIX     := $(NATIVE_DESTDIR)
+endif
+ifneq ($(GLOBAL_SYSROOT),y)
+DEP_PREFIX     ?= $(WORKDIR)/sysroot-native
+else
+DEP_PREFIX     ?= $(SYS_PREFIX)
+endif
+endif # NATIVE_BUILD
+
+INS_SUBDIR     ?= /usr
+INS_TOPDIR     ?= $(WORKDIR)/image
+INS_PREFIX     ?= $(WORKDIR)/image
+OBJ_SUBDIR     ?=
+OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
+ifneq ($(GLOBAL_SYSROOT),y)
+PATH_PREFIX    ?= $(WORKDIR)/sysroot-native
+else
+PATH_PREFIX    ?= $(ENV_NATIVE_ROOT)/sysroot
+endif
+
+else # ENV_BUILD_MODE
+
+# WORKDIR should be exported by yocto recipe.
+# Yocto doesn't have SYS_PREFIX INS_TOPDIR INS_SUBDIR
+ifneq ($(NATIVE_BUILD),y)
+INS_PREFIX     ?= $(WORKDIR)/image
+DEP_PREFIX     ?= $(WORKDIR)/recipe-sysroot
+else # NATIVE_BUILD
+INS_PREFIX     ?= $(WORKDIR)/image/$(WORKDIR)/recipe-sysroot-native
+DEP_PREFIX     ?= $(WORKDIR)/recipe-sysroot-native
+endif # NATIVE_BUILD
+
+OBJ_SUBDIR     ?=
+OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
+PATH_PREFIX    ?= $(WORKDIR)/recipe-sysroot-native
+
+endif # ENV_BUILD_MODE
+
+ifneq ($(O), )
+OBJ_PREFIX     := $(O)$(OBJ_SUBDIR)
+endif
+
+ifneq ($(DESTDIR), )
+INS_PREFIX     := $(DESTDIR)
+endif
+
+ifneq ($(DEPDIR), )
+DEP_PREFIX     := $(DEPDIR)
+endif
+
+define link_hdrs
+$(addprefix -I,$(addprefix $(DEP_PREFIX),/include /usr/include) \
+	$(if $(SEARCH_HDRS),$(wildcard \
+	$(addprefix $(DEP_PREFIX)/include/,$(SEARCH_HDRS)) \
+	$(addprefix $(DEP_PREFIX)/usr/include/,$(SEARCH_HDRS)) \
+)))
+endef
+
+ifeq ($(KERNELRELEASE), )
+
+comma          :=,
+define link_libs
+$(addprefix -L,$(addprefix $(DEP_PREFIX),/lib /usr/lib)) \
+$(addprefix -Wl$(comma)-rpath-link=,$(addprefix $(DEP_PREFIX),/lib /usr/lib))
+endef
+
+ifneq ($(filter y,$(NATIVE_DEPEND) $(NATIVE_BUILD)), )
+export PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/bin /usr/bin /sbin /usr/sbin)$(if $(PATH),:$(PATH)) | sed 's/ /:/g')
+export LD_LIBRARY_PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/lib /usr/lib)$(if $(LD_LIBRARY_PATH),:$(LD_LIBRARY_PATH)) | sed 's/ /:/g')
+endif
+
+ifneq ($(LICFILE), )
+ifneq ($(ENV_BUILD_MODE),yocto)
+ifneq ($(NATIVE_BUILD),y)
+LICPATH        ?= $(SRC_PATH)
+LICDEST        ?= $(INS_PREFIX)
+define install_lics
+	$(ENV_TOOL_DIR)/process_sysroot.sh license $(LICPATH) $(LICDEST) $(PACKAGE_NAME) "$(LICFILE)"
+endef
+endif
+endif
+endif
+
+ifeq ($(install_lics), )
+define install_lics
+	true
+endef
+endif
+
+# yocto envs should be exported by yocto recipe.
+
+ifneq ($(ENV_BUILD_MODE),yocto)
+
+PREPARE_SYSROOT := -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
+                  NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
+
+ifneq ($(DIS_PC_EXPORT),y)
+export PKG_CONFIG_LIBDIR:=$(DEP_PREFIX)/usr/lib/pkgconfig
+export PKG_CONFIG_PATH:=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib))) | sed 's@ @:@g')
+endif
+
+ifneq ($(NATIVE_BUILD),y)
+
+ifneq ($(ENV_BUILD_ARCH), )
+ARCH           := $(ENV_BUILD_ARCH)
+export ARCH
+endif
+
+ifneq ($(ENV_BUILD_TOOL), )
+ifneq ($(findstring /,$(ENV_BUILD_TOOL)), )
+CROSS_TOOLPATH := $(shell dirname $(ENV_BUILD_TOOL))
+CROSS_COMPILE  := $(shell basename $(ENV_BUILD_TOOL))
+export PATH:=$(CROSS_TOOLPATH):$(PATH)
+else
+CROSS_COMPILE  := $(ENV_BUILD_TOOL)
+endif
+export CROSS_COMPILE
+endif
+
+ifeq ($(CC_TOOL),clang)
+CC             := $(CROSS_COMPILE)clang
+CPP            := $(CROSS_COMPILE)clang -E
+CXX            := $(CROSS_COMPILE)clang++
+AS             := $(CROSS_COMPILE)llvm-as
+LD             := $(CROSS_COMPILE)lld
+AR             := $(CROSS_COMPILE)llvm-ar
+RANLIB         := $(CROSS_COMPILE)llvm-ranlib
+OBJCOPY        := $(CROSS_COMPILE)llvm-objcopy
+STRIP          := $(CROSS_COMPILE)llvm-strip
+else
+CC             := $(CROSS_COMPILE)gcc
+CPP            := $(CROSS_COMPILE)gcc -E
+CXX            := $(CROSS_COMPILE)g++
+AS             := $(CROSS_COMPILE)as
+LD             := $(CROSS_COMPILE)ld
+AR             := $(CROSS_COMPILE)ar
+RANLIB         := $(CROSS_COMPILE)ranlib
+OBJCOPY        := $(CROSS_COMPILE)objcopy
+STRIP          := $(CROSS_COMPILE)strip
+endif
+export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
+
+else # NATIVE_BUILD
+
+undefine ARCH CROSS_COMPILE
+unexport ARCH CROSS_COMPILE
+
+ifeq ($(CC_TOOL),clang)
+CC             := clang
+CPP            := clang -E
+CXX            := clang++
+AS             := llvm-as
+LD             := lld
+AR             := llvm-ar
+RANLIB         := llvm-ranlib
+OBJCOPY        := llvm-objcopy
+STRIP          := llvm-strip
+else
+CC             := gcc
+CPP            := gcc -E
+CXX            := g++
+AS             := as
+LD             := ld
+AR             := ar
+RANLIB         := ranlib
+OBJCOPY        := objcopy
+STRIP          := strip
+endif
+export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
+
+endif # NATIVE_BUILD
+endif # ENV_BUILD_MODE
+
+# Defines the GNU standard installation directories
+# Note: base_*dir and hdrdir are not defined in the GNUInstallDirs
+# GNUInstallDirs/Autotools: https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+# CMake: https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
+# Meson: https://mesonbuild.com/Builtin-options.html#directories
+# Yocto: https://git.yoctoproject.org/poky/tree/meta/conf/bitbake.conf
+
+base_bindir    := /bin
+base_sbindir   := /sbin
+base_libdir    := /lib
+bindir         := /usr/bin
+sbindir        := /usr/sbin
+libdir         := /usr/lib
+libexecdir     := /usr/libexec
+hdrdir         := /usr/include/$(INSTALL_HDR)
+includedir     := /usr/include
+datarootdir    := /usr/share
+datadir        := $(datarootdir)
+infodir        := $(datadir)/info
+localedir      := $(datadir)/locale
+mandir         := $(datadir)/man
+docdir         := $(datadir)/doc
+sysconfdir     := /etc
+servicedir     := /srv
+sharedstatedir := /com
+localstatedir  := /var
+runstatedir    := /run
+
+endif # KERNELRELEASE
+endif
+
+################ inc.conf.mk ###############
+
+ifneq ($(filter conf,$(INC_MAKES)), )
+ifeq ($(KERNELRELEASE), )
+
+CONF_WORKDIR     ?= $(ENV_NATIVE_ROOT)/objects/kconfig
+CONF_SRC         ?= $(ENV_MAKE_DIR)/../kconfig
+CONF_PATH        ?= $(CONF_WORKDIR)/image/usr/bin
+CONF_OUT         ?= $(if $(OBJ_PREFIX),$(OBJ_PREFIX),.)
+KCONFIG          ?= Kconfig
+CONF_SAVE_PATH   ?= config
+CONF_PREFIX      ?= srctree=$(shell pwd)
+CONF_HEADER      ?= $(shell echo __$(PACKAGE_NAME)_CONFIG_H__ | tr '[:lower:]' '[:upper:]')
+CONF_APPEND_CMD  ?=
+
+CONFIG_PATH      := $(CONF_OUT)/.config
+AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
+AUTOHEADER_PATH  := $(CONF_OUT)/config.h
+CONF_OPTIONS     := $(KCONFIG) --configpath $(CONFIG_PATH) \
+					--autoconfigpath $(AUTOCONFIG_PATH) \
+					--autoheaderpath $(AUTOHEADER_PATH)
+
+define gen_config_header
+	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --syncconfig && \
+		sed -i -e "1 i #ifndef $(CONF_HEADER)" -e "1 i #define $(CONF_HEADER)" -e '1 i \\' \
+		-e '$$ a \\' -e "\$$ a #endif" $(AUTOHEADER_PATH) && \
+		$(if $(CONF_APPEND_CMD),$(CONF_APPEND_CMD),:)
+endef
+
+define sync_config_header
+	if [ -e $(CONFIG_PATH) ]; then \
+		if [ -e $(AUTOHEADER_PATH) ]; then \
+			if [ $$(stat -c %Y $(CONFIG_PATH)) -gt $$(stat -c %Y $(AUTOHEADER_PATH)) ]; then \
+				$(call gen_config_header); \
+			fi; \
+		else \
+			$(call gen_config_header); \
+		fi; \
+	fi
+endef
+
+ifneq ($(DEF_CONFIG), )
+config_hash_file := $(CONFIG_PATH)-md5-$(shell md5sum $(CONF_SAVE_PATH)/$(DEF_CONFIG) | cut -d ' ' -f 1)
+define process_config_hash
+	rm -f $(CONFIG_PATH)-md5-* && echo > $(config_hash_file)
+endef
+else
+define process_config_hash
+	rm -f $(CONFIG_PATH)-md5-*
+endef
+endif
+
+define load_specific_config
+	mkdir -p $(CONF_OUT); \
+	cp -f $1 $(CONFIG_PATH); \
+	$(call process_config_hash); \
+	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --defconfig $1; \
+	$(call gen_config_header); \
+	echo Load $1 to $(CONFIG_PATH)
+endef
+
+.PHONY: buildkconfig cleankconfig menuconfig loadconfig defconfig cleanconfig
+
+ifneq ($(ENV_BUILD_MODE),yocto)
+
+ifeq ($(CONF_MAKES), )
+CONF_MFLAG       ?= -s
+CONF_MAKES       := $(CONF_MFLAG) O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
+endif
+
+buildkconfig:
+ifeq ($(wildcard $(CONF_PATH)/mconf), )
+	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
+endif
+
+cleankconfig:
+	@-$(MAKE) $(CONF_MAKES) clean
+
+else
+
+buildkconfig cleankconfig:
+
+endif
+
+menuconfig: buildkconfig
+	@mkdir -p $(CONF_OUT)
+	@mtime="$(if $(wildcard $(CONFIG_PATH)),$(if $(wildcard $(AUTOHEADER_PATH)),$$(stat -c %Y $(CONFIG_PATH)),0),0)"; \
+		$(CONF_PREFIX) $(CONF_PATH)/mconf $(CONF_OPTIONS); \
+		if [ "$${mtime}" != "$$(stat -c %Y $(CONFIG_PATH))" ]; then \
+			$(call gen_config_header); \
+		else \
+			$(call sync_config_header); \
+		fi
+
+ifneq ($(DEF_CONFIG), )
+menuconfig: loadconfig
+
+loadconfig: buildkconfig
+	@if [ ! -e $(CONFIG_PATH) ] || [ ! -e $(config_hash_file) ]; then \
+		$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG)); \
+	else \
+		$(call sync_config_header); \
+	fi
+
+defconfig: buildkconfig
+	@$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG))
+endif
+
+%_config: $(CONF_SAVE_PATH)/%_config buildkconfig
+	@$(call load_specific_config,$<)
+
+%_defconfig: $(CONF_SAVE_PATH)/%_defconfig buildkconfig
+	@$(call load_specific_config,$<)
+
+%_saveconfig: $(CONFIG_PATH) buildkconfig
+	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+
+%_savedefconfig: $(CONFIG_PATH) buildkconfig
+	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+
+cleanconfig: cleankconfig
+	@rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(dir $(AUTOCONFIG_PATH)) $(AUTOHEADER_PATH)
+
+endif
+endif
+
+################ inc.app.mk ################
+
+ifneq ($(filter app,$(INC_MAKES)), )
+ifeq ($(KERNELRELEASE), )
+
+COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
+SRC_PATH       ?= .
+IGNORE_PATH    ?= .git .pc scripts output
+REG_SUFFIX     ?= c cpp S
+ifeq ($(USING_CXX_BUILD_C),y)
+CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
+else
+CXX_SUFFIX     ?= cc cp cxx cpp CPP c++ C
+endif
+ASM_SUFFIX     ?= S s asm
+
+ifeq ($(SRCS), )
+SRCS           := $(shell find $(SRC_PATH) $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
+                      $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
+                  | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs)
+endif
+
+imake_cpflags  := -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
+imake_ldflags  := -L$(OBJ_PREFIX) -Wl,-rpath-link=$(OBJ_PREFIX)
+prior_ldflags  :=
+
+imake_cpflags  += $(call link_hdrs)
+imake_ldflags  += $(call link_libs)
+
+imake_cpflags  += $(OPTIMIZER_FLAG)
+imake_ldflags  += -Wl,-O1
+ifeq ($(ENV_OPTIMIZER),release)
+imake_cpflags  += -ffunction-sections -fdata-sections
+imake_ldflags  += -Wl,--gc-sections
+endif
+#imake_ldflags += -static
+
+imake_cpflags  += -Wall # This enables all the warnings about constructions that some users consider questionable.
+imake_cpflags  += -Wextra # This enables some extra warning flags that are not enabled by -Wall (This option used to be called -W).
+imake_cpflags  += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),1024) # Warn whenever an object is defined whose size exceeds object_byte_size.
+imake_cpflags  += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
+#imake_cpflags += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
+
+# Use https://github.com/slimm609/checksec.sh/ to check the secture
+ifeq ($(ENV_SECURITY),y)
+# NX(No-eXecute) or DEP(Data Execution Prevention)
+#-z execstack # the default value is execstack, close it with noexecstack
+# Canary
+SEC_CPFLAGS    += -fstack-protector-strong  # check stack overflow
+# Fortify
+SEC_CPFLAGS    += -D_FORTIFY_SOURCE=2       # check string funcs overflow
+SEC_CPFLAGS    += -Wformat -Werror=format-security
+# PIC(Position Independent Code) / PIE(Position-Independent Executable) / ASLR(Address Space Layout Randomization)
+#CPFLAGS: -fPIC for libraries, -fPIE for executables; LDFLAGS: -fPIC for shared libraries, -pie for executables
+# Don't link unused shared libraries
+SEC_LDFLAGS    += -Wl,--as-needed
+# RELRO(Relocation Read-Only) https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro
+SEC_LDFLAGS    += -Wl,-z,relro,-z,now
+
+imake_cpflags  += $(SEC_CPFLAGS)
+prior_ldflags  += $(SEC_LDFLAGS)
+endif
+
+# For more description, refer to https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Instrumentation-Options.html
+ifeq ($(ENV_SANITIZER),1)
+# Enable AddressSanitizer, a fast memory error detector to detect out-of-bounds and use-after-free bugs.
+SANITIZER_FLAG ?= -fsanitize=address
+else ifeq ($(ENV_SANITIZER),2)
+# Enable ThreadSanitizer, a fast data race detector.
+# Memory access instructions are instrumented to detect data race bugs.
+SANITIZER_FLAG ?= -fsanitize=thread
+else ifeq ($(ENV_SANITIZER),3)
+# Enable LeakSanitizer, a memory leak detector. This option only matters for linking of executables,
+# and the executable is linked against a library that overrides malloc and other allocator functions.
+SANITIZER_FLAG ?= -fsanitize=leak
+else ifeq ($(ENV_SANITIZER),4)
+# Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
+# Various computations are instrumented to detect undefined behavior at runtime.
+SANITIZER_FLAG ?= -fsanitize=undefined
+endif
+imake_cpflags  += $(SANITIZER_FLAG)
+imake_ldflags  += $(SANITIZER_FLAG)
+
+ifeq ($(ENV_ANALYZER),y)
+ifneq ($(filter %gcc,$(CC)), )
+# For more description, refer to https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html
+ifeq ($(shell expr `PATH=$(PATH) $(CC) -dumpversion` \>= 10),1)
+imake_cpflags  += -fanalyzer
+imake_ldflags  += -fanalyzer
+endif
+else
+# For more description, refer to https://clang.llvm.org/docs/ClangStaticAnalyzer.html
+# clang --analyze -Xanalyzer -analyzer-checker=<package> <source-files>
+# <package> can be got from `clang -cc1 -analyzer-checker-help`
+imake_cpflags  += --analyze
+imake_ldflags  += --analyze
+endif
+endif
+
+imake_cpflags  += $(IMAKE_CPFLAGS)
+imake_ldflags  += $(IMAKE_LDFLAGS)
+prior_ldflags  += $(PRIOR_LDFLAGS)
+
+CHECK_INFO     += ENV_OPTIMIZER=$(ENV_OPTIMIZER)        \
+                  ENV_SECURITY=$(ENV_SECURITY)          \
+                  ENV_SANITIZER=$(ENV_SANITIZER)        \
+                  ENV_ANALYZER=$(ENV_ANALYZER)          \
+                  USING_CXX_BUILD_C=$(USING_CXX_BUILD_C)\
+                  CC=$(CC)                              \
+                  CFLAGS=$(CFLAGS)                      \
+                  CXXFLAGS=$(CXXFLAGS)                  \
+                  CPFLAGS=$(CPFLAGS)                    \
+                  LDFLAGS=$(LDFLAGS)                    \
+                  imake_cpflags=$(imake_cpflags)        \
+                  imake_ldflags=$(imake_ldflags)        \
+                  prior_ldflags=$(prior_ldflags)
+
+define translate_obj
+$(patsubst %,$(OBJ_PREFIX)/%.o,$(basename $(1)))
+endef
+
+define set_flags
+$(foreach v,$(2),$(eval $(1)_$(patsubst %,%.o,$(basename $(v))) := $(3)))
+endef
+
+define set_links
+-Wl,-Bstatic $(addprefix -l,$(1)) -Wl,-Bdynamic $(addprefix -l,$(2))
+endef
+
+define all_ver_obj
+$(strip \
+	$(if $(word 4,$(1)), \
+		$(if $(word 4,$(1)),$(word 1,$(1)).$(word 2,$(1)).$(word 3,$(1)).$(word 4,$(1))) \
+		$(if $(word 2,$(1)),$(word 1,$(1)).$(word 2,$(1))) \
+		$(word 1,$(1)) \
+		,\
+		$(if $(word 3,$(1)),$(word 1,$(1)).$(word 2,$(1)).$(word 3,$(1))) \
+		$(if $(word 2,$(1)),$(word 1,$(1)).$(word 2,$(1))) \
+		$(word 1,$(1)) \
+	)
+)
+endef
+
+define compile_tool
+$(if $(filter $(patsubst %,\%.%,$(CXX_SUFFIX)),$(1)),$(CXX),$(CC))
+endef
+
+define compile_obj
+ifeq ($(filter $(1),$(REG_SUFFIX)),$(1))
+ifneq ($(filter %.$(1),$(SRCS)), )
+$$(patsubst %.$(1),$$(OBJ_PREFIX)/%.o,$$(filter %.$(1),$$(SRCS))): $$(OBJ_PREFIX)/%.o: %.$(1)
+	@mkdir -p $$(dir $$@)
+ifeq ($(filter $(1),$(ASM_SUFFIX)), )
+	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) $$(PRIVATE_CPFLAGS) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
+	@cat $$(patsubst %.o,%.d,$$@) | sed -e 's/#.*//' -e 's/^[^:]*:\s*//' -e 's/\s*\\$$$$//' -e 's/[ \t\v][ \t\v]*/\n/g' | sed -e '/^$$$$/ d' -e 's/$$$$/:/g' >> $$(patsubst %.o,%.d,$$@)
+endif
+	@$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
+ifneq ($(2),$(AS))
+	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) $$(PRIVATE_CPFLAGS) -o $$@ $$<
+else
+	@$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
+endif
+endif
+endif
+endef
+
+ifeq ($(USING_CXX_BUILD_C),y)
+$(eval $(call compile_obj,c,$$(CXX)))
+else
+$(eval $(call compile_obj,c,$$(CC)))
+endif
+$(eval $(call compile_obj,cc,$$(CXX)))
+$(eval $(call compile_obj,cp,$$(CXX)))
+$(eval $(call compile_obj,cxx,$$(CXX)))
+$(eval $(call compile_obj,cpp,$$(CXX)))
+$(eval $(call compile_obj,CPP,$$(CXX)))
+$(eval $(call compile_obj,c++,$$(CXX)))
+$(eval $(call compile_obj,C,$$(CXX)))
+$(eval $(call compile_obj,S,$$(CC)))
+$(eval $(call compile_obj,s,$$(AS)))
+$(eval $(call compile_obj,asm,$$(AS)))
+
+OBJS           := $(call translate_obj,$(SRCS))
+DEPS           := $(patsubst %.o,%.d,$(OBJS))
+CHECK_FILE     := $(OBJ_PREFIX)/checkinfo
+
+$(OBJS): $(MAKEFILE_LIST) $(CHECK_FILE)
+-include $(DEPS)
+
+$(CHECK_FILE): $(CHECK_FILE).tmp
+	@if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
+		rm -f $<; \
+	else \
+		mv -f $< $@; \
+	fi
+
+$(CHECK_FILE).tmp:
+	@mkdir -p $(OBJ_PREFIX)
+	@echo "$(CHECK_INFO)" > $@
+
+.PHONY: clean_objs
+
+clean_objs:
+	@rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)
+
+define add-liba-build
+LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
+$$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := -fPIC $(4)
+$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3) $(5)
+	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	@rm -f $$@
+	@$$(AR) rc $$@ $$(call translate_obj,$(2))
+ifneq ($(3), )
+	@echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
+	@echo ADDLIB $(lib) >> $$@.mri)
+	@echo SAVE >> $$@.mri
+	@echo END >> $$@.mri
+	@$$(AR) -M < $$@.mri
+	@rm -f $$@.mri
+endif
+endef
+
+define add-libso-build
+libso_names := $(call all_ver_obj,$(1))
+LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
+
+$$(OBJ_PREFIX)/$$(firstword $$(libso_names)): PRIVATE_CPFLAGS := -fPIC $(4)
+$$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2)) $(5)
+	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
+		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
+
+ifneq ($$(word 2,$$(libso_names)), )
+$$(OBJ_PREFIX)/$$(word 2,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 1,$$(libso_names))
+	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+endif
+
+ifneq ($$(word 3,$$(libso_names)), )
+$$(OBJ_PREFIX)/$$(word 3,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 2,$$(libso_names))
+	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+endif
+
+ifneq ($$(word 4,$$(libso_names)), )
+$$(OBJ_PREFIX)/$$(word 4,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 3,$$(libso_names))
+	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+endif
+
+endef
+
+define add-bin-build
+BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
+$$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := $(if $(filter y,$(ENV_SECURITY)),-fPIE) $(4)
+$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(5)
+	@$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	@$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
+endef
+
+ifneq ($(LIBA_NAME), )
+$(eval $(call add-liba-build,$(LIBA_NAME),$(SRCS)))
+endif
+
+ifneq ($(LIBSO_NAME), )
+$(eval $(call add-libso-build,$(LIBSO_NAME),$(SRCS)))
+endif
+
+ifneq ($(BIN_NAME), )
+$(eval $(call add-bin-build,$(BIN_NAME),$(SRCS)))
+endif
+
+INSTALL_LIBRARIES ?= $(LIB_TARGETS)
+INSTALL_BINARIES  ?= $(BIN_TARGETS)
+
+endif
+endif
+
+################ inc.mod.mk ################
+
+ifneq ($(filter mod,$(INC_MAKES)), )
+ifneq ($(KERNELRELEASE), )
+
+MOD_NAME       ?= hello
+obj-m          := $(patsubst %,%.o,$(MOD_NAME))
+
+imake_ccflags  := $(patsubst %,-I%,$(src) $(src)/include $(obj))
+imake_ccflags  += $(call link_hdrs)
+imake_ccflags  += $(OPTIMIZER_FLAG)
+imake_ccflags  += $(IMAKE_CCFLAGS)
+
+ccflags-y      += $(imake_ccflags)
+
+define translate_obj
+$(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))
+endef
+
+define set_flags
+$(foreach v,$(2),$(eval $(1)_$(call translate_obj,$(v)) = $(3)))
+endef
+
+ifeq ($(words $(MOD_NAME)),1)
+
+IGNORE_PATH    ?= .git .pc scripts output
+REG_SUFFIX     ?= c S
+
+ifeq ($(SRCS), )
+SRCS           := $(filter-out %.mod.c,$(shell find $(src) \
+                          $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
+                          $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
+                     | xargs))
+endif
+OBJS           := $(call translate_obj,$(SRCS))
+
+ifneq ($(words $(OBJS))-$(OBJS),1-$(MOD_NAME).o)
+$(MOD_NAME)-y  := $(OBJS)
+endif
+
+else
+
+# If multiple modules are compiled at the same time, user should
+# set objs under every module himself.
+
+endif
+
+else # KERNELRELEASE
+
+KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
+MOD_PATH       ?= $(shell pwd)
+
+ifeq ($(MOD_MAKES), )
+MOD_MAKES      := -C $(KERNEL_SRC)
+else
+MOD_MAKES      += -C $(KERNEL_SRC)
+endif
+
+ifneq ($(ENV_BUILD_MODE),yocto)
+MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
+endif
+
+ifneq ($(filter $(OBJ_PREFIX),. $(MOD_PATH)), )
+MOD_MAKES      += M=$(MOD_PATH)
+else
+
+MOD_MAKES      += M=$(OBJ_PREFIX) src=$(MOD_PATH)
+KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
+
+modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
+
+$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
+	@-mkdir -p $(dir $@)
+	@-cp -f $< $@
+
+#
+# Note:
+# Users should copy the Kbuild or Makefile to avoid compilation failures.
+# If they don't want to copy it, they should modify the
+# "$(KERNEL_SRC)/scripts/Makefile.modpost" as follow:
+#   -include $(if $(wildcard $(KBUILD_EXTMOD)/Kbuild), \
+#   -             $(KBUILD_EXTMOD)/Kbuild, $(KBUILD_EXTMOD)/Makefile)
+#   +include $(if $(wildcard $(src)/Kbuild), $(src)/Kbuild, $(src)/Makefile)
+#
+
+endif
+
+export SEARCH_HDRS PACKAGE_NAME
+
+.PHONY: modules modules_clean modules_install symvers_install
+
+modules:
+	@$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
+
+modules_clean:
+	@$(MAKE) $(MOD_MAKES) clean
+
+modules_install:
+	@$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
+
+symvers_install:
+	@install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+	@cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+
+install_hdrs: symvers_install
+
+endif
+endif
+
+################ inc.ins.mk ################
+
+ifeq ($(filter disins,$(INC_MAKES)), )
+ifeq ($(KERNELRELEASE), )
+
+# Defines the compatible variables with previous inc.ins.mk
+
+INSTALL_BASE_BINARIES  ?= $(INSTALL_BINARIES)
+INSTALL_BASE_BINS      ?= $(INSTALL_BASE_BINARIES)
+INSTALL_BINS           ?= $(INSTALL_BINARIES)
+INSTALL_BASE_LIBRARIES ?= $(INSTALL_LIBRARIES)
+INSTALL_BASE_LIBS      ?= $(INSTALL_BASE_LIBRARIES)
+INSTALL_LIBS           ?= $(INSTALL_LIBRARIES)
+INSTALL_HDRS           ?= $(INSTALL_HEADERS)
+
+# Defines the installation functions and targets
+
+define install_obj
+.PHONY: install_$(1)s
+install_$(1)s:
+	@install -d $$(INS_PREFIX)$$($(1)dir)
+	@cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
+endef
+
+define install_ext
+install_$(1)s_%:
+	@ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
+	isrc="$$$$(echo $$$${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$$$//g')"; \
+	idst="$$(INS_PREFIX)$$($(1)dir)$$$$(echo $$$${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$$$/\1/g')"; \
+	install -d $$$${idst} && cp -drf --preserve=mode,timestamps $$$${isrc} $$$${idst}
+endef
+
+$(eval $(call install_obj,base_bin))
+$(eval $(call install_obj,base_sbin))
+$(eval $(call install_obj,base_lib))
+$(eval $(call install_obj,bin))
+$(eval $(call install_obj,sbin))
+$(eval $(call install_obj,lib))
+$(eval $(call install_obj,libexec))
+$(eval $(call install_obj,hdr))
+$(eval $(call install_obj,include))
+$(eval $(call install_obj,data))
+$(eval $(call install_obj,info))
+$(eval $(call install_obj,locale))
+$(eval $(call install_obj,man))
+$(eval $(call install_obj,doc))
+$(eval $(call install_obj,sysconf))
+$(eval $(call install_obj,service))
+$(eval $(call install_obj,sharedstate))
+$(eval $(call install_obj,localstate))
+$(eval $(call install_obj,runstate))
+
+$(eval $(call install_ext,include))
+$(eval $(call install_ext,data))
+$(eval $(call install_ext,sysconf))
+
+install_todir_%:
+	@ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
+	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
+	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
+	install -d $${idst} && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
+
+install_tofile_%:
+	@ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
+	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
+	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
+	install -d $$(dirname $${idst}) && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
+
+ifneq ($(ENV_BUILD_MODE),yocto)
+ifneq ($(DIS_LICENSE),y)
+.PHONY: license
+SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
+SRC_PATH        ?= .
+
+install release: license
+license:
+	@$(call install_lics)
+endif
+endif
+
+endif # KERNELRELEASE
+endif

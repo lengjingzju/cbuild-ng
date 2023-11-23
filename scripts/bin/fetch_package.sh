@@ -47,12 +47,12 @@ usage() {
 do_check() {
     if [ -z $method ] || [ -z "$url" ] || [ -z $package ]; then
         usage
-        echo "ERROR: Invalid options."
+        echo "ERROR: Invalid options." >&2
         exit 1
     fi
 
     if [ -z "$(which wget)" ]; then
-        echo "ERROR: please install wget first."
+        echo "ERROR: please install wget first." >&2
         exit 1
     fi
 
@@ -61,18 +61,18 @@ do_check() {
             ;;
         git)
             if [ -z "$(which git)" ]; then
-                echo "ERROR: please install git first."
+                echo "ERROR: please install git first." >&2
                 exit 1
             fi
             ;;
         svn)
             if [ -z "$(which svn)" ]; then
-                echo "ERROR: please install svn first."
+                echo "ERROR: please install svn first." >&2
                 exit 1
             fi
             ;;
         *)
-            echo "ERROR: Invalid method($method)."
+            echo "ERROR: Invalid method($method)." >&2
             usage
             exit 1
             ;;
@@ -124,7 +124,7 @@ do_fetch() {
                     done
 
                     if [ ! -e ${ENV_DOWN_DIR}/$package ]; then
-                        echo "ERROR: failed to download $url"
+                        echo "ERROR: failed to download $url" >&2
                         exit 1
                     fi
                 fi
@@ -133,7 +133,7 @@ do_fetch() {
                     rmd5=$(md5sum ${ENV_DOWN_DIR}/$package | cut -d ' ' -f 1)
                     if [ "$md5" != "$rmd5" ]; then
                         rm -f ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: md5sum of $package: set($md5)!=actual($rmd5)"
+                        echo "ERROR: md5sum of $package: set($md5)!=actual($rmd5)" >&2
                         exit 1
                     fi
                 fi
@@ -146,7 +146,7 @@ do_fetch() {
                     git clone $url ${ENV_DOWN_DIR}/$package
                     if [ $? -ne 0 ]; then
                         rm -rf ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: failed to clone git $url"
+                        echo "ERROR: failed to clone git $url" >&2
                         exit 1
                     fi
                     if [ "$branch-$tag-$rev" != "--" ]; then
@@ -154,21 +154,21 @@ do_fetch() {
                         if [ ! -z "$branch" ]; then
                             git checkout -q $branch
                             if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to checkout branch ($branch) of $package."
+                                echo "ERROR: failed to checkout branch ($branch) of $package." >&2
                                 exit 1
                             fi
                         fi
                         if [ ! -z "$tag" ]; then
                             git reset -q --hard $tag
                             if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to reset tag ($tag) of $package."
+                                echo "ERROR: failed to reset tag ($tag) of $package." >&2
                                 exit 1
                             fi
                         fi
                         if [ ! -z "$rev" ]; then
                             git reset -q --hard $rev
                             if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to reset rev ($rev) of $package."
+                                echo "ERROR: failed to reset rev ($rev) of $package." >&2
                                 exit 1
                             fi
                         fi
@@ -194,13 +194,13 @@ do_fetch() {
                     svn checkout -q $url ${ENV_DOWN_DIR}/$package
                     if [ $? -ne 0 ]; then
                         rm -rf ${ENV_DOWN_DIR}/$package
-                        echo "ERROR: failed to checkout svn $url"
+                        echo "ERROR: failed to checkout svn $url" >&2
                         exit 1
                     fi
                     if [ ! -z "$rev" ]; then
                         svn update -q -r $rev
                         if [ $? -ne 0 ]; then
-                            echo "ERROR: failed to update rev ($rev) of $package."
+                            echo "ERROR: failed to update rev ($rev) of $package." >&2
                             exit 1
                         fi
                     fi
@@ -248,21 +248,21 @@ do_fetch() {
                         if [ ! -z "$branch" ] && [ "$branch" != "$rbranch" ]; then
                             git checkout -q $branch
                             if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to checkout branch ($branch) of $package."
+                                echo "ERROR: failed to checkout branch ($branch) of $package." >&2
                                 exit 1
                             fi
                         fi
                         if [ ! -z "$tag" ] && [ "$tag" != "$rtag" ]; then
                             git reset -q --hard $tag
                             if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to reset tag ($tag) of $package."
+                                echo "ERROR: failed to reset tag ($tag) of $package." >&2
                                 exit 1
                             fi
                         fi
                         if [ ! -z "$rev" ] && [ "$rev" != "$rrev" ]; then
                             git reset -q --hard $rev
                             if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to reset rev ($rev) of $package."
+                                echo "ERROR: failed to reset rev ($rev) of $package." >&2
                                 exit 1
                             fi
                         fi
@@ -282,7 +282,7 @@ do_fetch() {
                         svn update -q
                         svn update -q -r $rev
                         if [ $? -ne 0 ]; then
-                            echo "ERROR: failed to update rev ($rev) of $package."
+                            echo "ERROR: failed to update rev ($rev) of $package." >&2
                             exit 1
                         fi
                         cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
@@ -308,7 +308,7 @@ do_unpack() {
                     unzip -q ${ENV_DOWN_DIR}/$package -d $outdir
                     if [ $? -ne 0 ]; then
                         rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$package.$checksuffix
-                        echo "ERROR: ${ENV_DOWN_DIR}/$package is invalid zip file."
+                        echo "ERROR: ${ENV_DOWN_DIR}/$package is invalid zip file." >&2
                         exit 1
                     fi
                     ;;
@@ -317,12 +317,12 @@ do_unpack() {
                     tar -xf ${ENV_DOWN_DIR}/$package -C $outdir
                     if [ $? -ne 0 ]; then
                         rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$package.$checksuffix
-                        echo "ERROR: ${ENV_DOWN_DIR}/$package is invalid tar file."
+                        echo "ERROR: ${ENV_DOWN_DIR}/$package is invalid tar file." >&2
                         exit 1
                     fi
                     ;;
                 git|svn)
-                    echo -e "\033[32mcopy ${ENV_DOWN_DIR}/$package to $outdir\033[0m"
+                    echo -e "\033[32mcopy ${ENV_DOWN_DIR}/$package to $outdir\033[0m" >&2
                     cp -rfp ${ENV_DOWN_DIR}/$package $outdir
                     ;;
                 *)

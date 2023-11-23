@@ -19,12 +19,19 @@ KEYWORDS       := none
 MAXLEVEL       := 2
 TIME_FORMAT    := /usr/bin/time -a -o $(WORKDIR)/time_statistics -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
 
-.PHONY: all clean distclean deps all-deps total_time time_statistics
+.PHONY: all clean distclean deps all-deps time_statistics
 
 all: export MFLAG ?= -s
 all: loadconfig
-	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= all_targets
+	@$(PRECMD)make $(MFLAG) $(if $(filter y,$(tsflag)),,$(ENV_BUILD_JOBS)) MAKEFLAGS= all_targets
 	@echo "Build done!"
+
+time_statistics: export MFLAG ?= -s
+time_statistics: export tsflag := y
+time_statistics:
+	@mkdir -p $(WORKDIR)
+	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
+	@make $(MFLAG) PRECMD="$(TIME_FORMAT) "
 
 -include $(WORKDIR)/.config
 -include $(WORKDIR)/auto.mk
@@ -51,13 +58,3 @@ all-deps:
 	@for package in $$(cat $(WORKDIR)/Target  | cut -d '=' -f 1); do \
 		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config; \
 	done
-
-total_time: loadconfig
-	@$(PRECMD)make $(MFLAG) all_targets
-	@echo "Build done!"
-
-time_statistics: export MFLAG ?= -s
-time_statistics:
-	@mkdir -p $(WORKDIR)
-	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(WORKDIR)/$@
-	@make $(MFLAG) PRECMD="$(TIME_FORMAT) " total_time
