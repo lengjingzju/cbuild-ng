@@ -31,8 +31,4 @@ CACHE_DEPENDS    = none
 COMPILE_TOOL     = cmake
 CMAKE_FLAGS      = -DBUILD_TESTING=OFF
 
-CUSTOM_TARGETS   = install
 include $(ENV_MAKE_DIR)/inc.rule.mk
-
-install:
-	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR)$(bindir) $(INS_PREFIX)$(bindir)

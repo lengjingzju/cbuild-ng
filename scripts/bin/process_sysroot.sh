@@ -35,16 +35,22 @@ link_sysroot() {
                         continue
                     fi
                     ;;
+                Help)
+                    # Help is cmake doc
+                    if [ $(echo $s | grep -c '/share/cmake') -eq 1 ]; then
+                        continue
+                    fi
+                    ;;
                 terminfo)
                     if [ $(echo $s | grep -c '/share$\|/lib$') -eq 1 ]; then
-                        ln -sfT $s/$v $d/$v
+                        cp -drf --preserve=mode,timestamps $s/$v $d/
                         continue
                     fi
                     ;;
             esac
             link_sysroot $s/$v $d/$v
         else
-            ln -sfT $s/$v $d/$v
+            ln -fT $s/$v $d/$v
         fi
     done
 }
@@ -71,6 +77,12 @@ release_sysroot_with_check() {
                     ;;
                 locale|man|info|doc)
                     if [ $(echo $s | grep -c '/share$') -eq 1 ]; then
+                        continue
+                    fi
+                    ;;
+                Help)
+                    # Help is cmake doc
+                    if [ $(echo $s | grep -c '/share/cmake') -eq 1 ]; then
                         continue
                     fi
                     ;;
@@ -115,10 +127,13 @@ release_sysroot_without_check() {
                     fi
                     ;;
                 locale|man|info|doc)
-                    if [ $(echo $s | grep -c '/share$') -eq 1 ]; then
-                        mkdir -p $d/$v
-                        cp -drf --preserve=mode,timestamps $s/$v/* $d/$v
-                    else
+                    if [ $(echo $s | grep -c '/share$') -eq 0 ]; then
+                        release_sysroot_without_check $s/$v $d/$v
+                    fi
+                    ;;
+                Help)
+                    # Help is cmake doc
+                    if [ $(echo $s | grep -c '/share/cmake') -eq 0 ]; then
                         release_sysroot_without_check $s/$v $d/$v
                     fi
                     ;;

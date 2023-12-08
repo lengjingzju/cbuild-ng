@@ -4,8 +4,9 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-ifneq ($(ENV_BUILD_MODE), yocto)
+COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 
+ifneq ($(ENV_BUILD_MODE), yocto)
 WORKDIR        := $(ENV_CFG_ROOT)
 CONF_OUT       := $(WORKDIR)
 KCONFIG        := $(WORKDIR)/Kconfig
@@ -30,7 +31,7 @@ PGPORT         := $(if $(PGCMD),$(shell cat $(WORKDIR)/log/port))
 
 all: export MFLAG ?= -s
 all: loadconfig progress
-	@$(PGPATH)/progress $(PGTOUT)$(WORKDIR)/log $(PRECMD)make $(MFLAG) $(if $(filter y,$(tsflag)),,$(ENV_BUILD_JOBS)) \
+	@$(PRECMD)$(PGPATH)/progress $(PGTOUT)$(WORKDIR)/log make $(MFLAG) $(if $(filter y,$(tsflag)),,$(ENV_BUILD_JOBS)) \
 		MAKEFLAGS= PGCMD="$(PGPATH)/progress \$$(PGPORT)" all_targets
 	@echo "Build done!"
 
@@ -38,9 +39,9 @@ time_statistics: export MFLAG ?= -s
 time_statistics: export tsflag := y
 time_statistics:
 	@mkdir -p $(shell dirname $(TIME_OUTPUT))
-	@$(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e) "real\t\tuser\t\tsys\t\tpackage" > $(TIME_OUTPUT)
+	@$(COLORECHO) "real\t\tuser\t\tsys\t\tpackage" > $(TIME_OUTPUT)
 	@make $(MFLAG) PRECMD="$(TIME_FORMAT) "
-	@echo "time statistics file is $(TIME_OUTPUT)"
+	@$(COLORECHO) "\033[34mtime statistics file is $(TIME_OUTPUT)\033[0m"
 
 progress:
 	@mkdir -p $(PGPATH)
