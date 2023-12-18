@@ -393,8 +393,8 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ENV_CACHE_DIR    : /home/lengjing/data/cbuild-ng/output/mirror-cache/build-cache
     ENV_MIRROR_URL   : http://127.0.0.1:8888
     ENV_TOP_OUT      : /home/lengjing/data/cbuild-ng/output
-    ENV_CROSS_ROOT   : /home/lengjing/data/cbuild-ng/output/noarch
-    ENV_CFG_ROOT     : /home/lengjing/data/cbuild-ng/output/noarch/config
+    ENV_CROSS_ROOT   : /home/lengjing/data/cbuild-ng/output/x86_64-host
+    ENV_CFG_ROOT     : /home/lengjing/data/cbuild-ng/output/x86_64-host/config
     ENV_NATIVE_ROOT  : /home/lengjing/data/cbuild-ng/output/x86_64-native
     ============================================================
     ```

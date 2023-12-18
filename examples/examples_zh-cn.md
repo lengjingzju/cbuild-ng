@@ -453,8 +453,8 @@
     ENV_CACHE_DIR    : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/mirror-cache/build-cache
     ENV_MIRROR_URL   : http://127.0.0.1:8888
     ENV_TOP_OUT      : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output
-    ENV_CROSS_ROOT   : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch
-    ENV_CFG_ROOT     : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/config
+    ENV_CROSS_ROOT   : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host
+    ENV_CFG_ROOT     : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/config
     ENV_NATIVE_ROOT  : /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-native
     ============================================================
     ```
@@ -463,9 +463,9 @@
 
     ```sh
     lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ make time_statistics
-    Generate /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/config/Kconfig OK.
-    Generate /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/config/Target OK.
-    Generate /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/config/auto.mk OK.
+    Generate /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/config/Kconfig OK.
+    Generate /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/config/Target OK.
+    Generate /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/config/auto.mk OK.
     bison	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-native/objects/kconfig/build/autogen/parser.tab.c
     gcc	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-native/objects/kconfig/build/autogen/parser.tab.c
     flex	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-native/objects/kconfig/build/autogen/lexer.lex.c
@@ -490,26 +490,26 @@
     gcc	sub.c
     gcc	add.c
     gcc	main.c
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/build/libtest.a
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/build/libtest.so.1.2.3
-    bin:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/build/test
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/build/libtest.a
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/build/libtest.so.1.2.3
+    bin:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/build/test
     Build test-app1 Done.
     gcc	main.c
-    bin:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app2/build/test2
+    bin:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app2/build/test2
     Build test-app2 Done.
     gcc	add.c
     gcc	sub.c
     gcc	mul.c
     gcc	div.c
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libadd.a
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libadd.so.1.2.3
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libsub.a
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libsub.so.1.2
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libmul.a
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libmul.so.1
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libdiv.a
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libdiv.so
-    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/build/libadd2.so.1.2.3
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libadd.a
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libadd.so.1.2.3
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libsub.a
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libsub.so.1.2
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libmul.a
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libmul.so.1
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libdiv.a
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libdiv.so
+    lib:	/home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/build/libadd2.so.1.2.3
     Load config/def_config to .config
     Build test-conf Done.
     KERNELRELEASE= pwd=/home/lengjing/data/cbuild-ng/examples/test-mod/test-hello-add PWD=/home/lengjing/data/cbuild-ng/examples/test-cbuild/test-mod/test-hello-add
@@ -549,7 +549,7 @@
     sign-file: certs/signing_key.pem: No such file or directory
     Warning: modules_install: missing 'System.map' file. Skipping depmod.
     Build done!
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ cat output/noarch/config/time_statistics
+    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ cat output/x86_64-host/config/time_statistics
     real		user		sys		package
     0.03		0.02		0.00		deps
     0.20		0.24		0.04		test-app1
@@ -586,55 +586,55 @@
 * 可以看到全局和私有 sysroot 都是符号链接，大大节省了存储空间
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ tree output/noarch/sysroot/
-    output/noarch/sysroot/
+    lengjing@lengjing:~/data/cbuild-ng/examples/test-cbuild$ tree output/x86_64-host/sysroot/
+    output/x86_64-host/sysroot/
     |-- lib
     |   `-- modules
     |       `-- 5.4.0-144-generic
     |           `-- extra
-    |               |-- hello_add.ko -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello-add/image/lib/modules/5.4.0-144-generic/extra/hello_add.ko
-    |               |-- hello_dep.ko -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello/image/lib/modules/5.4.0-144-generic/extra/hello_dep.ko
-    |               `-- hello_sub.ko -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello-sub/image/lib/modules/5.4.0-144-generic/extra/hello_sub.ko
+    |               |-- hello_add.ko -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello-add/image/lib/modules/5.4.0-144-generic/extra/hello_add.ko
+    |               |-- hello_dep.ko -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello/image/lib/modules/5.4.0-144-generic/extra/hello_dep.ko
+    |               `-- hello_sub.ko -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello-sub/image/lib/modules/5.4.0-144-generic/extra/hello_sub.ko
     `-- usr
         |-- bin
-        |   |-- test -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/bin/test
-        |   `-- test2 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app2/image/usr/bin/test2
+        |   |-- test -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/bin/test
+        |   `-- test2 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app2/image/usr/bin/test2
         |-- include
         |   |-- test-app1
-        |   |   |-- add.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/include/test-app1/add.h
-        |   |   `-- sub.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/include/test-app1/sub.h
+        |   |   |-- add.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/include/test-app1/add.h
+        |   |   `-- sub.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/include/test-app1/sub.h
         |   |-- test-app3
-        |   |   |-- add.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/include/test-app3/add.h
-        |   |   |-- div.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/include/test-app3/div.h
-        |   |   |-- mul.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/include/test-app3/mul.h
-        |   |   `-- sub.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/include/test-app3/sub.h
+        |   |   |-- add.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/include/test-app3/add.h
+        |   |   |-- div.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/include/test-app3/div.h
+        |   |   |-- mul.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/include/test-app3/mul.h
+        |   |   `-- sub.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/include/test-app3/sub.h
         |   |-- test-hello-add
-        |   |   |-- Module.symvers -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello-add/image/usr/include/test-hello-add/Module.symvers
-        |   |   `-- hello_add.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello-add/image/usr/include/test-hello-add/hello_add.h
+        |   |   |-- Module.symvers -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello-add/image/usr/include/test-hello-add/Module.symvers
+        |   |   `-- hello_add.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello-add/image/usr/include/test-hello-add/hello_add.h
         |   `-- test-hello-sub
-        |       |-- Module.symvers -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello-sub/image/usr/include/test-hello-sub/Module.symvers
-        |       `-- hello_sub.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-hello-sub/image/usr/include/test-hello-sub/hello_sub.h
+        |       |-- Module.symvers -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello-sub/image/usr/include/test-hello-sub/Module.symvers
+        |       `-- hello_sub.h -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-hello-sub/image/usr/include/test-hello-sub/hello_sub.h
         `-- lib
-            |-- libadd.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd.a
-            |-- libadd.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd.so
-            |-- libadd.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd.so.1
-            |-- libadd.so.1.2.3 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd.so.1.2.3
-            |-- libadd2.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd2.so
-            |-- libadd2.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd2.so.1
-            |-- libadd2.so.1.2.3 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libadd2.so.1.2.3
-            |-- libdiv.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libdiv.a
-            |-- libdiv.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libdiv.so
-            |-- libmul.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libmul.a
-            |-- libmul.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libmul.so
-            |-- libmul.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libmul.so.1
-            |-- libsub.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libsub.a
-            |-- libsub.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libsub.so
-            |-- libsub.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libsub.so.1
-            |-- libsub.so.1.2 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app3/image/usr/lib/libsub.so.1.2
-            |-- libtest.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/lib/libtest.a
-            |-- libtest.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/lib/libtest.so
-            |-- libtest.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/lib/libtest.so.1
-            `-- libtest.so.1.2.3 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/noarch/objects/test-app1/image/usr/lib/libtest.so.1.2.3
+            |-- libadd.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd.a
+            |-- libadd.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd.so
+            |-- libadd.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd.so.1
+            |-- libadd.so.1.2.3 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd.so.1.2.3
+            |-- libadd2.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd2.so
+            |-- libadd2.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd2.so.1
+            |-- libadd2.so.1.2.3 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libadd2.so.1.2.3
+            |-- libdiv.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libdiv.a
+            |-- libdiv.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libdiv.so
+            |-- libmul.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libmul.a
+            |-- libmul.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libmul.so
+            |-- libmul.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libmul.so.1
+            |-- libsub.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libsub.a
+            |-- libsub.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libsub.so
+            |-- libsub.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libsub.so.1
+            |-- libsub.so.1.2 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app3/image/usr/lib/libsub.so.1.2
+            |-- libtest.a -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/lib/libtest.a
+            |-- libtest.so -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/lib/libtest.so
+            |-- libtest.so.1 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/lib/libtest.so.1
+            `-- libtest.so.1.2.3 -> /home/lengjing/data/cbuild-ng/examples/test-cbuild/output/x86_64-host/objects/test-app1/image/usr/lib/libtest.so.1.2.3
 
     12 directories, 35 files
     ```
