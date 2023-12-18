@@ -1045,6 +1045,115 @@ Note: The reason for providing the above functions is that multiple libraries or
     * LICDEST: The root directory to install licenses, its default value is `$(INS_PREFIX)`
 
 
+## Configure CBuild-ng Environment
+
+The compilation environment can be a host environment or a docker environment, taking `Ubuntu 20.04` as an example.
+
+
+### Use Host Environment
+
+* Just install the following software packages on the host:
+
+```sh
+$ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+    pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
+    git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
+$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+
+### Use Docker Environment
+
+* Install docker(host side)
+    * The latest version：https://get.docker.com
+    * The test version：https://test.docker.com
+
+    ```sh
+    $ curl -fsSL https://test.docker.com -o docker.sh
+    $ sudo sh docker.sh
+    $ sudo usermod -aG docker $USER
+    ```
+
+* Pull and test the Ubuntu 20.04 docker container(host side)
+    * You can also use the command `sudo docker pull ubuntu:20.04` to only pull
+
+    ```sh
+    $ sudo docker run ubuntu:20.04 /bin/echo "Hello world"
+    ```
+
+* Enter docker(host side) of interactive Ubuntu 20.04
+    * -i: Allow command interaction with the container
+    * -t: Specify a pseudo terminal or terminal
+    * -v <host directory>:<container directory>: Map host directory
+    * -u <username>: Run docker with the specified user ID
+    * --add-host=host.docker.internal:host-gateway: Map host network (Requires docker v20.10 and higher)
+        * At this time, `172.17.0.1 host.docker.internal` can be seen in `/etc/hosts` of the docker system
+    * --name "xxx": Specify the name of the container in docker
+    * ubuntu:20.04: `REPOSITORY` and `TAG` of docker container, users can also use `IMAGE ID`
+
+    ```sh
+    $ MAPDIR=`pwd` # The root directory of CBuild-ng
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:20.04 bash
+    ```
+
+* Install CBuild-ng compilation environment(docker side)
+
+    ```sh
+    $ apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+        pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
+        git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
+    $ pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+    $ pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+    $ pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+    ```
+
+* Submit and save the docker image (host side)
+    * -a <name>: Specify the name of the submitter
+    * -m <information>: fill in the description information of this submission
+    * ca69951b2455: Run `docker ps` will list container ID
+    * cbuild:0.0.1: The saved `REPOSITORY` and `TAG`
+    * Note: Do not exit the docker machine when saving
+
+    ```sh
+    $ sudo docker ps
+    CONTAINER ID   IMAGE          COMMAND   CREATED       STATUS       PORTS     NAMES
+    ca69951b2455   ubuntu:20.04   "bash"    3 hours ago   Up 3 hours             hopeful_mayer
+    $ sudo docker commit -a "lengjing" -m "cbuild based on Ubuntu 20.04" ca69951b2455 cbuild:0.0.1
+    $ sudo docker images
+    REPOSITORY   TAG       IMAGE ID       CREATED             SIZE
+    cbuild       0.0.1     664510d1047d   4 hours ago         1.21GB
+    ubuntu       20.04     83a4bf3bb050   2 weeks ago         72.8MB
+    ```
+
+* Exit the docker machine and enter again(host side)
+    * Exit the docker machine, enter `exit` or use the shortcut key `Ctrl+D` in the docker machine
+    * At this time, docker uses the `REPOSITORY` and `TAG` just submitted
+
+    ```sh
+    $ MAPDIR=`pwd` # The root directory of CBuild-ng
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway cbuild:0.0.1 bash
+    ```
+
+* Test CBuild-ng(docker side)
+
+    ```sh
+    $ cd $MAPDIR
+    $ source scripts/build.env
+    $ make menuconfig
+    ```
+
+* Export/Import docker image(host side)
+    * `docker save <REPOSITORY>:<TAG> -o <exported filename>`：Export
+    * `docker load -i <the docker image file exported earlier>`：Import
+
+    ```sh
+    $ sudo docker save cbuild:0.0.1 -o cbuild_0.0.1.img
+    $ sudo docker load -i cbuild_0.0.1.img
+    ```
+
+
 ## Classic Build Compile OSS Layer
 
 * The number of OSS packages is increasing, and at present there are more than 50 packages

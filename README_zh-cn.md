@@ -1032,6 +1032,115 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * LICDEST: 安装 license 的根目录，默认取值 `$(INS_PREFIX)`
 
 
+## 配置 CBuild-ng 的编译环境
+
+编译环境可选主机环境或 docker 环境，以 `Ubuntu 20.04` 为例。
+
+
+### 使用主机环境
+
+* 主机安装以下软件包即可
+
+```sh
+$ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+    pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
+    git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
+$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+
+### 使用 Docker 环境
+
+* 安装 docker(宿主机)
+    * 最新版：https://get.docker.com
+    * 测试版：https://test.docker.com
+
+    ```sh
+    $ curl -fsSL https://test.docker.com -o docker.sh
+    $ sudo sh docker.sh
+    $ sudo usermod -aG docker $USER
+    ```
+
+* 拉取并测试 Ubuntu 20.04 的 docker(宿主机)
+    * 也可以使用命令 `sudo docker pull ubuntu:20.04` 只拉取
+
+    ```sh
+    $ sudo docker run ubuntu:20.04 /bin/echo "Hello world"
+    ```
+
+* 进入交互式 Ubuntu 20.04 的 docker(宿主机)
+    * -i：允许和容器进行命令交互
+    * -t：指定一个伪终端或终端
+    * -v <主机目录>:<容器目录>：映射主机目录
+    * -u <用户名>：以指定用户ID运行 docker
+    * --add-host=host.docker.internal:host-gateway：映射主机网络（需要 Docker v20.10 及更高版本）
+        * 此时 docker 系统的 `/etc/hosts` 可以看到 `172.17.0.1      host.docker.internal`
+    * --name "xxx"：指定 docker 中容器的名字
+    * ubuntu:20.04：docker 镜像的 `REPOSITORY` 名和 `TAG`，也可以使用`IMAGE ID`
+
+    ```sh
+    $ MAPDIR=`pwd` # cbuild编译系统根目录
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:20.04 bash
+    ```
+
+* 安装 CBuild-ng 编译环境(docker机)
+
+    ```sh
+    $ apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+        pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
+        git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
+    $ pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+    $ pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+    $ pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+    ```
+
+* 提交保存 docker 镜像(宿主机)
+    * -a 名字：指定提交者的名字
+    * -m 信息：填写本次提交的描述信息
+    * ca69951b2455：运行 `docker ps` 列出的容器ID
+    * cbuild:0.0.1：保存的 `REPOSITORY` 和 `TAG`
+    * 注：保存时 docker 机不要退出
+
+    ```sh
+    $ sudo docker ps
+    CONTAINER ID   IMAGE          COMMAND   CREATED       STATUS       PORTS     NAMES
+    ca69951b2455   ubuntu:20.04   "bash"    3 hours ago   Up 3 hours             hopeful_mayer
+    $ sudo docker commit -a "lengjing" -m "cbuild based on Ubuntu 20.04" ca69951b2455 cbuild:0.0.1
+    $ sudo docker images
+    REPOSITORY   TAG       IMAGE ID       CREATED             SIZE
+    cbuild       0.0.1     664510d1047d   4 hours ago         1.21GB
+    ubuntu       20.04     83a4bf3bb050   2 weeks ago         72.8MB
+    ```
+
+* 退出 docker 机再次进入(宿主机)
+    * 退出 docker机，在 docker 机输入 `exit` 或使用快捷键 `Ctrl+D`
+    * 此时 docker 使用刚才提交的 `REPOSITORY` 和 `TAG`
+
+    ```sh
+    $ MAPDIR=`pwd` # cbuild编译系统根目录
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway cbuild:0.0.1 bash
+    ```
+
+* 测试 CBuild-ng 编译系统(docker机)
+
+    ```sh
+    $ cd $MAPDIR
+    $ source scripts/build.env
+    $ make menuconfig
+    ```
+
+* 导出导入 docker 镜像(宿主机)
+    * `docker save <REPOSITORY>:<TAG> -o <导出的文件名>`：导出
+    * `docker load -i <前面导出的docker镜像文件>`：导入
+
+    ```sh
+    $ sudo docker save cbuild:0.0.1 -o cbuild_0.0.1.img
+    $ sudo docker load -i cbuild_0.0.1.img
+    ```
+
+
 ## Classic Build 编译开源软件层
 
 * 开源软件层的包不断增加中，目前已有50多个包
