@@ -79,26 +79,39 @@ all-deps:
 		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config; \
 	done
 
-PKGS_DIR ?= $(ENV_CROSS_ROOT)/packages
+LICS_DIR := $(ENV_TOP_DIR)/system/rootfs/licenses
+define pkgs_dst
+$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkgs,%,$1)
+endef
+define lics_dst
+$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkgs,%,$1)/usr/share/license
+endef
+
 %-pkgs: export MFLAG ?= -s
 %-pkgs:
 	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= $(patsubst %-pkgs,%,$@)
-	@rm -rf $(PKGS_DIR)/$(patsubst %-pkgs,%,$@)
-	@mkdir -p $(PKGS_DIR)/$(patsubst %-pkgs,%,$@)
-	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkgs,%,$@) $(PKGS_DIR)/$(patsubst %-pkgs,%,$@) $(WORKDIR)/Target $(WORKDIR)/.config
+	@rm -rf $(call pkgs_dst,$@)
+	@mkdir -p $(call pkgs_dst,$@)
 	@echo "----------------------------------------"
-	@make -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(PKGS_DIR)/$(patsubst %-pkgs,%,$@) INSTALL_OPTION=release $(patsubst %-pkgs,%,$@)_release
+	@make -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(call pkgs_dst,$@) INSTALL_OPTION=release $(patsubst %-pkgs,%,$@)_release
 	@echo "----------------------------------------"
-	@rm -rf $(addprefix $(PKGS_DIR)/$(patsubst %-pkgs,%,$@),/include/* /usr/include/* /usr/local/include/*)
-	@libs=$$(find $(PKGS_DIR)/$(patsubst %-pkgs,%,$@) -name "*.a" -o -name "*.la" | xargs); \
+	@rm -rf $(addprefix $(call pkgs_dst,$@),/include/* /usr/include/* /usr/local/include/*)
+	@libs=$$(find $(call pkgs_dst,$@) -name "*.a" -o -name "*.la" | xargs); \
 	if [ ! -z "$${libs}" ]; then \
 		rm -rf $${libs}; \
 	fi
-	@elfs=$$(find $(PKGS_DIR)/$(patsubst %-pkgs,%,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+	@elfs=$$(find $(call pkgs_dst,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
 	if [ ! -z "$${elfs}" ]; then \
 		$(if $(ENV_BUILD_TOOL),$(ENV_BUILD_TOOL)strip,$(if $(CROSS_COMPILE),$(CROSS_COMPILE)strip,strip)) -s $${elfs}; \
 	fi
-	@$(COLORECHO) "\033[34mRelease $(patsubst %-pkgs,%,$@) in $(PKGS_DIR)/$(patsubst %-pkgs,%,$@)\033[0m"
+
+	@mkdir -p $(call lics_dst,$@)
+	@cp -drf $(LICS_DIR)/* $(call lics_dst,$@)
+	@python3 $(ENV_TOOL_DIR)/gen_package_infos.py -c $(WORKDIR)/.config -i $(WORKDIR)/info.txt \
+		-t $(WORKDIR)/Target -p $(patsubst %-pkgs,%,$@) -s $(LICS_DIR)/spdx-licenses.html \
+		-o $(call lics_dst,$@)/index.txt -w $(call lics_dst,$@)/index.html -f 0:0
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkgs,%,$@) $(call lics_dst,$@) $(WORKDIR)/Target $(WORKDIR)/.config
+
 
 ifneq ($(PGCMD), )
 

@@ -1030,13 +1030,69 @@ def escape_tolower(var):
     return var.lower().replace('_', '-').replace('__dot__', '.').replace('__plus__', '+')
 
 
+def parse_deptree(packages, package, configs, targets, tkeys):
+    if package in configs and package not in packages:
+        packages.add(package)
+
+        if package in tkeys and targets[package]:
+            for dep in targets[package]:
+                if '-native' in dep:
+                    continue
+
+                if dep[0] == '?':
+                    dep = dep[1:]
+                    parse_deptree(packages, dep, configs, targets, tkeys)
+                elif dep[0] == '|':
+                    dep = dep[1:]
+                    if dep in configs:
+                        parse_deptree(packages, dep, configs, targets, tkeys)
+                    elif '-patch-' in dep:
+                        parse_deptree(packages, dep.replace('-patch-', '-unpatch-', 1), configs, targets, tkeys)
+                    else:
+                        parse_deptree(packages, 'prebuild-' + dep, configs, targets, tkeys)
+                elif '@' in dep:
+                    pairs = dep.split('@')
+                    dep = pairs[0]
+                    cond = escape_tolower(pairs[1].replace('CONFIG_', '', 1))
+                    if cond in configs:
+                        parse_deptree(packages, dep, configs, targets, tkeys)
+                else:
+                    parse_deptree(packages, dep, configs, targets, tkeys)
+
+
 def gen_license(args, spdxs):
     configs = set()
+    packages = set()
+    targets = {}
     filter_flag = [1, 1]
     if args.filter_flag:
         filter_flag = [int(var) for var in args.filter_flag.split(':')]
 
-    if filter_flag[0]:
+    if args.package:
+        with open(args.conf_file, 'r') as fp:
+            for per_line in fp.read().splitlines():
+                ret = re.match(r'CONFIG_(.*)=y', per_line)
+                if ret:
+                    configs.add(escape_tolower(ret.groups()[0]))
+
+        with open(args.target_file, 'r') as fp:
+            for per_line in fp.read().splitlines():
+                ret = re.match(r'(.*)="(.*)" # .*', per_line)
+                if ret:
+                    targets[ret.groups()[0].strip()] = ret.groups()[1].strip().split()
+        parse_deptree(packages, args.package, configs, targets, targets.keys())
+
+        tmp = packages
+        packages = set()
+        for pkg in tmp:
+            packages.add(pkg.replace('prebuild-', '', 1))
+        tmp = configs
+        configs = set()
+        for pkg in tmp:
+            configs.add(pkg.replace('prebuild-', '', 1))
+        tmp = set()
+
+    elif filter_flag[0]:
         with open(args.conf_file, 'r') as fp:
             for per_line in fp.read().splitlines():
                 ret = re.match(r'CONFIG_(.*)=y', per_line)
@@ -1051,6 +1107,8 @@ def gen_license(args, spdxs):
             if filter_flag[0] and package not in configs:
                 del infos[package]
             elif filter_flag[1] and 'LICENSE' not in package_keys:
+                del infos[package]
+            elif args.package and package not in packages:
                 del infos[package]
     if not infos:
         return
@@ -1097,6 +1155,14 @@ def parse_options():
             dest='info_file',
             help='Specify the information file path.')
 
+    parser.add_argument('-t', '--target',
+            dest='target_file',
+            help='Specify the Target file path.')
+
+    parser.add_argument('-p', '--pkg',
+            dest='package',
+            help='Specify the package name, it will only list the information of this package and its dependent packages.')
+
     parser.add_argument('-o', '--out',
             dest='out_file',
             help='Specify the output file path.')
@@ -1115,6 +1181,11 @@ def parse_options():
 
     args = parser.parse_args()
     if args.info_file and not args.out_file and not args.web_file:
+        print('\033[31mERROR: Invalid parameters.\033[0m\n')
+        parser.print_help()
+        sys.exit(1)
+
+    if args.package and not args.conf_file and not args.target_file:
         print('\033[31mERROR: Invalid parameters.\033[0m\n')
         parser.print_help()
         sys.exit(1)
