@@ -58,16 +58,12 @@ endif
 
 elfs: packages
 	@echo "Strip ELFs ..."
-	@rm -rf $(FAKEROOT_DIR)/include/* $(FAKEROOT_DIR)/usr/include/* $(FAKEROOT_DIR)/usr/local/include/*
-	@libs=$$(find $(wildcard $(addprefix $(FAKEROOT_DIR),/lib /usr/lib /usr/local/lib)) -name "*.a" -o -name "*.la"); \
+	@rm -rf $(addprefix $(FAKEROOT_DIR),/include/* /usr/include/* /usr/local/include/*)
+	@libs=$$(find $(FAKEROOT_DIR) -name "*.a" -o -name "*.la" | xargs); \
 	if [ ! -z "$${libs}" ]; then \
 		rm -rf $${libs}; \
 	fi
-	@elfs=$$(find $(wildcard $(addprefix $(FAKEROOT_DIR),/lib /usr/lib /usr/local/lib \
-														 /bin /usr/bin /usr/local/bin \
-														 /sbin /usr/sbin /usr/local/sbin \
-														 /libexec /usr/libexec /usr/local/libexec)) \
-			-type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+	@elfs=$$(find $(FAKEROOT_DIR) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
 	if [ ! -z "$${elfs}" ]; then \
 		$(STRIP) -s $${elfs}; \
 	fi

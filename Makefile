@@ -79,6 +79,27 @@ all-deps:
 		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config; \
 	done
 
+PKGS_DIR ?= $(ENV_CROSS_ROOT)/packages
+%-pkgs: export MFLAG ?= -s
+%-pkgs:
+	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= $(patsubst %-pkgs,%,$@)
+	@rm -rf $(PKGS_DIR)/$(patsubst %-pkgs,%,$@)
+	@mkdir -p $(PKGS_DIR)/$(patsubst %-pkgs,%,$@)
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkgs,%,$@) $(PKGS_DIR)/$(patsubst %-pkgs,%,$@) $(WORKDIR)/Target $(WORKDIR)/.config
+	@echo "----------------------------------------"
+	@make -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(PKGS_DIR)/$(patsubst %-pkgs,%,$@) INSTALL_OPTION=release $(patsubst %-pkgs,%,$@)_release
+	@echo "----------------------------------------"
+	@rm -rf $(addprefix $(PKGS_DIR)/$(patsubst %-pkgs,%,$@),/include/* /usr/include/* /usr/local/include/*)
+	@libs=$$(find $(PKGS_DIR)/$(patsubst %-pkgs,%,$@) -name "*.a" -o -name "*.la" | xargs); \
+	if [ ! -z "$${libs}" ]; then \
+		rm -rf $${libs}; \
+	fi
+	@elfs=$$(find $(PKGS_DIR)/$(patsubst %-pkgs,%,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+	if [ ! -z "$${elfs}" ]; then \
+		$(if $(ENV_BUILD_TOOL),$(ENV_BUILD_TOOL)strip,$(if $(CROSS_COMPILE),$(CROSS_COMPILE)strip,strip)) -s $${elfs}; \
+	fi
+	@$(COLORECHO) "\033[34mRelease $(patsubst %-pkgs,%,$@) in $(PKGS_DIR)/$(patsubst %-pkgs,%,$@)\033[0m"
+
 ifneq ($(PGCMD), )
 
 progress_init:
