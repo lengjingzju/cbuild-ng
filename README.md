@@ -407,7 +407,6 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
     ENV_BUILD_SOC    : cortex-a53
-    ENV_BUILD_ARCH   : arm64
     ENV_BUILD_TOOL   : /home/lengjing/data/cbuild-ng/output/toolchain/cortex-a53-toolchain-gcc12.2.0-linux5.15/bin/aarch64-linux-gnu-
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
@@ -419,9 +418,10 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ENV_CROSS_ROOT   : /home/lengjing/data/cbuild-ng/output/cortex-a53
     ENV_CFG_ROOT     : /home/lengjing/data/cbuild-ng/output/cortex-a53/config
     ENV_NATIVE_ROOT  : /home/lengjing/data/cbuild-ng/output/x86_64-native
+    KERNEL_ARCH      : arm64
     KERNEL_VER       : 5.15.88
     KERNEL_SRC       : /home/lengjing/data/cbuild-ng/output/kernel/linux-5.15.88
-    KERNEL_OUT       : /home/lengjing/data/cbuild-ng/output/cortex-a53/linux-5.15.88
+    KERNEL_OUT       : /home/lengjing/data/cbuild-ng/output/cortex-a53/objects/linux-5.15.88/build
     ============================================================
     ```
 
@@ -440,10 +440,10 @@ Note: Users need to fill in the SOC-related parameters in the `process_machine.s
 * ENV_BUILD_MODE    : Specifies the build mode: `classic`, Classic Build, separate source code and compilation output; `yocto`, Yocto Build
 * ENV_BUILD_JOBS    : Specifies the number of compilation threads
 * ENV_BUILD_SOC     : Specifies the cross-compilation SOC, build system obtains a series of parameters related to the SOC through the `process_machine.sh` script
-* ENV_BUILD_ARCH    : Specifies the ARCH for cross-compilation of linux modules
 * ENV_BUILD_TOOL    : Specifies the cross-compiler prefix
 <br>
 
+* KERNEL_ARCH       : Specifies the ARCH for cross-compilation of linux modules
 * KERNEL_VER        : Linux kernel version
 * KERNEL_SRC        : Linux kernel source code path
 * KERNEL_OUT        : Linux kernel compilation output path
@@ -1098,11 +1098,34 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:20.04 bash
     ```
 
+* Configure some convenient operations on the docker machine (docker machine)
+     * Create user `cbuild` with id `1000` (1000 is usually the id of the host setting user)
+
+         ```sh
+         $ groupadd -r -g 1000 cbuild
+         $ useradd -r -m -g 1000 -u 1000 cbuild
+         ```
+
+     * Tab command completion, users also need to search for bash-completion in `/etc/bash.bashrc` and remove the comments
+
+         ```sh
+         $ apt install bash-completion
+         ```
+
+     * Solve Chinese garbled characters
+
+         ```sh
+         apt install locales
+         locale-gen en_US.UTF-8
+         locale-gen zh_CN.UTF-8
+         echo "export LANG=en_US.UTF-8" >> ~/.bashrc
+         ```
+
 * Install CBuild-ng compilation environment(docker side)
 
     ```sh
     $ apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
-        pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
+        pkg-config bison flex yasm libncurses-dev libtool graphviz time python3-pip \
         git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
     $ pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
     $ pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -1133,7 +1156,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 
     ```sh
     $ MAPDIR=`pwd` # The root directory of CBuild-ng
-    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway cbuild:0.0.1 bash
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway -u cbuild cbuild:0.0.1 bash
     ```
 
 * Test CBuild-ng(docker side)

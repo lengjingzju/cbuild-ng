@@ -17,11 +17,15 @@ machine=
 arch=
 cpu_family=
 endian=
-linux_arch=
 cross_target=
+toolchain=
 gcc_arch_option=
 
-linux_version=6.6.1
+linux_arch=
+linux_src=
+linux_out=
+linux_version=6.6.6
+
 gcc_version=13.2.0
 
 if [ ! -z $soc ]; then
@@ -130,6 +134,21 @@ case $choice in
     linux_version)
         echo "$linux_version"
         ;;
+    linux_src)
+        if [ -z "$linux_src" ]; then
+            echo "${ENV_TOP_OUT}/kernel/linux-$linux_version"
+        else
+            echo "$linux_src"
+        fi
+        ;;
+    linux_out)
+        if [ -z "$linux_out" ]; then
+            echo "${ENV_TOP_OUT}/$soc/objects/linux-$linux_version/build"
+        else
+            echo "$linux_out"
+        fi
+        ;;
+
     gcc_version)
         echo "$gcc_version"
         ;;
@@ -141,6 +160,13 @@ case $choice in
         ;;
     toolchain_path)
         echo "${ENV_TOP_OUT}/toolchain"
+        ;;
+    toolchain)
+        if [ -z "$toolchain" ]; then
+            echo "${ENV_TOP_OUT}/toolchain/$cpu-toolchain-gcc$gcc_version-linux$(echo $linux_version | sed -E 's/([0-9]+)\.([0-9]+)\.([0-9]+)/\1.\2/g')/bin/$cross_target-"
+        else
+            echo "$toolchain"
+        fi
         ;;
 
     autotools_cross)

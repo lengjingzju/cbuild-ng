@@ -391,7 +391,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
     ENV_BUILD_SOC    : cortex-a53
-    ENV_BUILD_ARCH   : arm64
     ENV_BUILD_TOOL   : /home/lengjing/data/cbuild-ng/output/toolchain/cortex-a53-toolchain-gcc12.2.0-linux5.15/bin/aarch64-linux-gnu-
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
@@ -403,9 +402,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ENV_CROSS_ROOT   : /home/lengjing/data/cbuild-ng/output/cortex-a53
     ENV_CFG_ROOT     : /home/lengjing/data/cbuild-ng/output/cortex-a53/config
     ENV_NATIVE_ROOT  : /home/lengjing/data/cbuild-ng/output/x86_64-native
+    KERNEL_ARCH      : arm64
     KERNEL_VER       : 5.15.88
     KERNEL_SRC       : /home/lengjing/data/cbuild-ng/output/kernel/linux-5.15.88
-    KERNEL_OUT       : /home/lengjing/data/cbuild-ng/output/cortex-a53/linux-5.15.88
+    KERNEL_OUT       : /home/lengjing/data/cbuild-ng/output/cortex-a53/objects/linux-5.15.88/build
     ============================================================
     ```
 
@@ -424,10 +424,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * ENV_BUILD_MODE    : 设置编译模式: `classic`, Classic Build，源码和编译输出分离; `yocto`, Yocto Build
 * ENV_BUILD_JOBS    : 指定编译线程数
 * ENV_BUILD_SOC     : 指定交叉编译的 SOC，根据 SOC 和 process_machine.sh 脚本得到和 SOC 相关的一系列参数
-* ENV_BUILD_ARCH    : 指定交叉编译 linux 模块的 ARCH
 * ENV_BUILD_TOOL    : 指定交叉编译器前缀
 <br>
 
+* KERNEL_ARCH       : 指定交叉编译 linux 模块的 ARCH
 * KERNEL_VER        : Linux 内核版本
 * KERNEL_SRC        : Linux 内核解压后的目录路径名
 * KERNEL_OUT        : Linux 内核编译输出的目录路径名
@@ -1085,11 +1085,34 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:20.04 bash
     ```
 
+* 配置docker机一些便利的操作(docker机)
+    * 建立id为 `1000` 的用户 `cbuild`(1000通常是主机设置用户的id)
+
+        ```sh
+        $ groupadd -r -g 1000 cbuild
+        $ useradd -r -m -g 1000 -u 1000 cbuild
+        ```
+
+    * tab命令补全，还需要在 `/etc/bash.bashrc` 中搜索bash-completion，去掉注释
+
+        ```sh
+        $ apt install bash-completion
+        ```
+
+    * 解决中文乱码
+
+        ```sh
+        apt install locales
+        locale-gen en_US.UTF-8
+        locale-gen zh_CN.UTF-8
+        echo "export LANG=en_US.UTF-8" >> ~/.bashrc
+        ```
+
 * 安装 CBuild-ng 编译环境(docker机)
 
     ```sh
     $ apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
-        pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
+        pkg-config bison flex yasm libncurses-dev libtool graphviz time python3-pip \
         git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
     $ pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
     $ pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -1120,7 +1143,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 
     ```sh
     $ MAPDIR=`pwd` # cbuild编译系统根目录
-    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway cbuild:0.0.1 bash
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway -u cbuild cbuild:0.0.1 bash
     ```
 
 * 测试 CBuild-ng 编译系统(docker机)

@@ -147,8 +147,8 @@ endif
 
 ifneq ($(NATIVE_BUILD),y)
 
-ifneq ($(ENV_BUILD_ARCH), )
-ARCH           := $(ENV_BUILD_ARCH)
+ifneq ($(KERNEL_ARCH), )
+ARCH           := $(KERNEL_ARCH)
 export ARCH
 endif
 
