@@ -30,58 +30,49 @@ gcc_version=13.2.0
 
 if [ ! -z $soc ]; then
     case $soc in
-        'cortex-a78')
+        'cortex-a76.cortex-a55' | 'cortex-a75.cortex-a55' | 'cortex-a78' | 'cortex-a77' | 'cortex-a76' | 'cortex-a75' | 'cortex-a55')
             machine=qemuarm64
-            cpu=cortex-a78
+            cpu=$soc
             arch=armv8.2-a
-            cpu_family=aarch64
-            endian=little
-            linux_arch=arm64
-            cross_target=aarch64-linux-gnu
-            gcc_arch_option="--with-arch=armv8.2-a --with-tune=cortex-a78 --with-cpu=cortex-a78+crypto+dotprod+fp16+rcpc"
+            gcc_arch_option="--with-arch=$arch --with-tune=$cpu --with-cpu=$cpu"
             ;;
-        'cortex-a76')
+
+        'cortex-a73.cortex-a53' | 'cortex-a72.cortex-a53' | 'cortex-a72.cortex-a35' | 'cortex-a57.cortex-a53' | 'cortex-a73' | 'cortex-a72' | 'cortex-a57' | 'cortex-a53' | 'cortex-a35')
             machine=qemuarm64
-            cpu=cortex-a76
-            arch=armv8.2-a
-            cpu_family=aarch64
-            endian=little
-            linux_arch=arm64
-            cross_target=aarch64-linux-gnu
-            gcc_arch_option="--with-arch=armv8.2-a --with-tune=cortex-a76 --with-cpu=cortex-a76+crypto+dotprod+fp16+rcpc"
-            ;;
-        'cortex-a53+crypto')
-            machine=qemuarm64
-            cpu=cortex-a53+crypto
+            cpu=$soc
             arch=armv8-a
-            cpu_family=aarch64
-            endian=little
-            linux_arch=arm64
-            cross_target=aarch64-linux-gnu
-            gcc_arch_option="--with-arch=armv8-a --with-cpu=cortex-a53+crypto"
+            gcc_arch_option="--with-arch=$arch --with-cpu=$cpu"
             ;;
-        'cortex-a53')
-            machine=qemuarm64
-            cpu=cortex-a53
-            arch=armv8-a
-            cpu_family=aarch64
-            endian=little
-            linux_arch=arm64
-            cross_target=aarch64-linux-gnu
-            gcc_arch_option="--with-arch=armv8-a --with-cpu=cortex-a53"
-            ;;
-        'cortex-a9')
+
+        'cortex-a17.cortex-a7' | 'cortex-a15.cortex-a7' | 'cortex-a17' | 'cortex-a15' | 'cortex-a9' | 'cortex-a7' | 'cortex-a5')
             machine=qemuarm
-            cpu=cortex-a9
+            cpu=$soc
             arch=armv7-a
+            gcc_arch_option="--with-arch=$arch --with-tune=$cpu --with-fpu=neon --with-float=hard"
+            ;;
+
+        *)
+            echo "ERROR: $0: Invalid soc ($soc)"
+            exit 1;
+            ;;
+    esac
+
+
+    case $arch in
+        'armv8-a' | 'armv8.2-a')
+            cpu_family=aarch64
+            endian=little
+            linux_arch=arm64
+            cross_target=aarch64-linux-gnu
+            ;;
+        'armv7-a')
             cpu_family=arm
             endian=little
             linux_arch=arm
             cross_target=arm-linux-gnueabihf
-            gcc_arch_option="--with-arch=armv7-a --with-tune=cortex-a9"
             ;;
         *)
-            echo "ERROR: $0: Invalid soc $soc"
+            echo "ERROR: $0: Invalid arch ($arch) for soc ($soc)"
             exit 1;
             ;;
     esac

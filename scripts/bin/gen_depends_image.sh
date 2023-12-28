@@ -10,6 +10,13 @@ package=$1
 outdir=$2
 targetpath=$3
 confpath=$4
+if [ ! -z "$5" ]; then
+    corepkgs=":$5:"
+else
+    corepkgs=""
+fi
+corecheck=1
+coreexist=" "
 dones=" "
 
 if [ -z `which dot` ]; then
@@ -33,6 +40,7 @@ fi
 
 write_rule() {
     target=$1
+    tofile=$2
     if [ ! -z "${target}" ]; then
         depstr=$(cat ${targetpath} | grep "^${target}=\".*\"")
         if [ ! -z "${depstr}" ]; then
@@ -97,18 +105,30 @@ write_rule() {
                         style1="solid"
                     fi
 
+                    if [ ! -z "${corepkgs}" ]; then
+                        if [ $(echo "${corepkgs}" | grep -c ":${dep}:") -ne 0 ]; then
+                            if [ ${corecheck} -eq 1 ]; then
+                                if [ $(echo "${coreexist}" | grep -c " ${dep} ") -eq 0 ]; then
+                                    coreexist="${coreexist}${dep} "
+                                fi
+                            else
+                                continue
+                            fi
+                        fi
+                    fi
+
                     attr="style = ${style1}, color = ${color1}"
                     if [ ! -z "${label1}" ]; then
                         attr="${attr}, label = \"${label1}\""
                     fi
-                    echo "\"${target}\" -> \"${dep}\" [${attr}]" >> ${outdir}/${package}.dot
+                    echo "\"${target}\" -> \"${dep}\" [${attr}]" >> ${tofile}
 
                     if [ "${headchar}" = "|" ]; then
                         attr="style = ${style2}, color = ${color2}"
                         if [ ! -z "${label2}" ]; then
                             attr="${attr}, label = \"${label2}\""
                         fi
-                        echo "\"${target}\" -> \"${dep}\" [${attr}]" >> ${outdir}/${package}.dot
+                        echo "\"${target}\" -> \"${dep}\" [${attr}]" >> ${tofile}
                     fi
                 done
 
@@ -120,7 +140,14 @@ write_rule() {
                     fi
                     if [ $(echo "${dones}" | grep -c " ${dep} ") -eq 0 ]; then
                         dones="${dones}${dep} "
-                        write_rule ${dep}
+                        if [ ! -z "${corepkgs}" ]; then
+                            if [ $(echo "${corepkgs}" | grep -c ":${dep}:") -ne 0 ]; then
+                                if [ ${corecheck} -eq 0 ]; then
+                                    continue
+                                fi
+                            fi
+                        fi
+                        write_rule ${dep} ${tofile}
                     fi
                 done
             fi
@@ -167,10 +194,30 @@ else
     else
         echo "\"${package}\" [color = red]" >> ${outdir}/${package}.dot
     fi
-    write_rule ${package}
+    write_rule ${package} ${outdir}/${package}.dot
 fi
 echo "}" >> ${outdir}/${package}.dot
 
 dot -Tsvg -o ${outdir}/${package}.svg ${outdir}/${package}.dot
 dot -Tpng -o ${outdir}/${package}.png ${outdir}/${package}.dot
 echo -e "\033[32mNote: ${package}.dot ${package}.svg and ${package}.png are generated in the ${outdir} folder.\033[0m"
+
+if [ "${coreexist}" != " " ]; then
+    corecheck=0
+    dones=" "
+
+    echo "digraph depends {" > ${outdir}/${package}.brief.dot
+    PACKAGE=$(echo "${package}" | tr 'a-z-' 'A-Z_')
+    if [ $(grep -c "^CONFIG_${PACKAGE}=y" ${confpath}) -eq 1 ]; then
+        echo "\"${package}\" [color = green]" >> ${outdir}/${package}.brief.dot
+    else
+        echo "\"${package}\" [color = red]" >> ${outdir}/${package}.brief.dot
+    fi
+    write_rule ${package} ${outdir}/${package}.brief.dot
+    echo "label = \"Note: drop the relationships of " ${coreexist} "\"" >> ${outdir}/${package}.brief.dot
+    echo "}" >> ${outdir}/${package}.brief.dot
+
+    dot -Tsvg -o ${outdir}/${package}.brief.svg ${outdir}/${package}.brief.dot
+    dot -Tpng -o ${outdir}/${package}.brief.png ${outdir}/${package}.brief.dot
+    echo -e "\033[32mNote: ${package}.brief.dot ${package}.brief.svg and ${package}.brief.png are generated in the ${outdir} folder.\033[0m"
+fi

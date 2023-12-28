@@ -27,7 +27,7 @@ MPC_VER        ?= 1.3.1
 ISL_VER        ?= 0.26
 BINUTILS_VER   ?= 2.41
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GDB_VER        ?= 13.2
+GDB_VER        ?= 14.1
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
 GLIBC_VER      ?= 2.38

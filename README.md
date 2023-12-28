@@ -377,12 +377,33 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
 
 ## Environment Configuration
 
+* There are `3x2=6` ways to export the environment
+     * The first parameter is the flag
+         * No flag means cross-compilation, and exports environment variables related to Linux cross-compilation
+         * The `app` flag indicates cross-compilation and does not export Linux cross-compilation related environment variables for application development.
+         * The `host` flag indicates native-compilation, does not export Linux cross-compilation related environment variables, and does not export the cross-compiler
+     * board means development board
+         * When the export environment does not fill in the board, the serial number will pop up to let the users select the development board.
+         * The development board must have corresponding configuration items in the `scripts/bin/process_machine.sh` script
+         * The development board must have a corresponding configuration folder under the `board` folder
+         * `generic` is special. There is no configuration item in the `process_machine.sh` script. But there is a configuration folder under `board`, which is only used for native-compilation.
+
+    ```sh
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env <board>
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env app
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env app <board>
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env host
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env host <board>
+    ```
+
+
 ### Initialize Compilation Environment
 
 * Initialize the compilation environment
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env host generic
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
@@ -1729,7 +1750,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 * Sets Yocto Build envionment
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng$ source scripts/yocto.env
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/yocto.env generic
     ============================================================
     ENV_BUILD_MODE   : yocto
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng

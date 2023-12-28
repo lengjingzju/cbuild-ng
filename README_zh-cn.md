@@ -361,12 +361,33 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 ## 环境设置
 
+* 有 `3x2=6` 种环境导出方式
+    * 第一个参数是标志
+        * 无标志表示交叉编译，且导出Linux交叉编译相关的环境变量
+        * `app` 标志表示交叉编译，不导出Linux交叉编译相关的环境变量，用于应用开发
+        * `host` 标志表示本地编译，不导出Linux交叉编译相关的环境变量，不导出交叉编译器
+    * board 表示开发板
+        * 导出环境不填写开发板时，会跳出序号让用户选择开发板
+        * 开发板必须在 `scripts/bin/process_machine.sh` 脚本中有相应的配置项
+        * 开发板必须在 `board` 文件夹下有相应的配置文件夹
+        * `generic` 比较特殊，`process_machine.sh` 脚本中无配置项，`board` 下有配置文件夹，只用于本地编译
+
+    ```sh
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env <board>
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env app
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env app <board>
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env host
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env host <board>
+    ```
+
+
 ### 初始化编译环境
 
 * 初始化编译环境运行如下命令
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/build.env host generic
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
@@ -1718,7 +1739,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 * 设置编译环境
 
     ```sh
-    lengjing@lengjing:~/data/cbuild-ng$ source scripts/yocto.env
+    lengjing@lengjing:~/data/cbuild-ng$ source scripts/yocto.env generic
     ============================================================
     ENV_BUILD_MODE   : yocto
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng

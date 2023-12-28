@@ -10,7 +10,7 @@ ifneq ($(ENV_BUILD_MODE), yocto)
 WORKDIR        := $(ENV_CFG_ROOT)
 CONF_OUT       := $(WORKDIR)
 KCONFIG        := $(WORKDIR)/Kconfig
-CONF_SAVE_PATH := $(ENV_TOP_DIR)/configs
+CONF_SAVE_PATH := $(ENV_TOP_DIR)/board/$(if $(ENV_BUILD_SOC),$(ENV_BUILD_SOC),generic)/configs
 CONF_HEADER    := __CBUILD_GLOBAL_CONFIG__
 CONF_MFLAG     := -s $(ENV_BUILD_JOBS)
 DEF_CONFIG     := def_config
@@ -18,6 +18,7 @@ DEF_CONFIG     := def_config
 IGNORE_DIRS    := .git:.svn:scripts:output:build:configs:examples:notes
 KEYWORDS       := none
 MAXLEVEL       := 3
+CORE_PKGS      :=
 TIME_OUTPUT    := $(WORKDIR)/time_statistics/$(shell date +"%Y-%m-%d--%H-%M-%S.%N")
 TIME_FORMAT    := /usr/bin/time -a -o $(TIME_OUTPUT) -f \"%e\\t\\t%U\\t\\t%S\\t\\t\$$@\"
 
@@ -72,11 +73,11 @@ deps:
 		-d mk.deps -v mk.vdeps -c mk.kconf -s $(ENV_TOP_DIR) -i $(IGNORE_DIRS) -l $(MAXLEVEL) -w $(KEYWORDS)
 
 %-deps:
-	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-deps,%,$@) $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-deps,%,$@) $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config $(CORE_PKGS)
 
 all-deps:
 	@for package in $$(cat $(WORKDIR)/Target  | cut -d '=' -f 1); do \
-		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config; \
+		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config $(CORE_PKGS); \
 	done
 
 LICS_DIR := $(ENV_TOP_DIR)/system/rootfs/licenses
@@ -110,7 +111,7 @@ endef
 	@python3 $(ENV_TOOL_DIR)/gen_package_infos.py -c $(WORKDIR)/.config -i $(WORKDIR)/info.txt \
 		-t $(WORKDIR)/Target -p $(patsubst %-pkgs,%,$@) -s $(LICS_DIR)/spdx-licenses.html \
 		-o $(call lics_dst,$@)/index.txt -w $(call lics_dst,$@)/index.html -f 0:0
-	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkgs,%,$@) $(call lics_dst,$@) $(WORKDIR)/Target $(WORKDIR)/.config
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkgs,%,$@) $(call lics_dst,$@) $(WORKDIR)/Target $(WORKDIR)/.config $(CORE_PKGS)
 
 
 ifneq ($(PGCMD), )
@@ -131,7 +132,7 @@ WORKDIR        := $(ENV_CFG_ROOT)
 CONF_PATH      := $(WORKDIR)/objs/kconfig
 CONF_OUT       := $(WORKDIR)
 KCONFIG        := $(WORKDIR)/Kconfig
-CONF_SAVE_PATH := $(ENV_TOP_DIR)/configs
+CONF_SAVE_PATH := $(ENV_TOP_DIR)/board/$(if $(ENV_BUILD_SOC),$(ENV_BUILD_SOC),generic)/configs
 CONF_HEADER    := __CBUILD_GLOBAL_CONFIG__
 DEF_CONFIG     := yocto_config
 CONF_MAKES      = -s O=$(CONF_PATH) -C $(CONF_SRC)
