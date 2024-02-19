@@ -101,6 +101,16 @@ imake_ldflags  += --analyze
 endif
 endif
 
+ifeq ($(ENV_GPROF),y)
+ifneq ($(filter %gcc,$(CC)), )
+# Run the binary, it will generate the file of gmon.out, then run `gprof <bin> gmon.out > analysis.txt`
+# For more description, refer to https://sourceware.org/binutils/docs-2.42/gprof.html
+imake_cpflags  += -pg
+imake_ldflags  += -pg
+endif
+endif
+# Users also can use another performance and analyze tool, like: perf, valgrind
+
 imake_cpflags  += $(IMAKE_CPFLAGS)
 imake_ldflags  += $(IMAKE_LDFLAGS)
 prior_ldflags  += $(PRIOR_LDFLAGS)
@@ -109,6 +119,7 @@ CHECK_INFO     += ENV_OPTIMIZER=$(ENV_OPTIMIZER)        \
                   ENV_SECURITY=$(ENV_SECURITY)          \
                   ENV_SANITIZER=$(ENV_SANITIZER)        \
                   ENV_ANALYZER=$(ENV_ANALYZER)          \
+                  ENV_GPROF=$(ENV_GPROF)                \
                   USING_CXX_BUILD_C=$(USING_CXX_BUILD_C)\
                   CC=$(CC)                              \
                   CFLAGS=$(CFLAGS)                      \
