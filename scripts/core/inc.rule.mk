@@ -101,7 +101,12 @@ all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
 
 ifeq ($(filter build,$(CUSTOM_TARGETS)), )
 build:
-	@mkdir -p $(OBJ_PREFIX)
+	@if [ ! -e $(OBJ_PREFIX)/$(VERSION) ]; then \
+		rm -rf $(OBJ_PREFIX); \
+		mkdir -p $(OBJ_PREFIX); \
+	else \
+		rm -f $(OBJ_PREFIX)/$(VERSION); \
+	fi
 	@$(if $(SRC_URLS),$(call do_fetch))
 	@$(if $(PATCH_FOLDER),$(call do_patch))
 ifneq ($(filter prepend,$(CUSTOM_TARGETS)), )
@@ -111,7 +116,7 @@ ifeq ($(COMPILE_TOOL),autotools)
 	@cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
-	@cd $(OBJ_PREFIX) && rm -f CMakeCache.txt && \
+	@cd $(OBJ_PREFIX) && \
 		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
 	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
@@ -138,6 +143,7 @@ endif
 ifneq ($(filter append,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) append
 endif
+	@echo > $(OBJ_PREFIX)/$(VERSION)
 endif
 
 ifeq ($(filter clean,$(CUSTOM_TARGETS)), )
