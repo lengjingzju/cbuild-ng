@@ -1050,7 +1050,10 @@ Note: The reason for providing the above functions is that multiple libraries or
 * Variables
     * PACKAGE_NAME: The package name
     * LICENSE: The package license ID
-    * VERSION: The package version
+    * VERSION: The package version, there are three ways to obtain the package version
+        * Use the actual version string directly
+        * Written in the process_machine.sh script, obtained by running the script, similar to `VERSION = $(shell $(MACHINE_SCRIPT) gcc_version)`, the keyword used for parsing is `<PACKAGE_NAME>_version`
+        * Through menuconfig configuration, multiple versions are supported, similar to `VERSION = $(CONFIG_GCC_VERSION)`, the keyword used for parsing is `VERSION`
     * HOMEPAGE: The package official URL
         * If HOMEPAGE is not defined, it means it is a local package, and the description information will display the `Location` column
     * DESCRIPTION: The package description

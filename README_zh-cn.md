@@ -1037,7 +1037,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * 涉及的变量
     * PACKAGE_NAME: 包的名字
     * LICENSE: 包的 license ID
-    * VERSION: 包的版本
+    * VERSION: 包的版本，获取包版本有3种写法方式
+        * 直接写上真正的版本字符串
+        * 写在 process_machine.sh 脚本中通过运行脚本获取，写法类似 `VERSION = $(shell $(MACHINE_SCRIPT) gcc_version)`，解析时判断的关键字是 `包名_version`
+        * 通过 menuconfig 配置，支持多个版本，写法类似 `VERSION = $(CONFIG_GCC_VERSION)`，解析时判断的关键字是 `VERSION`
     * HOMEPAGE: 包的官网 URL
         * 若没有定义 HOMEPAGE，表示是本地包，描述信息将显示 `Location` 栏
     * DESCRIPTION: 包的描述信息

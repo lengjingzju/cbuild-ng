@@ -1099,17 +1099,37 @@ def gen_license(args, spdxs):
                 if ret:
                     configs.add(escape_tolower(ret.groups()[0]).replace('prebuild-', '', 1))
 
+    versions = {}
+    verkeys = []
+    if args.conf_file:
+        with open(args.conf_file, 'r') as fp:
+            for per_line in fp.read().splitlines():
+                ret = re.match(r'CONFIG_(.*)_VERSION="(.+)"', per_line)
+                if ret:
+                    ver = ret.groups()[1].strip()
+                    if ver:
+                        versions[escape_tolower(ret.groups()[0]).replace('prebuild-', '', 1)] = ver
+        if versions:
+            verkeys = versions.keys()
+
+
     infos = {}
     with open(args.info_file, 'r') as fp:
         infos = eval(fp.read())
-        for package in set(infos.keys()):
-            package_keys = infos[package].keys()
-            if filter_flag[0] and package not in configs:
-                del infos[package]
-            elif filter_flag[1] and 'LICENSE' not in package_keys:
-                del infos[package]
-            elif args.package and package not in packages:
-                del infos[package]
+    if not infos:
+        return
+
+    for package in set(infos.keys()):
+        package_keys = infos[package].keys()
+        if filter_flag[0] and package not in configs:
+            del infos[package]
+        elif filter_flag[1] and 'LICENSE' not in package_keys:
+            del infos[package]
+        elif args.package and package not in packages:
+            del infos[package]
+        elif 'VERSION' in package_keys:
+            if 'VERSION' in infos[package]['VERSION'] and package in verkeys:
+                infos[package]['VERSION'] = versions[package]
     if not infos:
         return
 
