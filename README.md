@@ -906,6 +906,10 @@ Note: The reason for providing the above functions is that multiple libraries or
 
 * Targets in in `inc.rule.mk`
     * dofetch       : Only downloads package from internet or mirror server
+    * setdev        : Set development mode
+        * Each time the development mode compiles, the source code will be copied from the `output/mirror-cache/download` folder to the compilation output folder, so that the source code can be modified in the download folder for debugging during development.
+        * If there is cached compilation, please run the setforce target in development mode and do not cache compilation.
+    * unsetdev      : Cancel development mode
 
 
 ### Patch exec_patch.sh
@@ -1208,7 +1212,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     * `make time_statistics`: Compiles all packages one by one, and counts the compilation time of each package
         * Each OSS package in the time statistics file has three lines: line 1 is to prepare the sysroot for dependencies, line 2 is to compile, and line 3 is to install to the global sysroot
     * `make`: Multi-threadedly compiles all packages
-    * `make all_fetches`: Only downloads source code of all cache packages one by one
+    * `make all_fetches`: Only downloads source code of all packages which contain `SRC_URL` one by one
     * `make all_caches`: Downloads and compiles all cache packages one by one
 <br>
 

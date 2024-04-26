@@ -887,6 +887,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 * inc.rule.mk 涉及的目标
     * dofetch       : 仅下载源码
+    * setdev        : 设置开发模式
+        * 开发模式每次编译都会把源码从 `output/mirror-cache/download` 文件夹复制到编译输出文件夹，这样开发时可以在download文件夹修改源码调试
+        * 如果有缓存编译，开发模式也请运行 setforce 目标，不要缓存编译
+    * unsetdev      : 取消开发模式
 
 
 ### 打补丁 exec_patch.sh
@@ -1196,7 +1200,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     * `make time_statistics` 是一个一个包编译过去(包内可能是多线程编译)，获取每个包的编译时间
         * 每个开源软件包有三行: 第1行是准备依赖的 sysroot，第2行是编译，第3行是安装到全局 sysroot
     * `make` 是不仅是包内可能是多线程编译，多个包也是同时编译，不统计编译时间
-    * `make all_fetches` 只下载所有选中的支持缓存的包的源码
+    * `make all_fetches` 只下载所有指定网络下载SRC_URL的包的源码
         *
 注: 第一次编译前最好选中支持缓存的包后下载所有的源码 `make all_fetchs`，防止源码无法一次下载成功导致其它问题
     * `make all_caches` 下载并编译所有选中的支持缓存的包的源码

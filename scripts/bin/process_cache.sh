@@ -222,11 +222,22 @@ check_env() {
 get_source_checksum() {
     if [ ! -z "${srcname}" ]; then
         wlog "get_source_checksum: ${ENV_DOWN_DIR}/${srcname}"
-        if [ ! -e ${ENV_DOWN_DIR}/${srcname} ] && [ ! -z "${url}" ]; then
-            mkdir -p ${ENV_DOWN_DIR}/lock
-            echo > ${ENV_DOWN_DIR}/lock/${srcname}.lock
-            flock ${ENV_DOWN_DIR}/lock/${srcname}.lock -c "bash ${fetchtool} \"${url:1:3}\" \"${url:5}\" ${srcname}"
-            wlog "INFO: fetchcmd: ${fetchtool} ${url:1:3} ${url:5} ${srcname}"
+        if [ ! -z "${url}" ]; then
+            fetch_flag=0
+            if [ ! -e ${ENV_DOWN_DIR}/${srcname} ]; then
+                fetch_flag=1
+            elif [ -z "${version}" ]; then
+                if [ "${url:1:3}" = "git" ] || [ "${url:1:3}" = "svn" ]; then
+                    fetch_flag=1
+                fi
+            fi
+
+            if [ $fetch_flag -eq 1 ]; then
+                mkdir -p ${ENV_DOWN_DIR}/lock
+                echo > ${ENV_DOWN_DIR}/lock/${srcname}.lock
+                flock ${ENV_DOWN_DIR}/lock/${srcname}.lock -c "bash ${fetchtool} \"${url:1:3}\" \"${url:5}\" ${srcname}"
+                wlog "INFO: fetchcmd: ${fetchtool} ${url:1:3} ${url:5} ${srcname}"
+            fi
         fi
 
         if [ -f ${ENV_DOWN_DIR}/${srcname} ]; then

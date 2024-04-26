@@ -22,6 +22,8 @@ else
 SRC_PATH        ?= $(shell pwd)
 endif
 
+BUILD_DEVF      ?= $(WORKDIR)/$(PACKAGE_NAME)-$(VERSION)-dev
+BUILD_MARK      ?= $(PACKAGE_NAME)-$(VERSION)-mark
 BUILD_JOBS      ?= $(shell echo $(MAKEFLAGS) | grep -E '\-j[0-9]+' | sed -E 's/.*(-j[0-9]+).*/\1/g')
 MAKE_FNAME      ?= mk.deps
 
@@ -87,6 +89,9 @@ CACHE_VERBOSE   ?= 1
 endif
 
 define do_fetch
+	if [ -e $(BUILD_DEVF) ]; then \
+		rm -rf $(WORKDIR)/$(SRC_DIR); \
+	fi; \
 	mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock && \
 	flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"
 endef
@@ -101,11 +106,11 @@ all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
 
 ifeq ($(filter build,$(CUSTOM_TARGETS)), )
 build:
-	@if [ ! -e $(OBJ_PREFIX)/$(VERSION) ]; then \
+	@if [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ]; then \
 		rm -rf $(OBJ_PREFIX); \
 		mkdir -p $(OBJ_PREFIX); \
 	else \
-		rm -f $(OBJ_PREFIX)/$(VERSION); \
+		rm -f $(OBJ_PREFIX)/$(BUILD_MARK); \
 	fi
 	@$(if $(SRC_URLS),$(call do_fetch))
 	@$(if $(PATCH_FOLDER),$(call do_patch))
@@ -143,7 +148,7 @@ endif
 ifneq ($(filter append,$(CUSTOM_TARGETS)), )
 	@$(MAKE) -f $(MAKE_FNAME) append
 endif
-	@echo > $(OBJ_PREFIX)/$(VERSION)
+	@echo > $(OBJ_PREFIX)/$(BUILD_MARK)
 endif
 
 ifeq ($(filter clean,$(CUSTOM_TARGETS)), )
@@ -172,22 +177,22 @@ endif
 ifeq ($(CACHE_BUILD),y)
 
 define do_checksum
-	$(CACHE_SCRIPT) -m check -r $(CACHE_STATUS) -p $(PACKAGE_NAME) -v $(VERSION) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+	$(CACHE_SCRIPT) -m check -p $(PACKAGE_NAME) $(if $(VERSION),-v $(VERSION)) $(if $(filter y,$(NATIVE_BUILD)),-n) \
 		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE) \
 		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
 		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)') \
-		$(if $(CACHE_URL),-u '$(CACHE_URL)')
+		$(if $(CACHE_URL),-u '$(CACHE_URL)') -r $(CACHE_STATUS)
 endef
 
 define do_pushcache
-	$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) -v $(VERSION) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+	$(CACHE_SCRIPT) -m push -p $(PACKAGE_NAME) $(if $(VERSION),-v $(VERSION)) $(if $(filter y,$(NATIVE_BUILD)),-n) \
 		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE) \
 		$(if $(CACHE_SRCFILE),-s $(CACHE_SRCFILE)) $(if $(CACHE_CHECKSUM),-c '$(CACHE_CHECKSUM)') \
 		$(if $(CACHE_DEPENDS),-d '$(CACHE_DEPENDS)') $(if $(CACHE_APPENDS),-a '$(CACHE_APPENDS)')
 endef
 
 define do_pullcache
-	$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) -v $(VERSION) $(if $(filter y,$(NATIVE_BUILD)),-n) \
+	$(CACHE_SCRIPT) -m pull -p $(PACKAGE_NAME) $(if $(VERSION),-v $(VERSION)) $(if $(filter y,$(NATIVE_BUILD)),-n) \
 		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE)
 endef
 
@@ -249,7 +254,14 @@ psysroot:
 
 endif # CACHE_BUILD
 
-.PHONY: dofetch
+.PHONY: setdev unsetdev dofetch
+
+setdev:
+	@mkdir -p $(shell dirname $(BUILD_DEVF))
+	@echo > $(BUILD_DEVF)
+
+unsetdev:
+	@rm -f $(BUILD_DEVF)
 
 dofetch:
 ifneq ($(SRC_URLS), )

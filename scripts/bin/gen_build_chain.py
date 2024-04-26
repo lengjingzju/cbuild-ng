@@ -535,6 +535,11 @@ class Deps:
                             attrs.add('cache')
                             continue
                     if not ret:
+                        ret = self.RegexDict['URL'].match(per_line)
+                        if ret:
+                            attrs.add('url')
+                            continue
+                    if not ret:
                         ret = self.RegexDict['INCRULE'].match(per_line)
                         if ret:
                             attrs.add('unified')
@@ -686,6 +691,9 @@ class Deps:
                     if 'cache' in attrs:
                         if 'cache' not in item['targets']:
                             item['targets'].append('cache')
+                    if 'url' in attrs:
+                        if 'url' not in item['targets']:
+                            item['targets'].append('url')
 
                     if 'unified' in item['targets']:
                         if 'distclean' not in item['targets']:
@@ -1178,7 +1186,7 @@ class Deps:
         ignore_targets += ['prepare', 'all', 'clean', 'distclean', 'install', 'release']
         # special package attributes
         ignore_targets += ['norelease', 'psysroot', 'isysroot', 'noisysroot', 'finally']
-        ignore_targets += ['union', 'native', 'cache', 'singletask', 'jobserver']
+        ignore_targets += ['union', 'native', 'cache', 'url', 'singletask', 'jobserver']
 
         with open(filename, 'w') as fp:
             fp.write('INSTALL_OPTION ?= link\n')
@@ -1236,6 +1244,7 @@ class Deps:
                 pkg_flags['psysroot'] = False if 'psysroot' not in item['targets'] else True
                 pkg_flags['isysroot'] = False if 'isysroot' not in item['targets'] else True
                 pkg_flags['cache']    = False if 'cache' not in item['targets'] else True
+                pkg_flags['url']    = False if 'url' not in item['targets'] else True
                 pkg_flags['native']   = False if not item['target'].endswith('-native') else True
                 pkg_flags['deps']     = False
                 pkg_flags['reldeps']  = False
@@ -1393,13 +1402,21 @@ class Deps:
 
                 # cache
                 if 'cache' in item['targets']:
-                    phony.append(item['target'] + '_dofetch')
                     phony.append(item['target'] + '_setforce')
                     phony.append(item['target'] + '_set1force')
                     phony.append(item['target'] + '_unsetforce')
-                    fp.write('%s_dofetch %s_setforce %s_set1force %s_unsetforce:\n' % \
-                            (item['target'], item['target'], item['target'], item['target']))
+                    fp.write('%s_setforce %s_set1force %s_unsetforce:\n' % \
+                            (item['target'], item['target'], item['target']))
                     fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEB, makes, item['target']))
+
+                if 'url' in item['targets']:
+                    phony.append(item['target'] + '_dofetch')
+                    phony.append(item['target'] + '_setdev')
+                    phony.append(item['target'] + '_unsetdev')
+                    fp.write('%s_dofetch %s_setdev %s_unsetdev:\n' % \
+                            (item['target'], item['target'], item['target']))
+                    fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEB, makes, item['target']))
+
 
                 #### process other targets #####
                 other_targets = []
@@ -1475,6 +1492,7 @@ class Deps:
                     fp.write('ALL_TARGETS  += %s\n' % (item['target']))
                 if 'cache' in item['targets']:
                     fp.write('ALL_CACHES   += %s\n' % (item['target']))
+                if 'url' in item['targets']:
                     fp.write('ALL_FETCHES  += %s_dofetch\n' % (item['target']))
                 if pkg_flags['release']:
                     fp.write('ALL_RELEASES += %s_release\n' % (item['target']))
@@ -1634,6 +1652,7 @@ def do_normal_analysis(args):
     deps.RegexDict['DEPS'] = re.compile(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)')
     deps.RegexDict['INCDEPS'] = re.compile(r'#INCDEPS\s*:\s*([\s\w\\\-\./${}]+)')
     deps.RegexDict['CACHE'] = re.compile(r'CACHE_BUILD\s*[\?:]*=\s*y')
+    deps.RegexDict['URL'] = re.compile(r'SRC_URL\s*[\?:]*=.*')
     deps.RegexDict['INCRULE'] = re.compile(r'include\s+.*inc\.rule\.mk')
     deps.RegexDict['PACKAGE'] = re.compile(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)')
     deps.RegexDict['VARS'] = re.compile(r'(\w+)\s*[\?:]*=\s*(.+)')

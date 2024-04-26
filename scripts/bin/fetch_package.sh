@@ -268,6 +268,26 @@ do_fetch() {
                         fi
                         cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
                         echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                    else
+                        if [ "$tag-$rev" = "-" ]; then
+                            cd ${ENV_DOWN_DIR}/$package
+                            rev1=$(git log -1 --pretty=format:%H)
+                            git pull -q
+                            rev2=$(git log -1 --pretty=format:%H)
+                            if [ "$rev1" != "$rev2" ]; then
+                                cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                                echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                            fi
+                        fi
+                    fi
+                else
+                    cd ${ENV_DOWN_DIR}/$package
+                    rev1=$(git log -1 --pretty=format:%H)
+                    git pull -q
+                    rev2=$(git log -1 --pretty=format:%H)
+                    if [ "$rev1" != "$rev2" ]; then
+                        cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
                     fi
                 fi
                 ;;
@@ -285,6 +305,15 @@ do_fetch() {
                             echo "ERROR: failed to update rev ($rev) of $package." >&2
                             exit 1
                         fi
+                        cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                    fi
+                else
+                    cd ${ENV_DOWN_DIR}/$package
+                    rev1=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
+                    svn update -q
+                    rev2=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
+                    if [ "$rev1" != "$rev2" ]; then
                         cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
                         echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${ENV_DOWN_DIR}/$package.$checksuffix
                     fi
