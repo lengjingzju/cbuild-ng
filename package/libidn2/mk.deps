@@ -17,11 +17,11 @@ DESCRIPTION      = GNU Libidn is a fully documented implementation of the String
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.3.4
+VERSION          = 2.3.7
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://ftp.gnu.org/gnu/libidn/$(SRC_NAME)
-SRC_MD5          = a12109804fc9c5d7fb31f068c66655b8
+SRC_MD5          = de2818c7dea718a4f264f463f595596b
 
 AUTOTOOLS_FLAGS  = --with-libiconv-prefix=$(DEP_PREFIX)/usr \
                    --with-libunistring-prefix=$(DEP_PREFIX)/usr \

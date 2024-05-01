@@ -4,6 +4,9 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
+# fix error: meson.build:2422:26: ERROR: python is missing modules: packaging
+# sudo pip3 install packaging
+
 #DEPS(mk.deps) glib(native psysroot): unselect libffi zlib pcre2
 
 PACKAGE_NAME     = glib
@@ -16,11 +19,11 @@ DESCRIPTION      = GLib is a general-purpose, portable utility library, which pr
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.78.0
+VERSION          = 2.80.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://download.gnome.org/sources/glib/$(shell echo $(VERSION) | sed -E 's/([0-9]+).([0-9]+).([0-9]+)/\1.\2/g')/$(SRC_NAME)
-SRC_MD5          = fbddfac52807161670a11023965f1176
+SRC_MD5          = 3a51e2803ecd22c2dadcd07d9475ebe3
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

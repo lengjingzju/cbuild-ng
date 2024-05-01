@@ -21,11 +21,11 @@ DESCRIPTION      = Lzip is a lossless data compressor with a user interface simi
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.23
+VERSION          = 1.24.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://download.savannah.gnu.org/releases/lzip/$(SRC_NAME)
-SRC_MD5          = c47878da4af44ce7ab4115a75640a99d
+SRC_MD5          = 1a7720f5ed267d06112446ecb2a90b74
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

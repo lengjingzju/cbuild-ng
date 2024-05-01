@@ -18,7 +18,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 1.1.1w
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = https://ftp.openssl.org/source/$(SRC_NAME)
+SRC_URL          = https://ftp.openssl.org/source/old/1.1.1/$(SRC_NAME)
 SRC_MD5          = 3f76825f195e52d4b10c70040681a275
 
 CACHE_BUILD      = y

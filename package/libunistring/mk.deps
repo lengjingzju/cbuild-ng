@@ -16,11 +16,11 @@ DESCRIPTION      = It provides functions for manipulating Unicode strings and fo
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.1
+VERSION          = 1.2
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ftp.gnu.org/gnu/libunistring/$(SRC_NAME)
-SRC_MD5          = 0dfba19989ae06b8e7a49a7cd18472a1
+SRC_MD5          = 6b4ea63617bf09d76e5234379e75e7f9
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -17,11 +17,11 @@ DESCRIPTION      = HarfBuzz is a text shaping engine. It primarily supports Open
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 8.3.0
+VERSION          = 8.4.0
 SRC_DIR          = harfbuzz-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://github.com/harfbuzz/harfbuzz/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 7bf11a21c51a4f3ce0728decc4c557d4
+SRC_MD5          = 961e77201ff4738382ea06e9f15ade70
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -38,8 +38,11 @@ else
 AUTOTOOLS_FLAGS += --with-freetype=no
 endif
 
-CUSTOM_TARGETS   = append
+CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's/HB_HAS_FREETYPE/HAS_FREETYPE/g' $(SRC_PATH)/test/api/test-paint.c
 
 append:
 	@cp -fp $(SRC_PATH)/src/hb-ft.h $(INS_TOPDIR)$(INS_SUBDIR)/include/harfbuzz

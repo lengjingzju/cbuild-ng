@@ -38,6 +38,7 @@ COMPILE_TOOL     = cmake
 CMAKE_FLAGS      = -DDBUS_BUILD_TESTS=OFF \
                    -DDBUS_BUILD_X11=OFF \
                    -DDBUS_WITH_GLIB=OFF \
+                   -DENABLE_QT_HELP=OFF \
                    -DDBUS_SESSION_SOCKET_DIR=$(INS_TOPDIR)/tmp
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -22,11 +22,11 @@ DESCRIPTION      = A Portable Foreign Function Interface Library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.4.4
+VERSION          = 3.4.6
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/libffi/libffi/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 0da1a5ed7786ac12dcbaf0d499d8a049
+SRC_MD5          = b9cac6c5997dca2b3787a59ede34e0eb
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

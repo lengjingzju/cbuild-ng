@@ -17,11 +17,11 @@ DESCRIPTION      = util-linux is a random collection of Linux utilities.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.39.2
+VERSION          = 2.40
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/util-linux/util-linux/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 1e7bd7d5b7444aa4daab4c309018140f
+SRC_MD5          = bc4272a7821bb12c68c441d23b8eaa89
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -47,6 +47,8 @@ AUTOTOOLS_FLAGS  = --enable-libuuid \
                    --disable-use-tty-group \
                    --disable-vipw \
                    --disable-raw \
+                   --disable-liblastlog2 \
+                   --disable-pam-lastlog2 \
                    --without-udev \
                    --without-cap-ng \
                    --disable-setpriv \

@@ -18,11 +18,11 @@ DESCRIPTION      = Netlink Library Suite. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.8.0
+VERSION          = 3.9.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/thom311/libnl/releases/download/libnl$(subst .,_,$(VERSION))/$(SRC_NAME)
-SRC_MD5          = 86a4245274aae0a1cfdbd85ce88eede9
+SRC_MD5          = 27bffaccbb22ab9d8cff377b320f6014
 INS_SUBDIR       =
 INS_FULLER       = y
 

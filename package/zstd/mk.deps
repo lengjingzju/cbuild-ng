@@ -19,11 +19,11 @@ DESCRIPTION      = Zstandard is a fast compression algorithm, providing high com
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.5.5
+VERSION          = 1.5.6
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/facebook/zstd/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 63251602329a106220e0a5ad26ba656f
+SRC_MD5          = 5a473726b3445d0e5d6296afd1ab6854
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

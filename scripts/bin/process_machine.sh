@@ -24,9 +24,9 @@ gcc_arch_option=
 linux_arch=
 linux_src=
 linux_out=
-linux_version=6.6.6
+linux_version=6.6.30
 
-gcc_version=13.2.0
+gcc_version=14.1.0
 
 if [ ! -z $soc ]; then
     case $soc in

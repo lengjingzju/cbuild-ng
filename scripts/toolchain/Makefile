@@ -25,9 +25,9 @@ GMP_VER        ?= 6.3.0
 MPFR_VER       ?= 4.2.1
 MPC_VER        ?= 1.3.1
 ISL_VER        ?= 0.26
-BINUTILS_VER   ?= 2.41
+BINUTILS_VER   ?= 2.42
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GDB_VER        ?= 14.1
+GDB_VER        ?= 14.2
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
 GLIBC_VER      ?= 2.38
@@ -273,7 +273,7 @@ GLIBC_COMMON_OPTIONS    += --disable-multi-arch
 GDB_COMMON_OPTIONS      += gl_cv_c_multiarch=no
 endif
 
-GLIBC_COMMON_OPTIONS    += --enable-crypt # from glibc 2.38
+GLIBC_COMMON_OPTIONS    += --enable-crypt # only for glibc-2.38, glibc-2.39 has deleted libcrypt
 
 ifneq ($(HOST_TOOLCHAIN),y)
 BINUTILS_SYSROOT_OPTIONS = --with-sysroot=$(GLIBC_SYSROOT) \

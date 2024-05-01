@@ -20,11 +20,11 @@ DESCRIPTION      = XZ Utils is free general-purpose data compression software wi
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 5.4.5
+VERSION          = 5.4.6
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://nchc.dl.sourceforge.net/project/lzmautils/$(SRC_NAME)
-SRC_MD5          = 1d33e0be05c53e7a5641acf5c8b35fdd
+SRC_MD5          = 7ade7bd1181a731328f875bec62a9377
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

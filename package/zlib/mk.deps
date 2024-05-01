@@ -16,11 +16,11 @@ DESCRIPTION      = Zlib is a general-purpose, patent-free, lossless data compres
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = tar
-VERSION          = 1.3
+VERSION          = 1.3.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://www.zlib.net/$(SRC_NAME)
-SRC_MD5          = 60373b133d630f74f4a1f94c1185a53f
+SRC_MD5          = 9855b6d802d7fe5b7bd5b196a2271655
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

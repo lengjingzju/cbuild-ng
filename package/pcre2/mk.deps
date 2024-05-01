@@ -20,11 +20,11 @@ DESCRIPTION      = Perl-Compatible Regular Expressions. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 10.42
+VERSION          = 10.43
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://github.com/PCRE2Project/pcre2/releases/download/$(SRC_DIR)/$(SRC_NAME)
-SRC_MD5          = a8e9ab2935d428a4807461f183034abe
+SRC_MD5          = c8e2043cbc4abb80e76dba323f7c409f
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
