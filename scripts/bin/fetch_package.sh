@@ -227,68 +227,59 @@ do_fetch() {
 
         case $method in
             git)
-                if [ "$branch-$tag-$rev" != "--" ]; then
-                    cd ${ENV_DOWN_DIR}/$package
-                    rbranch=$(git symbolic-ref -q --short HEAD)
-                    rrev=$(git log -1 --pretty=format:%H)
-                    rtag=$(git show-ref --tags -d | grep "$rrev" | cut -d ' ' -f 2 | sed -e 's:^refs/tags/::g' -e 's:\^{}::g')
-                    changed=0
+                cd ${ENV_DOWN_DIR}/$package
+                if [ -z "$branch" ]; then
+                    branch=$(git branch -a | grep 'HEAD' | awk -F '/' '{print $NF}')
+                fi
+                rbranch=$(git symbolic-ref -q --short HEAD)
 
-                    if [ ! -z "$branch" ] && [ "$branch" != "$rbranch" ]; then
-                        changed=1
-                    elif [ ! -z "$tag" ] && [ "$tag" != "$rtag" ]; then
-                        changed=1
-                    elif [ ! -z "$rev" ] && [ "$rev" != "$rrev" ]; then
-                        changed=1
+                changed=0
+                if [ "$branch" != "$rbranch" ]; then
+                    changed=1
+                    rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                    git pull -q
+                    git checkout -q $branch
+                    if [ $? -ne 0 ]; then
+                        echo "ERROR: failed to checkout branch ($branch) of $package." >&2
+                        exit 1
                     fi
+                fi
 
-                    if [ $changed -ne 0 ]; then
-                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
-                        git pull -q
-                        if [ ! -z "$branch" ] && [ "$branch" != "$rbranch" ]; then
-                            git checkout -q $branch
-                            if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to checkout branch ($branch) of $package." >&2
-                                exit 1
-                            fi
-                        fi
-                        if [ ! -z "$tag" ] && [ "$tag" != "$rtag" ]; then
-                            git reset -q --hard $tag
-                            if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to reset tag ($tag) of $package." >&2
-                                exit 1
-                            fi
-                        fi
-                        if [ ! -z "$rev" ] && [ "$rev" != "$rrev" ]; then
-                            git reset -q --hard $rev
-                            if [ $? -ne 0 ]; then
-                                echo "ERROR: failed to reset rev ($rev) of $package." >&2
-                                exit 1
-                            fi
-                        fi
-                        cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
-                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
-                    else
-                        if [ "$tag-$rev" = "-" ]; then
-                            cd ${ENV_DOWN_DIR}/$package
-                            rev1=$(git log -1 --pretty=format:%H)
-                            git pull -q
-                            rev2=$(git log -1 --pretty=format:%H)
-                            if [ "$rev1" != "$rev2" ]; then
-                                cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
-                                echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
-                            fi
-                        fi
-                    fi
-                else
-                    cd ${ENV_DOWN_DIR}/$package
+                if [ "$tag-$rev" = "-" ]; then
                     rev1=$(git log -1 --pretty=format:%H)
                     git pull -q
                     rev2=$(git log -1 --pretty=format:%H)
                     if [ "$rev1" != "$rev2" ]; then
-                        cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
-                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                        changed=1
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
                     fi
+                else
+                    rrev=$(git log -1 --pretty=format:%H)
+                    rtag=$(git show-ref --tags -d | grep "$rrev" | cut -d ' ' -f 2 | sed -e 's:^refs/tags/::g' -e 's:\^{}::g')
+                    if [ ! -z "$tag" ] && [ "$tag" != "$rtag" ]; then
+                        changed=1
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                        git pull -q
+                        git reset -q --hard $tag
+                        if [ $? -ne 0 ]; then
+                            echo "ERROR: failed to reset tag ($tag) of $package." >&2
+                            exit 1
+                        fi
+                    elif [ ! -z "$rev" ] && [ "$rev" != "$rrev" ]; then
+                        changed=1
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                        git pull -q
+                        git reset -q --hard $rev
+                        if [ $? -ne 0 ]; then
+                            echo "ERROR: failed to reset tag ($tag) of $package." >&2
+                            exit 1
+                        fi
+                    fi
+                fi
+
+                if [ $changed -ne 0 ]; then
+                    cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                    echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
                 fi
                 ;;
 
