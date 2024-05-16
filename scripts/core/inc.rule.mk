@@ -22,7 +22,7 @@ else
 SRC_PATH        ?= $(shell pwd)
 endif
 
-BUILD_DEVF      ?= $(WORKDIR)/$(PACKAGE_NAME)-$(VERSION)-dev
+BUILD_DEVF      ?= $(WORKDIR)/$(PACKAGE_NAME)-dev
 BUILD_MARK      ?= $(PACKAGE_NAME)-$(VERSION)-mark
 BUILD_JOBS      ?= $(shell echo $(MAKEFLAGS) | grep -E '\-j[0-9]+' | sed -E 's/.*(-j[0-9]+).*/\1/g')
 MAKE_FNAME      ?= mk.deps
@@ -90,10 +90,12 @@ endif
 
 define do_fetch
 	if [ -e $(BUILD_DEVF) ]; then \
-		rm -rf $(WORKDIR)/$(SRC_DIR); \
+		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
 	fi; \
-	mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock && \
-	flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"
+	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(WORKDIR)/$(SRC_DIR) ]; then \
+		mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock && \
+		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"; \
+	fi
 endef
 
 define do_patch

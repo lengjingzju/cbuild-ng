@@ -907,8 +907,8 @@ Note: The reason for providing the above functions is that multiple libraries or
 * Targets in in `inc.rule.mk`
     * dofetch       : Only downloads package from internet or mirror server
     * setdev        : Set development mode
-        * Each time the development mode compiles, the source code will be copied from the `output/mirror-cache/download` folder to the compilation output folder, so that the source code can be modified in the download folder for debugging during development.
-        * If there is cached compilation, please run the setforce target in development mode and do not cache compilation.
+        * In development mode, if the source code folder is in the compilation output folder, the source code folder in `output/mirror-cache/download` will not be copied to the compilation output folder, so that the source code can be modified in the compilation output folder for debugging during development.
+        * If there is cached compilation, please run the `setforce` target in development mode and do not cache compilation.
     * unsetdev      : Cancel development mode
 
 

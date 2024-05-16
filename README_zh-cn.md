@@ -888,8 +888,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * inc.rule.mk 涉及的目标
     * dofetch       : 仅下载源码
     * setdev        : 设置开发模式
-        * 开发模式每次编译都会把源码从 `output/mirror-cache/download` 文件夹复制到编译输出文件夹，这样开发时可以在download文件夹修改源码调试
-        * 如果有缓存编译，开发模式也请运行 setforce 目标，不要缓存编译
+        * 开发模式下如果编译输出文件夹下存在源码目录，不会将 `output/mirror-cache/download` 中的源码复制到编译输出文件夹，这样开发时可以在编译输出文件夹修改源码调试
+        * 如果有缓存编译，开发模式也请运行 `setforce` 目标，不要缓存编译
     * unsetdev      : 取消开发模式
 
 
