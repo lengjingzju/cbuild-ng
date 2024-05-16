@@ -1128,8 +1128,11 @@ def gen_license(args, spdxs):
         elif args.package and package not in packages:
             del infos[package]
         elif 'VERSION' in package_keys:
-            if 'VERSION' in infos[package]['VERSION'] and package in verkeys:
-                infos[package]['VERSION'] = versions[package]
+            ret = re.match(r'.*CONFIG_(.*)_VERSION.*', infos[package]['VERSION'])
+            if ret:
+                ver = escape_tolower(ret.groups()[0]).replace('prebuild-', '', 1)
+                if ver and ver in verkeys:
+                    infos[package]['VERSION'] = versions[ver]
     if not infos:
         return
 
