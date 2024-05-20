@@ -875,8 +875,13 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
         * SRC_TAG   : git 的 tag
         * SRC_REV   : git 或 svn 的 revision
         * SRC_MD5   : tar 或 zip 的 MD5
-    * SRC_PATH      : 包的源码路径，默认取变量 `$(WORKDIR)/$(SRC_DIR)` 设置的值
-        * 没有下载阶段时，SRC_PATH 的默认值是当前目录
+    * SRC_PATH      : 包的源码路径
+        * 网络下载源码时
+            * git/svn 时 `SRC_SHARED` 默认为 y，可设置为n，默认取变量 `$(ENV_DOWN_DIR)/$(SRC_DIR)` 设置的值
+            * tar/zip 时 `SRC_SHARED` 固定为 n，默认取变量 `$(WORKDIR)/$(SRC_DIR)` 设置的值
+            * `SRC_SHARED` 为 y 时，不用复制源码到输出目录，可节省存储空间，提供类似 repo 的开发管理手段
+        * 本地源码时
+            * 此时 `SRC_URL` 的值是空，SRC_PATH 的默认值是当前目录
     * WORKDIR       : 解压或复制到的目录
     * SRC_NAME      : 下载保存的文件名或文件夹名
 <br>

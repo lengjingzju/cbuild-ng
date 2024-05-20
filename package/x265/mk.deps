@@ -21,7 +21,7 @@ SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
 SRC_URL          = https://bitbucket.org/multicoreware/$(PACKAGE_NAME)_git.git
 SRC_TAG          = $(VERSION)
-SRC_PATH         = $(WORKDIR)/$(SRC_DIR)/source
+SRC_PATH         = $(ENV_DOWN_DIR)/$(SRC_DIR)/source
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

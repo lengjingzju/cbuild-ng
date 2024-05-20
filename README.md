@@ -894,8 +894,13 @@ Note: The reason for providing the above functions is that multiple libraries or
         * SRC_TAG   : tag for `git`
         * SRC_REV   : rev (revision) for `git` or `svn`
         * SRC_MD5   : md5 for `tar` or `zip`
-    * SRC_PATH      : Source code path, its default value is `$(WORKDIR)/$(SRC_DIR)`
-        * If the SRC_URL is not set, the default value is current directory
+    * SRC_PATH      : Source code path
+        * Network source code
+            * When `FETCH_METHOD` is `git` / `svn`, the default value of `SRC_SHARED` is y, which can be set to n, and the default value is `$(ENV_DOWN_DIR)/$(SRC_DIR)`
+            * When `FETCH_METHOD` is `tar` / `zip`, the value of `SRC_SHARED` is fixed to n, and the default value is `$(WORKDIR)/$(SRC_DIR)`
+            * When `SRC_SHARED`is y, there is no need to copy the source code to the output directory, which can save storage space
+        * Local source code
+            * If the SRC_URL is not set, the default value is current directory
     * WORKDIR       : The path to extract to or copy to
     * SRC_NAME      : Saved filename or dirname for download package
 <br>

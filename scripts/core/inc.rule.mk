@@ -16,8 +16,17 @@ MESON_SCRIPT    := $(ENV_TOOL_DIR)/meson_cross.sh
 
 ifneq ($(SRC_URL), )
 FETCH_METHOD    ?= tar
+ifneq ($(filter $(FETCH_METHOD),git svn), )
+SRC_SHARED      ?= y
+else
+SRC_SHARED      := n
+endif
 SRC_URLS        ?= $(SRC_URL)$(if $(SRC_MD5),;md5=$(SRC_MD5))$(if $(SRC_BRANCH),;branch=$(SRC_BRANCH))$(if $(SRC_TAG),;tag=$(SRC_TAG))$(if $(SRC_REV),;rev=$(SRC_REV))
+ifneq ($(SRC_SHARED),y)
 SRC_PATH        ?= $(WORKDIR)/$(SRC_DIR)
+else
+SRC_PATH        ?= $(ENV_DOWN_DIR)/$(SRC_DIR)
+endif
 else
 SRC_PATH        ?= $(shell pwd)
 endif
@@ -88,6 +97,7 @@ endif
 CACHE_VERBOSE   ?= 1
 endif
 
+ifneq ($(SRC_SHARED),y)
 define do_fetch
 	if [ -e $(BUILD_DEVF) ]; then \
 		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
@@ -97,6 +107,17 @@ define do_fetch
 		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"; \
 	fi
 endef
+else
+define do_fetch
+	if [ -e $(BUILD_DEVF) ]; then \
+		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
+	fi; \
+	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(ENV_DOWN_DIR)/$(SRC_DIR) ]; then \
+		mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock && \
+		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"; \
+	fi
+endef
+endif
 
 define do_patch
 	$(PATCH_SCRIPT) patch $(PATCH_FOLDER) $(SRC_PATH)
