@@ -129,9 +129,11 @@ all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
 
 ifeq ($(filter build,$(CUSTOM_TARGETS)), )
 build:
-	@if [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ]; then \
+	@if [ "$(OBJ_DISRM)" != "y" ] && [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ]; then \
 		rm -rf $(OBJ_PREFIX); \
-		mkdir -p $(OBJ_PREFIX); \
+		if [ "$(findstring $(OBJ_PREFIX),$(SRC_PATH))" = "" ]; then \
+			mkdir -p $(OBJ_PREFIX); \
+		fi; \
 	else \
 		rm -f $(OBJ_PREFIX)/$(BUILD_MARK); \
 	fi

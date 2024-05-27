@@ -1498,6 +1498,13 @@ class Deps:
                     fp.write('ALL_RELEASES += %s_release\n' % (item['target']))
                 fp.write('ALL_CLEANS   += %s_clean\n' % (item['target']))
                 fp.write('.PHONY: %s\n\n' % (' '.join(phony)))
+                fp.write('else\n\n')
+
+                fp.write('%s:\n' % (item['target']))
+                fp.write('\t@echo "%s is not enabled!" >&2 && exit 1\n\n' % (item['target']))
+                fp.write('%s_%%:\n' % (item['target']))
+                fp.write('\t@echo "%s is not enabled!" >&2 && exit 1\n\n' % (item['target']))
+                fp.write('.PHONY: %s\n\n' % (item['target']))
                 fp.write('endif\n\n')
 
             fp.write('%s: %s\n\n' % ('all_targets',  '$(ALL_TARGETS)'))
