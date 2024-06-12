@@ -1,0 +1,40 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) secilc(native psysroot): unselect libsepol
+
+PACKAGE_NAME     = secilc
+
+LICENSE          = GPL-2.0-or-later
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/SELinuxProject/selinux
+DESCRIPTION      = The SELinux CIL Compiler is a compiler that converts the CIL language as described on the CIL design \
+                   wiki into a kernel binary policy file. Please see the CIL Design Wiki at: \
+                   http://github.com/SELinuxProject/cil/wiki/ \
+                   for more information about the goals and features on the CIL language.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = tar
+VERSION          = 3.6
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_REV          = 6df9570b8ee8d0bda251fdefd53be55e
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+MAKE_FLAGS       = CPPFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+MAKE_FLAGS      += PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
+OBJ_PREFIX       = $(SRC_PATH)
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i '/_MANPAGE/ d' $(SRC_PATH)/Makefile
+

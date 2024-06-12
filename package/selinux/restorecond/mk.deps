@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) restorecond(native psysroot): unselect glib libsepol libselinux
+
+PACKAGE_NAME     = restorecond
+
+LICENSE          = GPL-2.0-or-later
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/SELinuxProject/selinux
+DESCRIPTION      = The restorecond processes execute with the restorecond_t SELinux type. You can check if you have these \
+                   processes running by executing the ps command with the -Z qualifier.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = tar
+VERSION          = 3.6
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_REV          = 5a57dbc759c8a71dcba618f0b4b0f9e7
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+MAKE_FLAGS       = LDFLAGS="$(call link_libs)"
+MAKE_FLAGS      += SBINDIR=$(INS_TOPDIR)/sbin AUTOSTARTDIR=$(INS_TOPDIR)/etc/xdg/autostart
+MAKE_FLAGS      += INITDIR=$(INS_TOPDIR)/etc/rc.d/init.d SELINUXDIR=$(INS_TOPDIR)/etc/selinux
+MAKE_FLAGS      += SYSTEMDSYSTEMUNITDIR=$(INS_TOPDIR)/lib/systemd/system SYSTEMDUSERUNITDIR=$(INS_TOPDIR)/usr/lib/systemd/user
+MAKE_FLAGS      += PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
+OBJ_PREFIX       = $(SRC_PATH)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+

@@ -1,0 +1,36 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) mcstrans(native psysroot): unselect libcap pcre2 libsepol libselinux
+
+PACKAGE_NAME     = mcstrans
+
+LICENSE          = GPL-2.0-or-later
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/SELinuxProject/selinux
+DESCRIPTION      = mcstrans provides an translation daemon to translate SELinux categories from internal representations \
+                   to user defined representation.  This daemon reads /etc/selinux/{SELINUXTYPE}/setrans.conf configuration \
+                   file, and communicates with libselinux via a socket in /var/run/setrans.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = tar
+VERSION          = 3.6
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_REV          = 8c4b2012d98b1df0d1ae5192546afa6f
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+MAKE_FLAGS       = LDFLAGS="$(call link_libs)"
+MAKE_FLAGS      += SBINDIR=$(INS_TOPDIR)/sbin INITDIR=$(INS_TOPDIR)/etc/rc.d/init.d
+MAKE_FLAGS      += PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
+OBJ_PREFIX       = $(SRC_PATH)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
+

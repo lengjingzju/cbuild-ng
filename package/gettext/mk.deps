@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) gettext(native psysroot): unselect
+
+PACKAGE_NAME     = gettext
+
+LICENSE          = GPL-3.0-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.gnu.org/software/gettext/
+DESCRIPTION      = GNU gettext is an important step for the GNU Translation Project, as it is an asset on which we may \
+                   build many other steps. This package offers to programmers, translators, and even users, a well \
+                   integrated set of tools and documentation. Specifically, the GNU gettext utilities are a set of tools \
+                   that provides a framework to help other GNU packages produce multi-lingual messages. These tools \
+                   include a set of conventions about how programs should be written to support message catalogs, a \
+                   directory and file naming organization for the message catalogs themselves, a runtime library supporting \
+                   the retrieval of translated messages, and a few stand-alone programs to massage in various ways the sets \
+                   of translatable strings, or already translated strings. A special GNU Emacs mode also helps interested \
+                   parties in preparing these sets, or bringing them up to date.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.22.5
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://ftp.gnu.org/pub/gnu/gettext/$(SRC_NAME)
+SRC_MD5          = 3ae5580599d84be93e6213930facb2db
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

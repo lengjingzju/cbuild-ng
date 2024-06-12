@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) python3(native psysroot): unselect python3-native
+
+PACKAGE_NAME     = python3
+
+LICENSE          = PSF-2.0
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://www.python.org/
+DESCRIPTION      = Python is a high-level, general-purpose programming language. Its design philosophy emphasizes code \
+                   readability with the use of significant indentation. Python is dynamically typed and garbage-collected. \
+                   It supports multiple programming paradigms, including structured (particularly procedural), \
+                   object-oriented and functional programming. It is often described as a "batteries included" language \
+                   due to its comprehensive standard library.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.12.4
+SRC_DIR          = Python-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.python.org/ftp/python/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = d68f25193eec491eb54bc2ea664a05bd
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+ifneq ($(CROSS_COMPILE), )
+AUTOTOOLS_FLAGS += --build=$(shell uname -m)-linux-gnu --with-build-python=$(PATH_PREFIX)$(bindir)/python3
+AUTOTOOLS_FLAGS += ac_cv_buggy_getaddrinfo=no ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no
+endif
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libsepol(native psysroot): unselect
+
+PACKAGE_NAME     = libsepol
+
+LICENSE          = GPL-2.0-or-later
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/SELinuxProject/selinux
+DESCRIPTION      = libsepol provides an API for the manipulation of SELinux binary policies. It is used by checkpolicy \
+                   (the policy compiler) and similar tools, and programs such as load_policy, which must perform specific \
+                   transformations on binary policies (for example, customizing policy boolean settings).
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = tar
+VERSION          = 3.6
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_REV          = e0c71bc448cffada3406cc9a7ad7ea2c
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+MAKE_FLAGS       = PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
+OBJ_PREFIX       = $(SRC_PATH)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,40 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libselinux(native psysroot): unselect pcre2 libsepol
+
+PACKAGE_NAME     = libselinux
+
+LICENSE          = libselinux
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/SELinuxProject/selinux
+DESCRIPTION      = The libselinux packages contain the core library of an SELinux system. The libselinux library provides \
+                   an API for SELinux applications to get and set process and file security contexts, and to obtain \
+                   security policy decisions. It is required for any applications that use the SELinux API, and used by \
+                   all applications that are SELinux-aware.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = tar
+VERSION          = 3.6
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_REV          = 06149dae0a3c3af01dde4bb25d314b93
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+MAKE_FLAGS       = EXTRA_LDLIBS="$(call link_libs)"
+MAKE_FLAGS      += PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
+OBJ_PREFIX       = $(SRC_PATH)
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's@LDLIBS += -lselinux@LDLIBS += \$$(EXTRA_LDLIBS) -lselinux@g' $(SRC_PATH)/utils/Makefile
+
