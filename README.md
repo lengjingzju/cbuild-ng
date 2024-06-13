@@ -158,7 +158,7 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
     * `-s <Search Directories>`: Specifies the searched directory pathnames (containing VDEPS-statement) to search, and multiple directories are separated by colon
     * `-i <Ignore Directories>`: Specifies the ignored directory names, and multiple directories are separated by colon
     * `-g <Go On Directories>`: Specifies the continued directory pathnames, and multiple directories are separated by colon
-        * If the current directory contains the dependency filename, and `Go On Directories` is not specified or the current directory is not in it, the script will not continue to search sub-directories of the current directory
+        * If the current directory contains the dependency filename, the current directory does not have a `continue` file and `Go On Directories` is not specified or the current directory is not in it, the script will not continue to search sub-directories of the current directory
     * `-l <Max Layer Depth>`: Sets the maximum number of levels of the menuconfig, 0 for tile, 1 for 2-levels, ...
     * `-w <Keyword Directories>`: Sets the ignored level names of the menuconfig, and the multiple names set are separated by colon
         * If the directory name in the path matches the set value, the levels of this path is subtracted by one
@@ -212,6 +212,7 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
             * Users can also use INCDEPS-statement to continue to find dependency files under sub-folders
                 * For example: `#INCDEPS: test1 test2/test22`
                 * Sub-dirs supports environment variable substitution, for example, `${ENV_BUILD_SOC}` will be replaced with the value of the environment variable `ENV_BUILD_SOC`
+            * Users can also add a `continue` file to the current directory to continue to find dependency files under sub-folders
         * The Makefile name can include environment variables, for examples `${ENV_TOP_DIR}/xxx/Makefile`, there is no need to put the rule file in the source directory at this point
     * Target_Name: The package name ID
         * The keyword of `ignore` is a special ID that indicates no package, which is used to ignore the search of the current directory (`#DEPS() ignore():`)
@@ -223,6 +224,8 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
             * direct    : The main feature is that the `all` target of the package only calls compilation
                 * It is the default package type, no manual setting required
                 * `direct` package automatically appends the keyword of `isysroot` if the keyword of `noisysroot` is not specified
+            * empty     : The main feature is that the package is empty and only defines dependency relationships, without executing commands such as compile, install, and release
+                * Need to manually set `empty`
         * Package Target Keywords
             * all install clean: Ignores the necessary targets, adding or not has no effect on the parsing results
             * distclean : Completely cleans the compile output (including configuration)
@@ -696,7 +699,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * add-liba-build: Creates a rule for compiling static library
     * `$(eval $(call add-liba-build,<static library name>,<source files>))`
     * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>))`
-        * It will append the content of dependent static libraries to the generated static library 
+        * It will append the content of dependent static libraries to the generated static library
     * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>,<private CFLAGS>))`
     * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>,<private CFLAGS>,<extra dependencies>))`
 * add-libso-build: Creates a rule for compiling shared library

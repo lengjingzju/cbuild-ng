@@ -368,8 +368,9 @@ class Deps:
 
                 if dep_name in files:
                     self.PathList.append((root, root.replace(rootdir + '/', '', 1), ''))
-                    if not go_on_dirs or root not in go_on_dirs:
-                        dirs.clear() # don't continue to search sub dirs.
+                    if 'continue' not in files:
+                        if not go_on_dirs or root not in go_on_dirs:
+                            dirs.clear() # don't continue to search sub dirs.
 
 
     def search_yocto_depends(self, vir_name, search_dirs, ignore_dirs = []):
@@ -683,6 +684,10 @@ class Deps:
                     self.InfoDict[package]['LOCATION'] = items[0]['mpath'].replace(os.getenv('ENV_TOP_DIR'), 'TOPDIR', 1)
 
                 for item in items:
+                    if 'empty' in item['targets']:
+                        item['targets']  = ['empty', 'psysroot', 'norelease']
+                        continue
+
                     if 'unified' not in item['targets'] and 'direct' not in item['targets']:
                         if 'unified' in attrs:
                             item['targets'].append('unified')
@@ -1181,7 +1186,7 @@ class Deps:
 
     def gen_make(self, filename, target_list):
         # package types
-        ignore_targets  = ['unified', 'direct']
+        ignore_targets  = ['unified', 'direct', 'empty']
         # special package targets
         ignore_targets += ['prepare', 'all', 'clean', 'distclean', 'install', 'release']
         # special package attributes
@@ -1240,11 +1245,12 @@ class Deps:
 
                 pkg_flags = {}
                 pkg_flags['finally']  = False if item['target'] not in self.FinallyList else True
-                pkg_flags['unified']  = False if 'unified'  not in item['targets'] else True
+                pkg_flags['unified']  = False if 'unified' not in item['targets'] else True
+                pkg_flags['empty']    = False if 'empty' not in item['targets'] else True
                 pkg_flags['psysroot'] = False if 'psysroot' not in item['targets'] else True
                 pkg_flags['isysroot'] = False if 'isysroot' not in item['targets'] else True
                 pkg_flags['cache']    = False if 'cache' not in item['targets'] else True
-                pkg_flags['url']    = False if 'url' not in item['targets'] else True
+                pkg_flags['url']      = False if 'url' not in item['targets'] else True
                 pkg_flags['native']   = False if not item['target'].endswith('-native') else True
                 pkg_flags['deps']     = False
                 pkg_flags['reldeps']  = False
@@ -1331,37 +1337,48 @@ class Deps:
                 compile_str += '\t@$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n' % (item['target'])
 
                 phony.append(item['target'])
-                if pkg_flags['finally']:
-                    fp.write('%s: finaldeps\n' % (item['target']))
-                if pkg_flags['deps']:
-                    if pkg_flags['psysroot']:
+                if pkg_flags['empty']:
+                    if pkg_flags['deps']:
                         fp.write('%s: $(%s-deps)\n' % (item['target'], item['target']))
-                        if pkg_flags['unified'] and pkg_flags['cache']:
-                            fp.write('%s\t%s%s %s%s\n' % (cache_str, MAKEA, makes, unionstr, 'psysroot'))
-                        else:
-                            fp.write('%s\t%s %s\n' % (cache_str, psys_make, psysroot_target))
-                        fp.write('%s\n' % (compile_str))
                     else:
-                        fp.write('%s: $(addsuffix _install,$(%s-deps))\n' % (item['target'], item['target']))
-                        fp.write('%s%s\n' % (cache_str, compile_str))
-
-                    phony.append('%s_single' % (item['target']))
-                    fp.write('%s_single:\n' % (item['target']))
-                elif pkg_flags['finally']:
-                    phony.append('%s_single' % (item['target']))
-                    fp.write('%s %s_single:\n' % (item['target'], item['target']))
+                        fp.write('%s:\n' % (item['target']))
+                    fp.write('\t@$(if $(PGCMD),$(PGCMD) begin=$@)\n')
+                    fp.write('\t@$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n\n' % (item['target']))
                 else:
-                    fp.write('%s:\n' % (item['target']))
-                fp.write('%s%s\n' % (cache_str, compile_str))
+                    if pkg_flags['finally']:
+                        fp.write('%s: finaldeps\n' % (item['target']))
+                    if pkg_flags['deps']:
+                        if pkg_flags['psysroot']:
+                            fp.write('%s: $(%s-deps)\n' % (item['target'], item['target']))
+                            if pkg_flags['unified'] and pkg_flags['cache']:
+                                fp.write('%s\t%s%s %s%s\n' % (cache_str, MAKEA, makes, unionstr, 'psysroot'))
+                            else:
+                                fp.write('%s\t%s %s\n' % (cache_str, psys_make, psysroot_target))
+                            fp.write('%s\n' % (compile_str))
+                        else:
+                            fp.write('%s: $(addsuffix _install,$(%s-deps))\n' % (item['target'], item['target']))
+                            fp.write('%s%s\n' % (cache_str, compile_str))
+
+                        phony.append('%s_single' % (item['target']))
+                        fp.write('%s_single:\n' % (item['target']))
+                    elif pkg_flags['finally']:
+                        phony.append('%s_single' % (item['target']))
+                        fp.write('%s %s_single:\n' % (item['target'], item['target']))
+                    else:
+                        fp.write('%s:\n' % (item['target']))
+                    fp.write('%s%s\n' % (cache_str, compile_str))
 
                 # install
                 phony.append(item['target'] + '_install')
                 fp.write('%s_install: %s\n' % (item['target'], item['target']))
-                fp.write('\t@install -d %s\n' % (gsys_dir))
-                if pkg_flags['isysroot']:
-                    fp.write('\t%s\n\n' % (gsys_cmd))
+                if pkg_flags['empty']:
+                    fp.write('\t@\n\n')
                 else:
-                    fp.write('\t%s\n\n' % (gsys_make))
+                    fp.write('\t@install -d %s\n' % (gsys_dir))
+                    if pkg_flags['isysroot']:
+                        fp.write('\t%s\n\n' % (gsys_cmd))
+                    else:
+                        fp.write('\t%s\n\n' % (gsys_make))
 
                 # isysroot
                 phony.append(item['target'] + '_isysroot')
@@ -1369,10 +1386,13 @@ class Deps:
                     fp.write('%s_isysroot: %s\n' % (item['target'], psysroot_target))
                 else:
                     fp.write('%s_isysroot:\n' % (item['target']))
-                if pkg_flags['isysroot']:
-                    fp.write('\t%s\n\n' % (isys_cmd))
+                if pkg_flags['empty']:
+                    fp.write('\t@\n\n')
                 else:
-                    fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'install'))
+                    if pkg_flags['isysroot']:
+                        fp.write('\t%s\n\n' % (isys_cmd))
+                    else:
+                        fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'install'))
 
                 # release
                 if pkg_flags['release']:
@@ -1394,7 +1414,10 @@ class Deps:
                 # clean distclean
                 phony.append(item['target'] + '_clean')
                 fp.write('%s_clean:\n' % (item['target']))
-                fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'clean'))
+                if pkg_flags['empty']:
+                    fp.write('\t@\n\n')
+                else:
+                    fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'clean'))
                 if 'distclean' in item['targets']:
                     phony.append(item['target'] + '_distclean')
                     fp.write('%s_distclean:\n' % (item['target']))

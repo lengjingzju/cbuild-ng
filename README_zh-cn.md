@@ -160,7 +160,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * `-s <Search Directories>`: 指定搜索的目录文件路径名，多个目录使用冒号隔开
     * `-i <Ignore Directories>`: 指定忽略的目录名，不会搜索指定目录名下的依赖文件，多个目录使用冒号隔开
     * `-g <Go On Directories>`: 指定继续搜索的的目录文件路径名，多个目录使用冒号隔开
-        * 如果在当前目录下搜索到 `<Search Depend Name>`，`<Go On Directories>` 没有指定或当前目录不在它里面，不会再继续搜索当前目录的子目录
+        * 如果在当前目录下搜索到 `<Search Depend Name>`，当前目录不存在 `continue` 文件且 `<Go On Directories>` 没有指定或当前目录不在它里面，不会再继续搜索当前目录的子目录
     * `-l <Max Layer Depth>`: 设置 menuconfig 菜单的最大层数，0 表示菜单平铺，1表示2层菜单，...
     * `-w <Keyword Directories>`: 设置 menuconfig 菜单的忽略层级名，如果路径中的目录匹配设置值，则这个路径的层数减1，设置的多个目录使用冒号隔开
     * `-p <Prepend Flag>`: 设置生成的 Kconfig 中配置项的前缀，如果用户运行 conf / mconf 时设置了无前缀 `CONFIG_=""`，则运行此脚本需要设置此 flag 为 1
@@ -206,6 +206,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
             * 也可以使用 INCDEPS-statement 继续查找子文件夹下的依赖文件，支持递归
                 * 例如 `#INCDEPS: test1 test2/test22`，通过子文件夹下的依赖文件找到子包
                 * Subdir_Names 支持环境变量替换，例如 `${ENV_BUILD_SOC}` 会替换为环境变量 ENV_BUILD_SOC 的值
+            * 也可以当前目录添加 `continue` 文件，继续查找子文件夹下的依赖文件
         * Makefile_Name 支持环境变量替换，例如 `${ENV_TOP_DIR}/xxx/Makefile`，此时就不需要将规则文件放在源码目录
     * Target_Name: 当前包的名称ID
         * `ignore` 关键字是特殊的ID，表示此包不是一个包，用来屏蔽当前目录的搜索，一般写成 `#DEPS() ignore():`
@@ -217,6 +218,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
             * direct    : 主要特征是包的 `all` 目标只进行了编译
                 * 默认包类型，一般无需手动设置
                 * 如果未声明 `noisysroot`，`direct` 包默认自动添加 `isysroot` 关键字
+            * empty     : 主要特征是包是空包，只定义了依赖关系，没有编译、安装、发布等执行命令
+                * 需要手动设置 `empty`
         * 包目标关键字
             * all install clean: 忽略必需的目标，加不加对解析结果没有任何影响
             * distclean : 完全清理编译输出(包含配置)
