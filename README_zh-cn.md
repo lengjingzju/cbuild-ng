@@ -899,6 +899,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
         * 开发模式下如果编译输出文件夹下存在源码目录，不会将 `output/mirror-cache/download` 中的源码复制到编译输出文件夹，这样开发时可以在编译输出文件夹修改源码调试
         * 如果有缓存编译，开发模式也请运行 `setforce` 目标，不要缓存编译
     * unsetdev      : 取消开发模式
+    * status        : 获取当前包状态，如果下载类型是git的包，还获取git包的路径、分支、最后一次提交、当前修改状态
+        * dev: 开发模式；force: 强制编译模式
 
 
 ### 打补丁 exec_patch.sh
@@ -1212,6 +1214,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
         *
 注: 第一次编译前最好选中支持缓存的包后下载所有的源码 `make all_fetchs`，防止源码无法一次下载成功导致其它问题
     * `make all_caches` 下载并编译所有选中的支持缓存的包的源码
+    * `make all_statuses` 查看所有下载类型为git包的路径、分支、最后一次提交、当前修改状态
 
 * 编译交叉编译工具链，举例 cortex-a78
 

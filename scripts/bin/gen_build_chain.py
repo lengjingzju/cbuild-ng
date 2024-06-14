@@ -1434,10 +1434,11 @@ class Deps:
 
                 if 'url' in item['targets']:
                     phony.append(item['target'] + '_dofetch')
+                    phony.append(item['target'] + '_status')
                     phony.append(item['target'] + '_setdev')
                     phony.append(item['target'] + '_unsetdev')
-                    fp.write('%s_dofetch %s_setdev %s_unsetdev:\n' % \
-                            (item['target'], item['target'], item['target']))
+                    fp.write('%s_dofetch %s_status %s_setdev %s_unsetdev:\n' % \
+                            (item['target'], item['target'], item['target'], item['target']))
                     fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEB, makes, item['target']))
 
 
@@ -1517,6 +1518,7 @@ class Deps:
                     fp.write('ALL_CACHES   += %s\n' % (item['target']))
                 if 'url' in item['targets']:
                     fp.write('ALL_FETCHES  += %s_dofetch\n' % (item['target']))
+                    fp.write('ALL_STATUSES += %s_status\n' % (item['target']))
                 if pkg_flags['release']:
                     fp.write('ALL_RELEASES += %s_release\n' % (item['target']))
                 fp.write('ALL_CLEANS   += %s_clean\n' % (item['target']))
@@ -1533,6 +1535,8 @@ class Deps:
             fp.write('%s: %s\n\n' % ('all_targets',  '$(ALL_TARGETS)'))
             fp.write('%s: %s\n\n' % ('all_caches',   '$(ALL_CACHES)'))
             fp.write('%s: %s\n\n' % ('all_fetches',  '$(ALL_FETCHES)'))
+            fp.write('%s: %s\n'   % ('all_statuses',  'export MFLAG ?= -s'))
+            fp.write('%s: %s\n\n' % ('all_statuses',  '$(ALL_STATUSES)'))
             fp.write('%s: %s\n\n' % ('all_releases', '$(ALL_RELEASES)'))
             fp.write('%s: %s\n\n' % ('all_cleans',   '$(ALL_CLEANS)'))
             fp.write('.PHONY: all_targets all_caches all_fetches all_releases all_cleans\n\n')

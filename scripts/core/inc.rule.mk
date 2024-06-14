@@ -284,9 +284,17 @@ endif # CACHE_BUILD
 setdev:
 	@mkdir -p $(shell dirname $(BUILD_DEVF))
 	@echo > $(BUILD_DEVF)
+ifeq ($(CACHE_BUILD),y)
+	@$(call do_setforce)
+endif
+	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Development Mode.\033[0m"
 
 unsetdev:
 	@rm -f $(BUILD_DEVF)
+ifeq ($(CACHE_BUILD),y)
+	@$(call do_unsetforce)
+endif
+	@$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Development Mode.\033[0m"
 
 dofetch:
 ifneq ($(SRC_URLS), )
@@ -294,6 +302,36 @@ ifneq ($(SRC_URLS), )
 	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
 else
 	@
+endif
+
+ifneq ($(SRC_URLS), )
+status:
+	@status=""; \
+		if [ -e $(BUILD_DEVF) ]; then \
+			status=" dev"; \
+		fi; \
+		if [ -e $(CACHE_OUTPATH)/$(PACKAGE_NAME)-force ]; then \
+			status="$${status} force"; \
+		fi; \
+		if [ ! -z "$${status}" ]; then \
+			$(COLORECHO) "\033[31mSTATUS ($(PACKAGE_ID)):$${status}\033[0m"; \
+		fi
+ifeq ($(FETCH_METHOD),git)
+	@srcpath=""; \
+		if [ "$(SRC_SHARED)" != "y" ]; then \
+			srcpath=$(WORKDIR)/$(SRC_DIR); \
+		else \
+			srcpath=$(ENV_DOWN_DIR)/$(SRC_DIR); \
+		fi; \
+		if [ -e $${srcpath} ]; then \
+			cd $${srcpath}; \
+			info1=$$(echo $${srcpath} | sed "s:$(ENV_TOP_DIR)/::g"); \
+			info2=$$(git symbolic-ref -q --short HEAD); \
+			info3=$$(git log -1 --pretty='format:%h: %s (%cs) (%an)'); \
+			$(COLORECHO) "\033[32m$(PACKAGE_ID): \033[33m$${info1} \033[34m$${info2} \033[35m$${info3}\033[0m"; \
+			git status -s; \
+		fi
+endif
 endif
 
 %:

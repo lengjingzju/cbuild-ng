@@ -918,6 +918,8 @@ Note: The reason for providing the above functions is that multiple libraries or
         * In development mode, if the source code folder is in the compilation output folder, the source code folder in `output/mirror-cache/download` will not be copied to the compilation output folder, so that the source code can be modified in the compilation output folder for debugging during development.
         * If there is cached compilation, please run the `setforce` target in development mode and do not cache compilation.
     * unsetdev      : Cancel development mode
+    * status        : Get the current package status. If the download type is a git, it also gets the package path, branch, last commit, and current modification status
+        * `dev`: development mode; `force`: forced compilation mode
 
 
 ### Patch exec_patch.sh
@@ -1222,6 +1224,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     * `make`: Multi-threadedly compiles all packages
     * `make all_fetches`: Only downloads source code of all packages which contain `SRC_URL` one by one
     * `make all_caches`: Downloads and compiles all cache packages one by one
+    * `make all_statuses`: View the path, branch, last commit, and current modification status of all git download packages
 <br>
 
 * Compiles the cross-compilation toolchain, for example cortex-a78
