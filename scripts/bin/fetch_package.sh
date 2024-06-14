@@ -88,22 +88,34 @@ do_fetch() {
     fi
 
     if [ ! -e ${ENV_DOWN_DIR}/$package ] || [ ! -e ${ENV_DOWN_DIR}/$package.$checksuffix ]; then
-        rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
-        mkdir -p ${ENV_DOWN_DIR}
+        download_req=1
+        if [ "$packname" != "$package" ] && [ -e ${ENV_DOWN_DIR}/$packname ] && [ -e ${ENV_DOWN_DIR}/$package.$checksuffix ]; then
+            cd ${ENV_DOWN_DIR}
+            tar -xf $packname || rm -rf $packname $package
+            if [ -e ${ENV_DOWN_DIR}/$packname ]; then
+                download_req=0
+                rm -f ${ENV_DOWN_DIR}/$package.$checksuffix
+            fi
+        fi
 
-        # download package from mirror
-        mirror_url=${ENV_MIRROR_URL}/downloads/$packname
-        if [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(wget --spider -nv ${mirror_url} 2>&1 | grep -wc 200)" = "1" ]; then
-            echo -e "\033[32mwget ${mirror_url} to ${ENV_DOWN_DIR}/$packname\033[0m"
-            wget -q ${mirror_url} -O ${ENV_DOWN_DIR}/$packname --no-check-certificate
-            if [ "$packname" != "$package" ]; then
-                cd ${ENV_DOWN_DIR}
-                tar -xf $packname || rm -rf $packname $package
-            else
-                if [ ! -z "$md5" ]; then
-                    rmd5=$(md5sum ${ENV_DOWN_DIR}/$packname | cut -d ' ' -f 1)
-                    if [ "$md5" != "$rmd5" ]; then
-                        rm -f ${ENV_DOWN_DIR}/$packname
+        if [ $download_req -eq 1 ]; then
+            rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+            mkdir -p ${ENV_DOWN_DIR}
+
+            # download package from mirror
+            mirror_url=${ENV_MIRROR_URL}/downloads/$packname
+            if [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(wget --spider -nv ${mirror_url} 2>&1 | grep -wc 200)" = "1" ]; then
+                echo -e "\033[32mwget ${mirror_url} to ${ENV_DOWN_DIR}/$packname\033[0m"
+                wget -q ${mirror_url} -O ${ENV_DOWN_DIR}/$packname --no-check-certificate
+                if [ "$packname" != "$package" ]; then
+                    cd ${ENV_DOWN_DIR}
+                    tar -xf $packname || rm -rf $packname $package
+                else
+                    if [ ! -z "$md5" ]; then
+                        rmd5=$(md5sum ${ENV_DOWN_DIR}/$packname | cut -d ' ' -f 1)
+                        if [ "$md5" != "$rmd5" ]; then
+                            rm -f ${ENV_DOWN_DIR}/$packname
+                        fi
                     fi
                 fi
             fi
@@ -181,7 +193,7 @@ do_fetch() {
                         git pull -q
                         rev2=$(git log -1 --pretty=format:%H)
                         if [ "$rev1" != "$rev2" ]; then
-                            cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                            cd ${ENV_DOWN_DIR} && rm -f $packname && tar -zcf $packname $package
                         fi
                     fi
                 fi
@@ -212,7 +224,7 @@ do_fetch() {
                         svn update -q
                         rev2=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
                         if [ "$rev1" != "$rev2" ]; then
-                            cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                            cd ${ENV_DOWN_DIR} && rm -f $packname && tar -zcf $packname $package
                         fi
                     fi
                 fi
@@ -305,7 +317,7 @@ do_fetch() {
                     svn update -q
                     rev2=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
                     if [ "$rev1" != "$rev2" ]; then
-                        cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
+                        cd ${ENV_DOWN_DIR} && rm -f $packname && tar -zcf $packname $package
                         echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${ENV_DOWN_DIR}/$package.$checksuffix
                     fi
                 fi
