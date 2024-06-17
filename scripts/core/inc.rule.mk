@@ -233,7 +233,7 @@ endef
 
 define do_unsetforce
 	$(CACHE_SCRIPT) -m unsetforce -p $(PACKAGE_NAME) $(if $(filter y,$(NATIVE_BUILD)),-n) \
-		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -V $(CACHE_VERBOSE)
+		-o $(CACHE_OUTPATH) -i $(CACHE_INSPATH) -g $(CACHE_GRADE) -V $(CACHE_VERBOSE)
 endef
 
 .PHONY: checksum psysroot cachebuild setforce set1force unsetforce

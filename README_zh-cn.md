@@ -1040,7 +1040,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * checksum          : 检查缓存是否匹配，匹配则新建文件 `$(CACHE_STATUS)`
     * setforce          : 设置强制编译
     * set1force         : 设置强制编译一次
-    * unsetforce        : 取消强制编译
+    * unsetforce        : 取消强制编译，并会删除编译cache
 
 
 ### 许可证处理 gen_package_infos.py

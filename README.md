@@ -1053,7 +1053,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * checksum      : Checks whether cache is matched
     * setforce      : Sets force compilation flag
     * set1force     : Sets one-time force compilation flag
-    * unsetforce    : Removes force compilation flag
+    * unsetforce    : Removes force compilation flag and compilation cache
 
 
 ### License gen_package_infos.py
