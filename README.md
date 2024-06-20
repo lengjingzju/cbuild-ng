@@ -259,6 +259,8 @@ Note: The IDs (Target_Name / Depend_Names) only can consist of lowercase letters
 * Commands of Classic Build
     * `make <package>`: Compiles the given package with dependency packages compiled first
     * `make <package>_single`: Only compiles the given package without dependency packages compiled
+    * `make <package>_install_single`: Only install the given package to the global sysroot directory
+    * `make <package>_psysroot_single`: Only prepare the dependencies of the given package to the private sysroot directory (the target `psysroot` should be defined in the `Other_Target_Names`)
     * `make <package>_<target>`: Compiles the target of the given package with dependency packages compiled first
     * `make <package>_<target>_single`: Only compiles the target of the given package without dependency packages compiled
 

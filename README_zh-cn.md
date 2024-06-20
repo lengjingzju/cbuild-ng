@@ -250,6 +250,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * Classic Build 命令说明
     * 可以 `make 包名` 先编译某个包的依赖包(有依赖时)再编译这个包
     * 可以 `make 包名_single` 有依赖时才有这类目标，仅仅编译这个包
+    * 可以 `make 包名_install_single` 仅仅安装这个包到全局sysroot目录
+    * 可以 `make 包名_psysroot_single` 仅仅准备这个包的依赖到私有sysroot目录(需要在 Other_Target_Names 中定义特定目标 psysroot)
     * 可以 `make 包名_目标名` 先编译某个包的依赖包(有依赖时)再编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
     * 可以 `make 包名_目标名_single` 有依赖时才有这类目标，仅仅编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
 

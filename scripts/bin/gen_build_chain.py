@@ -1279,6 +1279,10 @@ class Deps:
                             % (gsys_dir, MAKEA[1:], makes, unionstr, 'install')
                 gsys_cmd = '@flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
 
+                cache_str = ''
+                if pkg_flags['cache']:
+                    cache_str = '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'checksum')
+
                 #### process dependencies #####
                 fp.write('ifeq ($(CONFIG_%s), y)\n\n' % (escape_toupper(item['target'])))
                 fp.write('%s-path := %s\n' % (item['target'], item['mpath']))
@@ -1315,6 +1319,7 @@ class Deps:
                     fp.write('\n')
 
                 #### process necessary targets #####
+
                 # psysroot_target
                 phony.append(psysroot_target)
                 if pkg_flags['deps']:
@@ -1322,11 +1327,15 @@ class Deps:
                 else:
                     fp.write('%s:\n\t@\n\n' % (psysroot_target))
 
-                # all
-                cache_str = ''
-                if pkg_flags['cache']:
-                    cache_str = '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'checksum')
+                if not pkg_flags['empty'] and pkg_flags['deps'] and pkg_flags['psysroot']:
+                    phony.append('%s_single' % (psysroot_target))
+                    fp.write('%s_single:\n' % (psysroot_target))
+                    if pkg_flags['unified'] and pkg_flags['cache']:
+                        fp.write('%s\t%s%s %s%s\n\n' % (cache_str, MAKEA, makes, unionstr, 'psysroot'))
+                    else:
+                        fp.write('%s\t%s %s\n\n' % (cache_str, psys_make, psysroot_target))
 
+                # all
                 compile_str = '\t@$(if $(PGCMD),$(PGCMD) begin=$@)\n'
                 if 'prepare' in item['targets']:
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'prepare')
@@ -1370,7 +1379,9 @@ class Deps:
 
                 # install
                 phony.append(item['target'] + '_install')
+                phony.append(item['target'] + '_install_single')
                 fp.write('%s_install: %s\n' % (item['target'], item['target']))
+                fp.write('%s_install %s_install_single:\n' % (item['target'], item['target']))
                 if pkg_flags['empty']:
                     fp.write('\t@\n\n')
                 else:
