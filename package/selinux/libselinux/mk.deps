@@ -37,4 +37,5 @@ include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
 	@sed -i 's@LDLIBS += -lselinux@LDLIBS += \$$(EXTRA_LDLIBS) -lselinux@g' $(SRC_PATH)/utils/Makefile
+	@sed -i 's@\-Werror \-Wno\-aggregate\-return@-Wno-aggregate-return@g' $(SRC_PATH)/src/Makefile $(SRC_PATH)/utils/Makefile
 

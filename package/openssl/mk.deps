@@ -9,17 +9,22 @@
 PACKAGE_NAME     = openssl
 
 LICENSE          = Apache-2.0
-LICFILE          = file://LICENSE
+LICFILE          = file://LICENSE*
 HOMEPAGE         = https://www.openssl.org/
 DESCRIPTION      = A robust, commercial-grade, full-featured toolkit for general-purpose cryptography and secure communication.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.1.1w
+VERSION          = 3.3.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = https://ftp.openssl.org/source/old/1.1.1/$(SRC_NAME)
-SRC_MD5          = 3f76825f195e52d4b10c70040681a275
+SRC_URL          = https://www.openssl.org/source/$(SRC_NAME)
+SRC_MD5          = 8a4342b399c18f870ca6186299195984
+
+# config for openssl-1.1.1, "--libdir=lib" should be removed in "prepend".
+#VERSION          = 1.1.1w
+#SRC_URL          = https://ftp.openssl.org/source/old/1.1.1/$(SRC_NAME)
+#SRC_MD5          = 3f76825f195e52d4b10c70040681a275
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
@@ -29,7 +34,7 @@ include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
 	@cd $(SRC_PATH) && \
-		./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) $(if $(CROSS_COMPILE),--cross-compile-prefix='') $(TOLOG)
+		./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) --libdir=lib $(if $(CROSS_COMPILE),--cross-compile-prefix='') $(TOLOG)
 	@sed -i 's/ -m64//g' $(SRC_PATH)/Makefile
 
 compile:

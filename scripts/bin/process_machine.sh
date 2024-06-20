@@ -24,7 +24,7 @@ gcc_arch_option=
 linux_arch=
 linux_src=
 linux_out=
-linux_version=6.6.30
+linux_version=6.6.33
 
 gcc_version=14.1.0
 

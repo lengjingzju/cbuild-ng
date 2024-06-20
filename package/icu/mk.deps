@@ -58,5 +58,6 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@mkdir -p $(CFG_PATH)
-	@cd $(CFG_PATH) && $(SRC_PATH)/runConfigureICU Linux/gcc $(TOLOG) && $(MAKE) $(TOLOG)
+	@unset ARCH CROSS_COMPILE CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP && \
+		mkdir -p $(CFG_PATH) && cd $(CFG_PATH) && \
+		$(SRC_PATH)/runConfigureICU Linux/gcc $(TOLOG) && $(MAKE) $(TOLOG)

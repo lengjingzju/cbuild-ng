@@ -79,7 +79,7 @@ endif
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc
+	@if [ -e $(INS_TOPDIR)$(INS_SUBDIR)/etc ]; then mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc; fi
 	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
 	@ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
 	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd

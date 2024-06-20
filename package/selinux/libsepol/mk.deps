@@ -30,4 +30,9 @@ CACHE_DEPENDS    = none
 MAKE_FLAGS       = PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
 OBJ_PREFIX       = $(SRC_PATH)
 
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i -e 's@\-Wall \-Werror@-Wall@g' -e 's@\-Werror \-Wall@-Wall@g' \
+		$(SRC_PATH)/src/Makefile $(SRC_PATH)/utils/Makefile $(SRC_PATH)/tests/Makefile
