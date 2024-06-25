@@ -35,7 +35,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 提供调用原始的 `Makefile` `CMake` `Autotools` `Meson` 编译的模板 `inc.rule.mk`
 <br>
 
-* 网络和缓存等处理工具(Classic Build): 处理包的下载、打补丁、编译、安装，支持源码镜像和缓存镜像
+* 网络和缓存等处理工具(Classic Build): 处理包的下载、打补丁、编译、安装、打包，支持源码镜像和缓存镜像
     * 提供方便可靠的补丁机制 `exec_patch.sh`
     * 提供自动拉取网络包工具，支持从 http(支持 md5)、git(支持 branch tag revision)或 svn(支持 revision) 下载包，支持镜像下载 `fetch_package.sh`
     * 提供编译缓存工具，再次编译不需要从代码编译，直接从本地缓存或网络缓存拉取 `process_cache.sh`
@@ -43,6 +43,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 提供可靠的安装脚本和 sysroot 处理脚本 `process_sysroot.sh`
     * 提供丰富的开源软件层，开源包不断增加中
     * 提供生成所有包的描述信息的 HTML 文件的脚本 `gen_package_infos.py`
+    * 提供生成独立包(打包包含系统依赖)的脚本 `gen_cpk_package.py` `gen_cpk_binary.sh`，功能类似 Snap、AppImage或Flatpak
 <br>
 
 * 测试用例可以查看 [examples_zh-cn.md](./examples/examples_zh-cn.md)
@@ -254,6 +255,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 可以 `make 包名_psysroot_single` 仅仅准备这个包的依赖到私有sysroot目录(需要在 Other_Target_Names 中定义特定目标 psysroot)
     * 可以 `make 包名_目标名` 先编译某个包的依赖包(有依赖时)再编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
     * 可以 `make 包名_目标名_single` 有依赖时才有这类目标，仅仅编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
+    * 可以 `make 包名-pkg` 编译并发布包(包含依赖)
+    * 可以 `make 包名-cpk` 编译并发布包(包含依赖)，然后打包成独立包(包含系统运行库，例如C库，修改 `rpath` 和 `link interpreter`)
 
 
 ### Yocto Build 实依赖规则
@@ -1070,6 +1073,37 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
             * `dst=xxx` 表示将安装的 license 文件重命名为 xxx (可选)
     * LICPATH: `file` 类型查找的源文件的起始目录，默认取值 `$(SRC_PATH)`
     * LICDEST: 安装 license 的根目录，默认取值 `$(INS_PREFIX)`
+
+
+### 打包成独立包 gen_cpk_package.py gen_cpk_binary.sh
+
+* 打包 gen_cpk_package.py 主要做了3件事
+    * 从系统复制rootfs缺失的共享库到rootfs下的syslib目录
+    * 修改RPATH路径为相对路径
+    * 修改动态库加载器(interpreter)的路径为绝对路径(Linux不支持相对路径的动态库加载器)
+
+```makefile
+python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@) \
+    -i include:share:etc:srv:com:var:run \
+    -c $(ENV_BUILD_TOOL)gcc -t $(ENV_BUILD_TOOL)readelf $(if $(CPK_EXTRA_PATH),-e $(CPK_EXTRA_PATH))
+```
+
+* 参数
+    * `-r <rootfs>`   : 指定要打包成独立包的 rootfs(必须指定的选项)
+    * `-i <ignore>`   : 指定rootfs中不需要处理的目录(即不包含动态库和可执行文件的目录)，多个目录使用冒号隔开
+    * `-c <compiler>` : 指定编译器的名称，不指定时默认为 `gcc`
+    * `-t <elftool>`  : 指定ELF读取工具的名称，不指定时默认为 `readelf`
+    * `-e <extra>`    : 指定动态库的目录，多个目录使用冒号隔开
+        * 在 `-r` 指定的rootfs和 `-c` 指定的编译器的搜索目录都找不到某些动态库时，需要指定此选项
+        * 命令: `make 包名-cpk CPK_EXTRA_PATH=附加的目录`
+
+注: 由于Linux不支持链接器 `interpreter` 的相对路径，所以在目标机上解压或移动位置后首次运行独立包的可执行文件需要先运行 `update.sh`。
+
+* 自解压包处理 gen_cpk_binary.sh
+    * 压缩成自解压包命令： `$(ENV_TOOL_DIR)/gen_cpk_binary.sh pack <要打包的rootfs>`
+        * 用户可以修改自解压包头部的脚本，修改自解压的行为
+    * 自解压包解压：  `<自解压包> <安装路径> <是否删除原有包后再安装>`
+        * "安装路径"和"是否删除原有包后再安装"是可选选项，不传输时会交互式让用户输入
 
 
 ## 配置 CBuild-ng 的编译环境

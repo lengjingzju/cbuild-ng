@@ -80,38 +80,62 @@ all-deps:
 		$(ENV_TOOL_DIR)/gen_depends_image.sh $${package} $(WORKDIR)/depends $(WORKDIR)/Target  $(WORKDIR)/.config $(CORE_PKGS); \
 	done
 
-LICS_DIR := $(ENV_TOP_DIR)/system/rootfs/licenses
-define pkgs_dst
-$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkgs,%,$1)
+LICS_DIR       := $(ENV_TOP_DIR)/system/rootfs/licenses
+define pkg_dst
+$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkg,%,$1)
 endef
-define lics_dst
-$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkgs,%,$1)/usr/share/license
+define pkg_lic_dst
+$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkg,%,$1)/usr/share/license
 endef
+PKG_BUILD      ?= y
+PKG_STRIP      ?= y
 
-%-pkgs: export MFLAG ?= -s
-%-pkgs:
-	@make $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= $(patsubst %-pkgs,%,$@)
-	@rm -rf $(call pkgs_dst,$@)
-	@mkdir -p $(call pkgs_dst,$@)
+%-pkg: export MFLAG ?= -s
+%-pkg:
+ifeq ($(PKG_BUILD),y)
+	@$(MAKE) $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= $(patsubst %-pkg,%,$@)
+endif
+	@rm -rf $(call pkg_dst,$@)
+	@mkdir -p $(call pkg_dst,$@)
 	@echo "----------------------------------------"
-	@make -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(call pkgs_dst,$@) INSTALL_OPTION=release $(patsubst %-pkgs,%,$@)_release
+	@$(MAKE) -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(call pkg_dst,$@) INSTALL_OPTION=release $(patsubst %-pkg,%,$@)_release
 	@echo "----------------------------------------"
-	@rm -rf $(addprefix $(call pkgs_dst,$@),/include/* /usr/include/* /usr/local/include/*)
-	@libs=$$(find $(call pkgs_dst,$@) -name "*.a" -o -name "*.la" | xargs); \
+	@rm -rf $(addprefix $(call pkg_dst,$@),/include/* /usr/include/* /usr/local/include/*)
+	@libs=$$(find $(call pkg_dst,$@) -name "*.a" -o -name "*.la" | xargs); \
 	if [ ! -z "$${libs}" ]; then \
 		rm -rf $${libs}; \
 	fi
-	@elfs=$$(find $(call pkgs_dst,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+ifeq ($(PKG_STRIP),y)
+	@elfs=$$(find $(call pkg_dst,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
 	if [ ! -z "$${elfs}" ]; then \
 		$(if $(ENV_BUILD_TOOL),$(ENV_BUILD_TOOL)strip,$(if $(CROSS_COMPILE),$(CROSS_COMPILE)strip,strip)) -s $${elfs}; \
 	fi
-
-	@mkdir -p $(call lics_dst,$@)
-	@cp -drf $(LICS_DIR)/* $(call lics_dst,$@)
+endif
+	@mkdir -p $(call pkg_lic_dst,$@)
+	@cp -drf $(LICS_DIR)/* $(call pkg_lic_dst,$@)
 	@python3 $(ENV_TOOL_DIR)/gen_package_infos.py -c $(WORKDIR)/.config -i $(WORKDIR)/info.txt \
-		-t $(WORKDIR)/Target -p $(patsubst %-pkgs,%,$@) -s $(LICS_DIR)/spdx-licenses.html \
-		-o $(call lics_dst,$@)/index.txt -w $(call lics_dst,$@)/index.html -f 0:0
-	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkgs,%,$@) $(call lics_dst,$@) $(WORKDIR)/Target $(WORKDIR)/.config $(CORE_PKGS)
+		-t $(WORKDIR)/Target -p $(patsubst %-pkg,%,$@) -s $(LICS_DIR)/spdx-licenses.html \
+		-o $(call pkg_lic_dst,$@)/index.txt -w $(call pkg_lic_dst,$@)/index.html -f 0:0
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkg,%,$@) $(call pkg_lic_dst,$@) $(WORKDIR)/Target $(WORKDIR)/.config $(CORE_PKGS)
+
+
+%-cpk: export MFLAG ?= -s
+%-cpk:
+	@$(MAKE) $(MFLAG) CONFIG_PATCHELF_NATIVE=y patchelf-native
+	@$(MAKE) $(MFLAG) CONFIG_PATCHELF=y patchelf
+	@$(MAKE) $(MFLAG) $(patsubst %-cpk,%-pkg,$@)
+	@PATH=$(ENV_NATIVE_ROOT)/objects/patchelf/image/usr/bin:$(PATH) \
+		python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@) \
+		-i include:share:etc:srv:com:var:run \
+		-c $(ENV_BUILD_TOOL)gcc -t $(ENV_BUILD_TOOL)readelf $(if $(CPK_EXTRA_PATH),-e $(CPK_EXTRA_PATH))
+	@cp -fp $(ENV_TOOL_DIR)/gen_cpk_package.py $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
+	@cp -fp $(ENV_CROSS_ROOT)/objects/patchelf/image/usr/bin/patchelf $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
+	@ush=$(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)/update.sh && \
+		echo '#!/bin/bash' > $${ush} && \
+		echo 'curdir=$$(dirname $$(realpath $$0))' >> $${ush} && \
+		echo 'PATH=$$curdir:$$PATH python3 $$curdir/gen_cpk_package.py -r $$curdir -i include:share:etc:srv:com:var:run' >> $${ush} && \
+		chmod +x $${ush}
+	@$(ENV_TOOL_DIR)/gen_cpk_binary.sh pack $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
 
 
 ifneq ($(PGCMD), )

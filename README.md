@@ -35,7 +35,7 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
     * Provides a template for calling original `Makefile, CMake, Autotools, Meson, ...` compilation (`inc.rule.mk`)
 <br>
 
-* Network and Cache ... Processing Tools: Handles the download, patching, compilation, and installation of packages, and supports download mirror and cache mirror
+* Network and Cache ... Processing Tools: Handles the download, patching, compilation, installation and pack of packages, and supports download mirror and cache mirror
     * Provides a convenient and reliable patching mechanism (`exec_patch.sh`)
     * Provides a automatic pull network package tool (`fetch_package.sh`)
         * Supports downloading packages from http (attributes: md5), git (attributes: branch tag rev) and svn (attributes: rev)
@@ -44,6 +44,7 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
     * Provides a convenient rule template, it supports caching compilation (`inc.rule.mk`)
     * Provides a rich open source software (OSS) layer, and OSS packages are increasing
     * Provides a tool to generate a HTML file which contains descriptive information for all packages (`gen_package_infos.py`)
+    * Provides a tool to generate independent packages (including system dependencies), with functions similar to Snap, AppImage, or Flatpak (`gen_cpk_package.py` and `gen_cpk_binary.sh`)
 <br>
 
 * Test cases can be viewed in [examples.md](./examples/examples.md)
@@ -263,6 +264,8 @@ Note: The IDs (Target_Name / Depend_Names) only can consist of lowercase letters
     * `make <package>_psysroot_single`: Only prepare the dependencies of the given package to the private sysroot directory (the target `psysroot` should be defined in the `Other_Target_Names`)
     * `make <package>_<target>`: Compiles the target of the given package with dependency packages compiled first
     * `make <package>_<target>_single`: Only compiles the target of the given package without dependency packages compiled
+    * `make <package>-pkg`: Compile and release packages (including dependencies)
+    * `make <package>-cpk`: Compile and release packages (including dependencies), then pack them into independent package (including system runtime libraries, such as C libraries, modify `rpath` and `link interpreter`)
 
 Note: The single type commands only exist in the packages with dependencies
 
@@ -1083,6 +1086,37 @@ Note: The reason for providing the above functions is that multiple libraries or
             * `dst=xxx`: Indicates renaming the installed license file (optional)
     * LICPATH: The starting directory of the source file to find for `file://` type, its default value is `$(SRC_PATH)`
     * LICDEST: The root directory to install licenses, its default value is `$(INS_PREFIX)`
+
+
+### Independent Package gen_cpk_package.py  gen_cpk_binary.sh
+
+* Packaging gen_cpk_package.py mainly does 3 things
+    * Copy the missing dynamic libraries required by rootfs from the system to the syslib directory under rootfs
+    * Modify the `RPATH` to a relative path
+    * Modify the path of the dynamic library loader (interpreter) to an absolute path (Linux does not support  relative path interpreter)
+
+```makefile
+python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@) \
+    -i include:share:etc:srv:com:var:run \
+    -c $(ENV_BUILD_TOOL)gcc -t $(ENV_BUILD_TOOL)readelf $(if $(CPK_EXTRA_PATH),-e $(CPK_EXTRA_PATH))
+```
+
+* Options:
+    * `-r <rootfs>`   : Specify the input rootfs to process(required option)
+    * `-i <ignore>`   : Specify the ignored directories that are not processed(Directories that do not contain dynamic libraries and executables). Multiple directories can be separated by colons
+    * `-c <compiler>` : Specify the compiler, its default value is `gcc`
+    * `-t <elftool>`  : pecify the ELF tool, its default value is `readelf`
+    * `-e <extra>`    : Specify the extra directories to get system dynamic libraries, Multiple directories can be separated by colons
+        * When certain dynamic libraries cannot be found in the search directories of the rootfs specified by `-r` and the compiler specified by `-c`, the option needs to be specified
+        * Command: `make package-name-cpk CPK_EXTRA_PATH=additional directory`
+ 
+* Note: Because Linux does not support relative paths for the linker 'interpreter', running the standalone package's executable file for the first time after decompressing or moving the location on the target machine requires running 'update.sh' first.
+
+* Self-extracting package processing gen_cpk_binary.sh
+    * Compress to self-extracting package command: `$(ENV_TOOL_DIR)/gen_cpk_binary.sh pack <rootfs to be packaged>`
+        * Users can modify the script in the header of the self-extracting package to modify the self-extracting behavior
+    * Self-extracting package decompression: `<self-extracting package> <installation path> <whether to delete the original package before installing>`
+        * "Installation path" and "whether to delete the original package before installing" are optional options. If not given, the user will be asked to enter interactively
 
 
 ## Configure CBuild-ng Environment

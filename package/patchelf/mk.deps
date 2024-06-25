@@ -1,0 +1,40 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) patchelf(native psysroot): unselect
+
+PACKAGE_NAME     = patchelf
+
+LICENSE          = GPL-3.0-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://github.com/NixOS/patchelf
+DESCRIPTION      = PatchELF is a simple utility for modifying existing ELF executables and libraries. In particular, \
+                   it can do the following: \
+                   * Change the dynamic loader ("ELF interpreter") of executables. \
+                   * Change the RPATH of executables and libraries.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+# The latest patchelf (0.18.0) has some problems.
+VERSION          = 0.12
+SRC_DIR          = patchelf-0.12.20200827.8d3a16e
+#SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.bz2
+SRC_URL          = https://github.com/NixOS/patchelf/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 4fed3f12040da79f59ecf337d5e99fbc
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = LDFLAGS=-static
+
+#CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+# Downloading from git should do it.
+prepend:
+	@cd $(SRC_PATH) && ./bootstrap.sh
