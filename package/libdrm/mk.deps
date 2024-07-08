@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libdrm(native psysroot): unselect
+
+PACKAGE_NAME     = libdrm
+
+LICENSE          = MIT
+LICFILE          = file://xf86drm.c;line=1-32
+HOMEPAGE         = http://dri.freedesktop.org
+DESCRIPTION      = Userspace interface to the kernel DRM services. \
+                   The runtime library for accessing the kernel DRM services. DRM stands for "Direct Rendering Manager", \
+                   which is the kernel portion of the "Direct Rendering Infrastructure" (DRI).  DRI is required for many \
+                   hardware accelerated OpenGL drivers.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.4.122
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://dri.freedesktop.org/libdrm/$(SRC_NAME)
+SRC_MD5          = 143c8df50e09cd1eeb1fb53f05ecb64a
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = meson
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

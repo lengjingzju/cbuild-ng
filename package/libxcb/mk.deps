@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libxcb(native psysroot): unselect xcb-proto xorgproto libxau libpthread-stubs libxdmcp
+
+PACKAGE_NAME     = libxcb
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://xcb.freedesktop.org
+DESCRIPTION      = Xau: X Authority Database library. \
+                   libxau provides the main interfaces to the X11 authorisation handling, which controls authorisation \
+                   for X connections, both client-side and server-side.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.17.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://xcb.freedesktop.org/dist/$(SRC_NAME)
+SRC_MD5          = 96565523e9f9b701fcb35d31f1d4086e
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

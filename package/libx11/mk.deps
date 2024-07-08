@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libx11(native psysroot): unselect xorgproto xtrans libxcb
+
+PACKAGE_NAME     = libx11
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.x.org
+DESCRIPTION      = Xlib: C Language X Interface library. \
+                   This package provides a client interface to the X Window System, otherwise known as 'Xlib'.  \
+                   It provides a complete API for the basic functions of the window system.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.8.9
+SRC_DIR          = libX11-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
+SRC_MD5          = 340c9336d55206749dbb468cd3aabef9
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-malloc0returnsnull
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

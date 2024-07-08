@@ -1,0 +1,41 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) fontconfig(native psysroot): unselect expat freetype zlib gperf-native
+
+PACKAGE_NAME     = fontconfig
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.fontconfig.org
+DESCRIPTION      = Fontconfig is a library for configuring and customizing font access. \
+                   Fontconfig can: \
+                   * discover new fonts when installed automatically, removing a common source of configuration problems. \
+                   * perform font name substitution, so that appropriate alternative fonts can be selected if fonts are missing. \
+                   * identify the set of fonts required to completely cover a set of languages. \
+                   * have GUI configuration tools built as it uses an XML-based configuration file (though with autodiscovery, \
+                     we believe this need is minimized). \
+                   * efficiently and quickly find the fonts you need among the set of fonts you have installed, even if you \
+                     have installed thousands of fonts, while minimzing memory usage. \
+                   * be used in concert with the X Render Extension and FreeType to implement high quality, anti-aliased \
+                     and subpixel rendered text on a display.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.15.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.freedesktop.org/software/fontconfig/release/$(SRC_NAME)
+SRC_MD5          = 5bb3a2829aecb22ae553c39099bd0d6a
+INS_FULLER       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS += --disable-docs LDFLAGS="$(call link_libs)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

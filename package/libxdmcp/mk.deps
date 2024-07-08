@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libxdmcp(native psysroot): unselect xorgproto
+
+PACKAGE_NAME     = libxdmcp
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.x.org
+DESCRIPTION      = XDMCP: X Display Manager Control Protocol library. \
+                   The purpose of the X Display Manager Control Protocol (XDMCP) is to provide a uniform mechanism for \
+                   an autonomous display to request login service from a remote host. An X terminal (screen, keyboard, \
+                   mouse, processor, network interface) is a prime example of an autonomous display.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.1.5
+SRC_DIR          = libXdmcp-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
+SRC_MD5          = ce0af51de211e4c99a111e64ae1df290
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,97 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) qt5(native psysroot): unselect mesa zlib pcre2 icu harfbuzz freetype fontconfig libpng libjpeg-turbo openssl
+
+PACKAGE_NAME     = qt5
+
+LICENSE          = QT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://www.qt.io/
+DESCRIPTION      = Qt is cross-platform application development framework for creating graphical user interfaces as well \
+                   as cross-platform applications that run on various software and hardware platforms such as Linux, \
+                   Windows, macOS, Android or embedded systems with little or no change in the underlying codebase while \
+                   still being a native application with native capabilities and speed.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 5.15.14
+MV               = $(shell echo $(VERSION) | cut -d '.' -f 1)
+SV               = $(shell echo $(VERSION) | cut -d '.' -f 2)
+SRC_DIR          = qt-everywhere-src-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://download.qt.io/archive/qt/$(MV).$(SV)/$(VERSION)/single/qt-everywhere-opensource-src-$(VERSION).tar.xz
+SRC_MD5          = 0265e7988790d8845441558130d59311
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+XPLATFORM        = $(if $(CROSS_COMPILE),linux-$(subst linux-,,$(CROSS_COMPILE)g++),linux-g++)
+CONFIGURE_FLAGS  = \
+-prefix $(INS_TOPDIR)$(INS_SUBDIR) -datadir $(INS_TOPDIR)$(INS_SUBDIR)/share \
+$(if $(CROSS_COMPILE),-hostprefix $(INS_TOPDIR)-host$(INS_SUBDIR) -hostdatadir $(INS_TOPDIR)-host$(INS_SUBDIR)/share) \
+-I $(DEP_PREFIX)/usr/include -L $(DEP_PREFIX)/usr/lib -L $(DEP_PREFIX)/lib \
+$(if $(CROSS_COMPILE),-xplatform $(XPLATFORM)) \
+-c++std c++17 \
+-release \
+-shared \
+-opensource \
+-confirm-license \
+-make libs \
+-skip qtwebengine \
+-optimized-qmake \
+-no-cups \
+-no-glib \
+-no-separate-debug-info \
+-pch \
+-egl \
+-icu \
+-system-harfbuzz \
+-system-freetype \
+-fontconfig \
+-system-zlib \
+-system-pcre \
+-system-libjpeg \
+-system-libpng
+
+CUSTOM_TARGETS   = compile
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+compile:
+	@if [ ! -e $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM) ]; then \
+		cp -drfp $(SRC_PATH)/qtbase/mkspecs/linux-aarch64-gnu-g++ $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM); \
+		sed -i 's/aarch64-linux-gnu-/$(CROSS_COMPILE)/g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	fi
+	@if [ $$(grep -c '^QMAKE_LIBS\s*=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
+		sed -i '/load(qt_config)/i QMAKE_LIBS              = $(call link_libs)' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	else \
+		sed -i 's:^QMAKE_LIBS\s*=.*:QMAKE_LIBS              = $(call link_libs):g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	fi
+	@if [ $$(grep -c '^QMAKE_CXXFLAGS\s*+=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
+		sed -i '/load(qt_config)/i QMAKE_CXXFLAGS         += -std=c++17' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	else \
+		sed -i 's:^QMAKE_CXXFLAGS\s*+=.*:QMAKE_CXXFLAGS         += -std=c++17:g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	fi
+	@sed -i -e 's/++1x/++11/g' -e  's/++1y/++14/g' -e  's/++1z/++17/g' $(SRC_PATH)/qtbase/mkspecs/common/g++-base.conf
+
+	@sed -i 's/c++14/c++17/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/mapbox-gl-native.pro
+	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/geometry.hpp) -eq 0 ]; then \
+		sed -i '/#pragma once/a #include <cstdint>' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/geometry.hpp; \
+	fi
+	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/string.hpp) -eq 0 ]; then \
+		sed -i '/#pragma once/a #include <cstdint>' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/string.hpp; \
+	fi
+	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/src/mbgl/gl/stencil_mode.hpp) -eq 0 ]; then \
+		sed -i '/#pragma once/a #include <cstdint>' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/src/mbgl/gl/stencil_mode.hpp; \
+	fi
+	@sed -i 's/const SizeType length/SizeType length/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/deps/rapidjson/1.1.0/include/rapidjson/document.h
+
+	@mkdir -p $(OBJ_PREFIX)
+	@unset ARCH CROSS_COMPILE CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP && cd $(OBJ_PREFIX) && \
+		$(if $(CROSS_COMPILE),,export LD_LIBRARY_PATH=$(DEP_PREFIX)/lib:$(DEP_PREFIX)/usr/lib$(if $(LD_LIBRARY_PATH),:$(LD_LIBRARY_PATH)) &&) \
+		$(SRC_PATH)/configure $(CONFIGURE_FLAGS) $(TOLOG) && \
+		$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+

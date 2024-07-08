@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) xtrans(native psysroot): unselect
+
+PACKAGE_NAME     = xtrans
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.x.org
+DESCRIPTION      = XTrans: X Transport library. \
+                   The X Transport Interface is intended to combine all system and transport specific code into a single \
+                   place. This API should be used by all libraries, clients and servers of the X Window System. Use of this \
+                   API should allow the addition of new types of transports and support for new platforms without making \
+                   any changes to the source except in the X Transport Interface code.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
+SRC_MD5          = 12344cd74a1eb25436ca6e6a2cf93097
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's:pkgconfigdir = $$(datadir)/pkgconfig:pkgconfigdir = $$(libdir)/pkgconfig:g' $(SRC_PATH)/Makefile.in $(SRC_PATH)/Makefile.am

@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) pjproject(native psysroot): unselect
+
+PACKAGE_NAME     = pjproject
+
+LICENSE          = GPL-2.0
+LICFILE          = file://COPYING
+HOMEPAGE         = https://github.com/pjsip/pjproject
+DESCRIPTION      = PJSIP is a free and open source multimedia communication library written in C with high level API in C, \
+                   C++, Java, C#, and Python languages. It implements standard based protocols such as SIP, SDP, RTP, STUN, \
+                   TURN, and ICE. It combines signaling protocol (SIP) with rich multimedia framework and NAT traversal \
+                   functionality into high level API that is portable and suitable for almost any type of systems ranging \
+                   from desktops, embedded systems, to mobile handsets.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.14.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/pjsip/pjproject/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 98ec7d33e9540ff61d91aa939640733c
+
+AUTOTOOLS_FLAGS  = 
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+OBJ_PREFIX       = $(SRC_PATH)
+export LD       := $(CC)
+include $(ENV_MAKE_DIR)/inc.rule.mk

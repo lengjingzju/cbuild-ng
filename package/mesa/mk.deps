@@ -1,0 +1,43 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) mesa(native psysroot): unselect expat zlib eudev libx11 libdrm libxcb libxext libxfixes libxshmfence glslang-native
+
+PACKAGE_NAME     = mesa
+
+LICENSE          = MIT
+LICFILE          = file://docs/license.rst
+HOMEPAGE         = http://mesa3d.org
+DESCRIPTION      = A free implementation of the OpenGL API. \
+                   Mesa is an open-source implementation of the OpenGL specification - a system for rendering interactive \
+                   3D graphics.  A variety of device drivers allows Mesa to be used in many different environments ranging \
+                   from software emulation to complete hardware acceleration for modern GPUs.  Mesa is used as part of the \
+                   overall Direct Rendering Infrastructure and X.org environment.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 24.1.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://archive.mesa3d.org/$(SRC_NAME)
+SRC_MD5          = 2783fc23b425a254c0c4f753a66cbfb6
+INS_FULLER       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = meson
+MESON_FLAGS      = -Dc_link_args="$(call link_libs)" -Dcpp_link_args="$(call link_libs)"
+MESON_FLAGS     += -Dgallium-opencl=disabled -Dopencl-spirv=false -Dllvm=disabled
+MESON_FLAGS     += -Dgles1=enabled -Dgles2=enabled -Degl=enabled
+MESON_FLAGS     += -Dgallium-drivers="swrast" -Dvulkan-drivers="" -Dplatforms="x11"
+MESON_FLAGS     += -Dmicrosoft-clc=false -Dgallium-rusticl=false -Dglx-direct=false -Dxlib-lease=false
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i "s:\[ld_args_bsymbolic, ld_args_gc_sections\]:['-lxcb-randr', ld_args_bsymbolic, ld_args_gc_sections]:g" $(SRC_PATH)/src/egl/meson.build

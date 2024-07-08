@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libxfixes(native psysroot): unselect libx11 xorgproto
+
+PACKAGE_NAME     = libxfixes
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.x.org
+DESCRIPTION      = XFixes: X Fixes extension library. \
+                   X applications have often needed to work around various shortcomings in the core X window system. \
+                   This extension is designed to provide the minimal server-side support necessary to eliminate problems \
+                   caused by these workarounds.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 6.0.1
+SRC_DIR          = libXfixes-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
+SRC_MD5          = 65b9ba1e9ff3d16c4fa72915d4bb585a
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-malloc0returnsnull
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
