@@ -459,7 +459,7 @@ check_cache() {
             echo > ${matchfile}
         elif [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(wget --spider -nv ${mirror_url} 2>&1 | grep -wc 200)" = "1" ]; then
             del_cache
-            rm -rf ${insdir}
+            rm -rf ${insdir} ${insdir}-flag
             mkdir -p ${ENV_CACHE_DIR}
             wget -q ${mirror_url} -O ${ENV_CACHE_DIR}/${cachefile} --no-check-certificate || exit 1
             echo -e "\033[32mwget ${mirror_url} to ${ENV_CACHE_DIR}/${cachefile}\033[0m"
@@ -475,12 +475,14 @@ check_cache() {
 }
 
 pull_cache() {
-    if [ ! -e ${insdir} ]; then
+    if [ ! -e ${insdir} ] || [ ! -e ${insdir}-flag ]; then
         if [ -e ${checkfile} ]; then
             cachefile=${cache_prefix}--${packname}--${version}--$(cat ${checkfile}).tar.gz
             if [ -e "${ENV_CACHE_DIR}/${cachefile}" ]; then
+                rm -rf ${insdir} ${insdir}-flag
                 mkdir -p ${outdir}
                 tar -xf ${ENV_CACHE_DIR}/${cachefile} -C ${outdir}
+                echo > ${insdir}-flag
                 wlog "INFO: unpack ${ENV_CACHE_DIR}/${cachefile} to ${outdir}"
                 exit 0
             else
@@ -507,6 +509,7 @@ push_cache() {
         wlog "INFO: push_cache: redo checksum"
     fi
     if [ -e ${checkfile} ]; then
+        echo > ${insdir}-flag
         cachefile=${cache_prefix}--${packname}--${version}--$(cat ${checkfile}).tar.gz
         cd $(dirname ${insdir})
         tar -zcf ${cachefile} $(basename ${insdir})
@@ -528,7 +531,7 @@ set_force() {
 
 unset_force() {
     rm -f ${forcefile}
-    rm -rf ${insdir}
+    rm -rf ${insdir} ${insdir}-flag
     del_cache
 }
 
