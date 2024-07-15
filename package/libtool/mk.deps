@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libtool(native psysroot): unselect
+
+PACKAGE_NAME     = libtool
+
+LICENSE          = GPL-2.0-only & LGPL-2.1-only
+LICFILE          = file://COPYING  file://libltdl/COPYING.LIB
+HOMEPAGE         = https://www.gnu.org/software/libtool/
+DESCRIPTION      = GNU Libtool is a generic library support script that hides the complexity of using shared libraries \
+                   behind a consistent, portable interface.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.4.7
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://ftp.gnu.org/gnu/libtool/$(SRC_NAME)
+SRC_MD5          = 2fc0b6ddcd66a89ed6e45db28fa44232
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) qt5(native psysroot): unselect mesa zlib pcre2 icu harfbuzz freetype fontconfig libpng libjpeg-turbo openssl
+#DEPS(mk.deps) qt5(native psysroot): unselect mesa zlib pcre2 icu harfbuzz freetype fontconfig libpng libjpeg-turbo openssl alsa-lib pulseaudio
 
 PACKAGE_NAME     = qt5
 
@@ -30,6 +30,7 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
 XPLATFORM        = $(if $(CROSS_COMPILE),linux-$(subst linux-,,$(CROSS_COMPILE)g++),linux-g++)
+LINK_LIBS        = -L$(DEP_PREFIX)/usr/lib/pulseaudio -Wl,-rpath-link=$(DEP_PREFIX)/usr/lib/pulseaudio $(call link_libs)
 CONFIGURE_FLAGS  = \
 -prefix $(INS_TOPDIR)$(INS_SUBDIR) -datadir $(INS_TOPDIR)$(INS_SUBDIR)/share \
 $(if $(CROSS_COMPILE),-hostprefix $(INS_TOPDIR)-host$(INS_SUBDIR) -hostdatadir $(INS_TOPDIR)-host$(INS_SUBDIR)/share) \
@@ -46,6 +47,8 @@ $(if $(CROSS_COMPILE),-xplatform $(XPLATFORM)) \
 -no-cups \
 -no-glib \
 -no-separate-debug-info \
+-alsa \
+-pulseaudio \
 -pch \
 -egl \
 -icu \
@@ -60,15 +63,25 @@ $(if $(CROSS_COMPILE),-xplatform $(XPLATFORM)) \
 CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
+ifeq ($(CROSS_COMPILE), )
+ifeq ($(NATIVE_BUILD),y)
+export LD_LIBRARY_PATH:=$(DEP_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
+else
+export LD_LIBRARY_PATH:=$(DEP_PREFIX)/lib:$(DEP_PREFIX)/usr/lib:$(DEP_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
+endif
+else
+export LD_LIBRARY_PATH:=$(PATH_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
+endif
+
 compile:
 	@if [ ! -e $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM) ]; then \
 		cp -drfp $(SRC_PATH)/qtbase/mkspecs/linux-aarch64-gnu-g++ $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM); \
 		sed -i 's/aarch64-linux-gnu-/$(CROSS_COMPILE)/g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	fi
 	@if [ $$(grep -c '^QMAKE_LIBS\s*=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
-		sed -i '/load(qt_config)/i QMAKE_LIBS              = $(call link_libs)' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+		sed -i '/load(qt_config)/i QMAKE_LIBS              = $(LINK_LIBS)' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	else \
-		sed -i 's:^QMAKE_LIBS\s*=.*:QMAKE_LIBS              = $(call link_libs):g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+		sed -i 's:^QMAKE_LIBS\s*=.*:QMAKE_LIBS              = $(LINK_LIBS):g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	fi
 	@if [ $$(grep -c '^QMAKE_CXXFLAGS\s*+=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
 		sed -i '/load(qt_config)/i QMAKE_CXXFLAGS         += -std=c++17' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
@@ -76,6 +89,7 @@ compile:
 		sed -i 's:^QMAKE_CXXFLAGS\s*+=.*:QMAKE_CXXFLAGS         += -std=c++17:g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	fi
 	@sed -i -e 's/++1x/++11/g' -e  's/++1y/++14/g' -e  's/++1z/++17/g' $(SRC_PATH)/qtbase/mkspecs/common/g++-base.conf
+	@sed -i 's/return($$$$pkg_config)/return("pkg-config")/g' $(SRC_PATH)/qtbase/mkspecs/features/qt_configure.prf
 
 	@sed -i 's/c++14/c++17/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/mapbox-gl-native.pro
 	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/geometry.hpp) -eq 0 ]; then \
@@ -89,9 +103,7 @@ compile:
 	fi
 	@sed -i 's/const SizeType length/SizeType length/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/deps/rapidjson/1.1.0/include/rapidjson/document.h
 
-	@mkdir -p $(OBJ_PREFIX)
-	@unset ARCH CROSS_COMPILE CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP && cd $(OBJ_PREFIX) && \
-		$(if $(CROSS_COMPILE),,export LD_LIBRARY_PATH=$(DEP_PREFIX)/lib:$(DEP_PREFIX)/usr/lib$(if $(LD_LIBRARY_PATH),:$(LD_LIBRARY_PATH)) &&) \
+	@mkdir -p $(OBJ_PREFIX) && cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(CONFIGURE_FLAGS) $(TOLOG) && \
 		$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 

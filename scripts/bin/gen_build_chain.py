@@ -8,6 +8,7 @@ import sys, os, re, copy, subprocess
 from argparse import ArgumentParser
 
 debug_mode = False
+host_mode = False if os.getenv('ENV_BUILD_TOOL') or os.getenv('CROSS_COMPILE') else True
 dis_isysroot = True
 dis_gsysroot = False
 
@@ -232,15 +233,13 @@ class Deps:
         nitem['wrule'] = []
         for wrule in item['wrule']:
             ndeps = []
-            deps = re.split(r'|+', wrule)
-            split_str == '||' if '||' in wrule else '|'
-            for dep in deps:
+            for dep in wrule:
                 if not dep.endswith('-native') and dep not in self.uni_packages:
                     dep = dep + '-native'
                 if dep != nitem['target'] and dep not in ndeps:
                     ndeps.append(dep)
             if ndeps:
-                nitem['wrule'].append(split_str.join(ndeps))
+                nitem['wrule'].append(ndeps)
 
         if nitem['conf']:
             if nitem['conf'] == 'kconfig':
@@ -631,6 +630,13 @@ class Deps:
                             self.__add_item_to_list(item, refs)
                     self.ActualList.append(item)
                     items.append(item)
+
+                    if host_mode and not item['target'].endswith('-native'):
+                        host_dep = '%s-native' % (item['target'])
+                        if host_dep in item['asdeps']:
+                            item['asdeps'].remove(host_dep)
+                        if host_dep in item['awdeps']:
+                            item['awdeps'].remove(host_dep)
 
                     if 'native' in item['targets']:
                         item['targets'].remove('native')

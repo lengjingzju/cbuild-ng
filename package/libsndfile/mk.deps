@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libsndfile(native psysroot): unselect libogg libvorbis flac alsa-lib
+
+PACKAGE_NAME     = libsndfile
+
+LICENSE          = LGPL-2.1-only
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://github.com/libsndfile/libsndfile
+DESCRIPTION      = libsndfile is a C library for reading and writing files containing sampled audio data.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.2.2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://github.com/libsndfile/libsndfile/releases/download/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 04e2e6f726da7c5dc87f8cf72f250d04
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = CFLAGS="$(call link_hdrs)" CXXFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

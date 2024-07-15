@@ -1,0 +1,8 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) qt(native empty): unselect ??qt5 ??qt6
+#INCDEPS: qt5 qt6

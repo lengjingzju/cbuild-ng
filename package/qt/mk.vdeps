@@ -1,0 +1,2 @@
+#VDEPS(choice) qt-choice(qt5 qt6): qt
+#VDEPS(choice) qt-choice-native(qt5-native qt6-native): qt-native

@@ -1,0 +1,105 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) qt6(native psysroot): unselect mesa zlib pcre2 icu harfbuzz freetype fontconfig libpng libjpeg-turbo openssl alsa-lib pulseaudio qt6-native
+
+PACKAGE_NAME     = qt6
+
+LICENSE          = QT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://www.qt.io/
+DESCRIPTION      = Qt is cross-platform application development framework for creating graphical user interfaces as well \
+                   as cross-platform applications that run on various software and hardware platforms such as Linux, \
+                   Windows, macOS, Android or embedded systems with little or no change in the underlying codebase while \
+                   still being a native application with native capabilities and speed.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 6.7.2
+MV               = $(shell echo $(VERSION) | cut -d '.' -f 1)
+SV               = $(shell echo $(VERSION) | cut -d '.' -f 2)
+SRC_DIR          = qt-everywhere-src-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://download.qt.io/archive/qt/$(MV).$(SV)/$(VERSION)/single/$(SRC_NAME)
+SRC_MD5          = 06d35b47349c7c0a45710daad359e07b
+
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+XPLATFORM        = $(if $(CROSS_COMPILE),linux-$(subst linux-,,$(CROSS_COMPILE)g++),linux-g++)
+LINK_LIBS        = -L$(DEP_PREFIX)/usr/lib/pulseaudio -Wl,-rpath-link=$(DEP_PREFIX)/usr/lib/pulseaudio $(call link_libs)
+CONFIGURE_FLAGS  = \
+-prefix $(INS_TOPDIR)$(INS_SUBDIR) -datadir $(INS_TOPDIR)$(INS_SUBDIR)/share \
+-I $(DEP_PREFIX)/usr/include -L $(DEP_PREFIX)/usr/lib -L $(DEP_PREFIX)/lib \
+$(if $(CROSS_COMPILE),-xplatform $(XPLATFORM)) \
+$(if $(CROSS_COMPILE),-qt-host-path $(PATH_PREFIX)/usr) \
+-release \
+-shared \
+-make libs \
+-skip qttools,qtdoc,qttranslations,qtwebengine,androiddeployqt  \
+-optimized-qmake \
+-no-cups \
+-no-glib \
+-no-vulkan \
+-no-separate-debug-info \
+-alsa \
+-pulseaudio \
+-pch \
+-egl \
+-icu \
+-opengl es2 \
+-opengles3 \
+-system-harfbuzz \
+-system-freetype \
+-fontconfig \
+-system-zlib \
+-system-pcre \
+-system-libjpeg \
+-system-libpng \
+-- \
+$(if $(CROSS_COMPILE),$(shell $(MACHINE_SCRIPT) cmake_cross)) \
+-DCMAKE_PREFIX_PATH="$(DEP_PREFIX);$(DEP_PREFIX)/usr" \
+-DCMAKE_REQUIRED_LINK_OPTIONS="$(shell echo $(LINK_LIBS) | sed 's/ /;/g')" \
+-DPKG_CONFIG_EXECUTABLE="pkg-config"
+
+CUSTOM_TARGETS   = compile
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+ifeq ($(CROSS_COMPILE), )
+ifeq ($(NATIVE_BUILD),y)
+export LD_LIBRARY_PATH:=$(DEP_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
+else
+export LD_LIBRARY_PATH:=$(DEP_PREFIX)/lib:$(DEP_PREFIX)/usr/lib:$(DEP_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
+endif
+else
+export LD_LIBRARY_PATH:=$(PATH_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
+endif
+export LDFLAGS:=$(LINK_LIBS)
+
+compile:
+	@if [ ! -e $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM) ]; then \
+		cp -drfp $(SRC_PATH)/qtbase/mkspecs/linux-aarch64-gnu-g++ $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM); \
+		sed -i 's/aarch64-linux-gnu-/$(CROSS_COMPILE)/g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	fi
+	@if [ $$(grep -c '^QMAKE_LIBS\s*=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
+		sed -i '/load(qt_config)/i QMAKE_LIBS              = $(LINK_LIBS)' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	else \
+		sed -i 's:^QMAKE_LIBS\s*=.*:QMAKE_LIBS              = $(LINK_LIBS):g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	fi
+	@if [ $$(grep -c '^QMAKE_CXXFLAGS\s*+=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
+		sed -i '/load(qt_config)/i QMAKE_CXXFLAGS         += -std=c++17' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	else \
+		sed -i 's:^QMAKE_CXXFLAGS\s*+=.*:QMAKE_CXXFLAGS         += -std=c++17:g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
+	fi
+	@sed -i -e 's/++1x/++11/g' -e  's/++1y/++14/g' -e  's/++1z/++17/g' $(SRC_PATH)/qtbase/mkspecs/common/g++-base.conf
+	@sed -i 's/CONDITION UNIX AND NOT QNX AND ALSA_FOUND AND NOT QT_FEATURE_pulseaudio/CONDITION UNIX AND NOT QNX AND ALSA_FOUND/g' $(SRC_PATH)/qtmultimedia/src/multimedia/configure.cmake
+
+	@mkdir -p $(OBJ_PREFIX)
+	@cd $(OBJ_PREFIX) && \
+		$(SRC_PATH)/configure $(CONFIGURE_FLAGS) $(TOLOG) && \
+		ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(TOLOG) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(TOLOG)
+

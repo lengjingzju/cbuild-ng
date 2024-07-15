@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) flac(native psysroot): unselect libogg
+
+PACKAGE_NAME     = flac
+
+LICENSE          = GFDL-1.2 & GPL-2.0-or-later & LGPL-2.1-or-later & BSD-3-Clause
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://xiph.org/flac/
+DESCRIPTION      = FLAC stands for Free Lossless Audio Codec, a lossless audio compression format.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.4.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://ftp.osuosl.org/pub/xiph/releases/flac/$(SRC_NAME)
+SRC_MD5          = 7cab20b46e0bc859234bf5ba7da81625
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --disable-oggtest CFLAGS="$(call link_hdrs)" CXXFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
