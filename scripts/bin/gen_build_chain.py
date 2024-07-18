@@ -223,7 +223,7 @@ class Deps:
         ideps = []
         for idep in item['ideps']:
             dep,cond = re.split(r'@+', idep)
-            split_str == '@@' if '@@' in idep else '@'
+            split_str = '@@' if '@@' in idep else '@'
             if not dep.endswith('-native') and dep not in self.uni_packages:
                 dep = dep + '-native'
             if dep != nitem['target'] and dep not in ideps:
@@ -1028,10 +1028,10 @@ class Deps:
         if item['conf']:
             if item['conf'] == 'kconfig':
                 kconf_path,shared_targets = self.__check_shared_kconfig(item['target'])
-                if shared_targets and shared_targets[0] == item['target']:
+                if shared_targets and shared_targets[-1] == item['target']:
                     conf_str = 'if %s\nmenu "%s configuration (%s)"\nsource "%s"\nendmenu\nendif\n\n' % (
                             ' || '.join(['%s%s' % (config_prepend, escape_toupper(v)) for v in shared_targets]),
-                            item['target'].replace('-native', ''), item['spath'], kconf_path)
+                            shared_targets[0], item['spath'], kconf_path)
                     if choice_flag:
                         self.conf_str += conf_str
                     else:

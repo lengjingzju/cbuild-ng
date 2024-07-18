@@ -259,9 +259,9 @@ get_source_checksum() {
     fi
 }
 
+depcache=""
 get_one_depend_checksum() {
-    depname=$1
-    depcache=""
+    local depname=$1
 
     if [ ! -z "${depname}" ]; then
         if [ -z "${native}" ] && [ "$(echo ${depname} | grep -c '\-native')" -eq 0 ]; then
@@ -283,15 +283,11 @@ get_one_depend_checksum() {
             fi
         fi
     fi
-
-    if [ -z "${depcache}" ]; then
-        wlog "depend (${depname}) of ${packname} isn't found."
-    else
-        wlog "depfile: ${depcache}"
-    fi
 }
 
 get_depend_checksum_auto() {
+    local pkgname=$1
+
     if [ -z "${ENV_CFG_ROOT}" ]; then
         wlog "ERROR: when depends is not specified, please export ENV_CFG_ROOT first."
         exit 1
@@ -301,24 +297,36 @@ get_depend_checksum_auto() {
         exit 1
     fi
 
-    depstr=$(cat ${targetpath} | grep "^${packname}=\".*\"")
+    local depstr=$(cat ${targetpath} | grep "^${pkgname}=\".*\"")
     wlog "get_depend_checksum_auto: depstr: ${depstr}"
     if [ ! -z "${depstr}" ]; then
-        deps=$(echo "${depstr}" | sed -E "s/^${packname}=\"(.*)\".*/\1/g")
+        local deps=$(echo "${depstr}" | sed -E "s/^${pkgname}=\"(.*)\".*/\1/g")
         wlog "get_depend_checksum_auto: deps: ${deps}"
         if [ ! -z "${deps}" ]; then
+            local dep=""
             for dep in ${deps}; do
-                depname=""
-                headchar=${dep:0:1}
+                local depname=""
+                local headchar=${dep:0:1}
+                local condition=""
                 if [ "${headchar}" = "?" ] || [ "${headchar}" = "|" ]; then
                     dep=${dep:1}
+                elif [ $(echo "${dep}" | grep -c "@") -ne 0 ]; then
+                    condition=$(echo "${dep}" | cut -d '@' -f 2)
+                    dep=$(echo "${dep}" | cut -d '@' -f 1)
+                    headchar=""
                 else
                     headchar=""
                 fi
 
-                DEP=$(echo "${dep}" | tr 'a-z-' 'A-Z_')
+                local DEP=$(echo "${dep}" | tr 'a-z-' 'A-Z_')
                 if [ $(grep -c "^CONFIG_${DEP}=y" ${confpath}) -eq 1 ]; then
-                    depname="${dep}"
+                    if [ -z "${condition}" ]; then
+                        depname="${dep}"
+                    else
+                        if [ $(grep -c "^${condition}=y" ${confpath}) -eq 1 ]; then
+                            depname="${dep}"
+                        fi
+                    fi
                 else
                     if [ "${headchar}" = "|" ]; then
                         if [ $(echo "${dep}" | grep -c "\-patch\-") -eq 0 ]; then
@@ -334,7 +342,15 @@ get_depend_checksum_auto() {
                     fi
                 fi
 
-                get_one_depend_checksum ${depname}
+                if [ ! -z "${depname}" ]; then
+                    get_one_depend_checksum ${depname}
+                    if [ -z "${depcache}" ]; then
+                        wlog "depend (${depname}) of ${pkgname} isn't found."
+                        get_depend_checksum_auto ${depname}
+                    else
+                        wlog "depfile: ${depcache}"
+                    fi
+                fi
             done
         fi
     fi
@@ -342,12 +358,19 @@ get_depend_checksum_auto() {
 
 get_depend_checksum() {
     if [ -z "${depends}" ]; then
-        get_depend_checksum_auto
+        get_depend_checksum_auto ${packname}
     elif [ "${depends}" = "none" ]; then
         : # do nothing
     else
+        local depname=""
         for depname in depends; do
             get_one_depend_checksum ${depname}
+            if [ -z "${depcache}" ]; then
+                wlog "depend (${depname}) of ${packname} isn't found."
+                get_depend_checksum_auto ${depname}
+            else
+                wlog "depfile: ${depcache}"
+            fi
         done
     fi
 }
