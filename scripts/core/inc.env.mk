@@ -137,6 +137,21 @@ endif
 
 ifneq ($(ENV_BUILD_MODE),yocto)
 
+define ft-config
+ifneq ($(NATIVE_BUILD),y)
+FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
+$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
+else
+FT_CONFIG       += $$(if $$(filter y,$$($1_NATIVE)),$2,$3)
+$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1_NATIVE=$$($1_NATIVE))
+endif
+endef
+
+define FT-CONFIG
+FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
+$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
+endef
+
 PREPARE_SYSROOT := -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
                   NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
 

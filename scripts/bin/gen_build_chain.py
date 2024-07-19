@@ -228,7 +228,10 @@ class Deps:
                 dep = dep + '-native'
             if dep != nitem['target'] and dep not in ideps:
                 ideps.append(dep)
-                nitem['ideps'].append(dep + split_str + cond)
+                if nitem['conf'] == 'kconfig':
+                    nitem['ideps'].append(dep + split_str + '%s' % (cond))
+                else:
+                    nitem['ideps'].append(dep + split_str + '%s_NATIVE' % (cond))
 
         nitem['wrule'] = []
         for wrule in item['wrule']:

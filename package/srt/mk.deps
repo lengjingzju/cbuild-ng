@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) srt(native psysroot): unselect openssl
+
+PACKAGE_NAME     = srt
+
+LICENSE          = MPL-2.0
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/gflags/gflags
+DESCRIPTION      = Secure Reliable Transport (SRT) is an open source transport technology that optimizes streaming \
+                   performance across unpredictable networks, such as the Internet.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/Haivision/srt/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = df8213a3669dd846ddaad0fa1e9f417b
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = 
+
+COMPILE_TOOL     = cmake
+cmake_flags     += -DENABLE_ENCRYPTION=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

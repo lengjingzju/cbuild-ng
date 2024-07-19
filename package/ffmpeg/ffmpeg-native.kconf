@@ -1,0 +1,160 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+comment "FFmpeg: libraries to build in addition to avutil"
+
+config FFMPEG_EN_AVDEVICE_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable avdevice"
+
+config FFMPEG_EN_AVFILTER_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable avfilter"
+
+config FFMPEG_EN_AVCODEC_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable avcodec"
+
+config FFMPEG_EN_AVFORMAT_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable avformat"
+
+config FFMPEG_EN_SWRESAMPLE_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable swresample"
+
+config FFMPEG_EN_SWSCALE_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable swscale"
+
+config FFMPEG_EN_POSTPROC_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable postproc"
+
+comment "FFmpeg: features to support"
+
+config FFMPEG_FT_ALSA_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable alsa"
+    depends on ALSA_LIB_NATIVE
+
+config FFMPEG_FT_ALTIVEC_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable altivec"
+
+config FFMPEG_FT_BZLIB_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable bzlib"
+    depends on BZIP2_NATIVE
+
+config FFMPEG_FT_FDK_AAC_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable libfdk-aac"
+    depends on FDK_AAC_NATIVE
+
+config FFMPEG_FT_GPL_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable gpl"
+
+config FFMPEG_FT_GSM_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libgsm"
+    depends on LIBGSM_NATIVE
+
+config FFMPEG_FT_JACK_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable indev=jack"
+    depends on JACK_NATIVE
+
+config FFMPEG_FT_LIBOPUS_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable libopus"
+    depends on OPUS_NATIVE
+
+config FFMPEG_FT_LIBVORBIS_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable libvorbis"
+    depends on LIBVORBIS_NATIVE
+
+config FFMPEG_FT_LZMA_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable lzma"
+    depends on XZ_NATIVE
+
+config FFMPEG_FT_MFX_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libmfx"
+    depends on INTEL_MEDIASDK_NATIVE
+
+config FFMPEG_FT_MP3LAME_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libmp3lame"
+    depends on LAME_NATIVE
+
+config FFMPEG_FT_OPENSSL_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable openssl"
+    depends on OPENSSL_NATIVE
+
+config FFMPEG_FT_SDL2_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable sdl2"
+    depends on SDL2_NATIVE
+
+config FFMPEG_FT_SPEEX_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libspeex"
+    depends on SPEEX_NATIVE
+
+config FFMPEG_FT_SRT_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable libsrt"
+    depends on SRT_NATIVE
+
+config FFMPEG_FT_THEORA_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libtheora"
+    depends on LIBTHEORA_NATIVE && LIBOGG_NATIVE
+
+config FFMPEG_FT_VAAPI_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable vaapi"
+    depends on LIBVA_NATIVE
+
+config FFMPEG_FT_VDPAU_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable vdpau"
+    depends on LIBVDPAU_NATIVE
+
+config FFMPEG_FT_VPX_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libvpx"
+    depends on LIBVPX_NATIVE
+
+config FFMPEG_FT_X264_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable libx264"
+    depends on X264_NATIVE && FFMPEG_FT_GPL
+
+config FFMPEG_FT_X265_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable libx265"
+    depends on X265_NATIVE && FFMPEG_FT_GPL
+
+config FFMPEG_FT_XCB_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable libxcb"
+    depends on LIBXCB_NATIVE
+
+config FFMPEG_FT_XV_NATIVE
+    default n
+    bool "FFmpeg: Enable or disable outdev=xv"
+    depends on LIBXV_NATIVE
+
+config FFMPEG_FT_ZLIB_NATIVE
+    default y
+    bool "FFmpeg: Enable or disable zlib"
+    depends on ZLIB_NATIVE

@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) fdk-aac(native psysroot): unselect
+
+PACKAGE_NAME     = fdk-aac
+
+LICENSE          = FDKv2
+LICFILE          = file://NOTICE
+HOMEPAGE         = https://github.com/mstorsjo/fdk-aac
+DESCRIPTION      = A standalone library of the Fraunhofer FDK AAC code from Android.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.0.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = fbaf688a6fd6ddf63c68566909a178b4
+INS_FULLER       = n
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

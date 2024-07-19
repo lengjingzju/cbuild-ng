@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) opus(native psysroot): unselect
+
+PACKAGE_NAME     = opus
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.opus-codec.org/
+DESCRIPTION      = Opus is a totally open, royalty-free, highly versatile audio codec. Opus is unmatched for interactive \
+                   speech and music transmission over the Internet, but is also intended for storage and streaming \
+                   applications. It is standardized by the Internet Engineering Task Force (IETF) as RFC 6716 which \
+                   incorporated technology from Skype’s SILK codec and Xiph.Org’s CELT codec.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://downloads.xiph.org/releases/opus/$(SRC_NAME)
+SRC_MD5          = c40b3a1fbdbb9a7aa178600b88200c76
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS += --disable-doc
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

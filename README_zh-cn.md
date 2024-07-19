@@ -508,6 +508,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * `$(call link_hdrs)`   : 根据 SEARCH_HDRS 变量的值自动生成查找头文件的 CFLAGS
 * `$(call link_libs)`   : 自动生成查找库文件的 LDFLAGS
 * `$(call install_lics)`: 安装 license 文件到 `/usr/local/license/$(PACKAGE_NAME)`
+* `$(eval $(call ft-config,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置))`: 动态特性配置
+    * 根据 `.config` 中指定配置名的值设置变量 `FT_CONFIG` 的值
+* `$(eval $(call FT-CONFIG,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置))`: 动态特性配置
+    * 作用同上，只是 `ft-config` 函数在 `NATIVE_BUILD=y` 时会将 `CONFIG配置名` 改为 `CONFIG配置名_NATIVE`；而 `FT-CONFIG` 函数不会
 
 
 #### 环境模板的变量说明

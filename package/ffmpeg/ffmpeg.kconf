@@ -1,0 +1,160 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+comment "FFmpeg: libraries to build in addition to avutil"
+
+config FFMPEG_EN_AVDEVICE
+    default y
+    bool "FFmpeg: Enable or disable avdevice"
+
+config FFMPEG_EN_AVFILTER
+    default y
+    bool "FFmpeg: Enable or disable avfilter"
+
+config FFMPEG_EN_AVCODEC
+    default y
+    bool "FFmpeg: Enable or disable avcodec"
+
+config FFMPEG_EN_AVFORMAT
+    default y
+    bool "FFmpeg: Enable or disable avformat"
+
+config FFMPEG_EN_SWRESAMPLE
+    default y
+    bool "FFmpeg: Enable or disable swresample"
+
+config FFMPEG_EN_SWSCALE
+    default y
+    bool "FFmpeg: Enable or disable swscale"
+
+config FFMPEG_EN_POSTPROC
+    default y
+    bool "FFmpeg: Enable or disable postproc"
+
+comment "FFmpeg: features to support"
+
+config FFMPEG_FT_ALSA
+    default y
+    bool "FFmpeg: Enable or disable alsa"
+    depends on ALSA_LIB
+
+config FFMPEG_FT_ALTIVEC
+    default n
+    bool "FFmpeg: Enable or disable altivec"
+
+config FFMPEG_FT_BZLIB
+    default y
+    bool "FFmpeg: Enable or disable bzlib"
+    depends on BZIP2
+
+config FFMPEG_FT_FDK_AAC
+    default y
+    bool "FFmpeg: Enable or disable libfdk-aac"
+    depends on FDK_AAC
+
+config FFMPEG_FT_GPL
+    default y
+    bool "FFmpeg: Enable or disable gpl"
+
+config FFMPEG_FT_GSM
+    default n
+    bool "FFmpeg: Enable or disable libgsm"
+    depends on LIBGSM
+
+config FFMPEG_FT_JACK
+    default n
+    bool "FFmpeg: Enable or disable indev=jack"
+    depends on JACK
+
+config FFMPEG_FT_LIBOPUS
+    default y
+    bool "FFmpeg: Enable or disable libopus"
+    depends on OPUS
+
+config FFMPEG_FT_LIBVORBIS
+    default y
+    bool "FFmpeg: Enable or disable libvorbis"
+    depends on LIBVORBIS
+
+config FFMPEG_FT_LZMA
+    default y
+    bool "FFmpeg: Enable or disable lzma"
+    depends on XZ
+
+config FFMPEG_FT_MFX
+    default n
+    bool "FFmpeg: Enable or disable libmfx"
+    depends on INTEL_MEDIASDK
+
+config FFMPEG_FT_MP3LAME
+    default n
+    bool "FFmpeg: Enable or disable libmp3lame"
+    depends on LAME
+
+config FFMPEG_FT_OPENSSL
+    default y
+    bool "FFmpeg: Enable or disable openssl"
+    depends on OPENSSL
+
+config FFMPEG_FT_SDL2
+    default y
+    bool "FFmpeg: Enable or disable sdl2"
+    depends on SDL2
+
+config FFMPEG_FT_SPEEX
+    default n
+    bool "FFmpeg: Enable or disable libspeex"
+    depends on SPEEX
+
+config FFMPEG_FT_SRT
+    default y
+    bool "FFmpeg: Enable or disable libsrt"
+    depends on SRT
+
+config FFMPEG_FT_THEORA
+    default n
+    bool "FFmpeg: Enable or disable libtheora"
+    depends on LIBTHEORA && LIBOGG
+
+config FFMPEG_FT_VAAPI
+    default n
+    bool "FFmpeg: Enable or disable vaapi"
+    depends on LIBVA
+
+config FFMPEG_FT_VDPAU
+    default n
+    bool "FFmpeg: Enable or disable vdpau"
+    depends on LIBVDPAU
+
+config FFMPEG_FT_VPX
+    default n
+    bool "FFmpeg: Enable or disable libvpx"
+    depends on LIBVPX
+
+config FFMPEG_FT_X264
+    default y
+    bool "FFmpeg: Enable or disable libx264"
+    depends on X264 && FFMPEG_FT_GPL
+
+config FFMPEG_FT_X265
+    default y
+    bool "FFmpeg: Enable or disable libx265"
+    depends on X265 && FFMPEG_FT_GPL
+
+config FFMPEG_FT_XCB
+    default n
+    bool "FFmpeg: Enable or disable libxcb"
+    depends on LIBXCB
+
+config FFMPEG_FT_XV
+    default n
+    bool "FFmpeg: Enable or disable outdev=xv"
+    depends on LIBXV
+
+config FFMPEG_FT_ZLIB
+    default y
+    bool "FFmpeg: Enable or disable zlib"
+    depends on ZLIB

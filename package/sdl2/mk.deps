@@ -1,0 +1,56 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) sdl2(native psysroot): unselect \
+    alsa-lib@@CONFIG_SDL2_FT_ALSA \
+    directfb@@CONFIG_SDL2_FT_DIRECTFB \
+    mesa@@CONFIG_SDL2_FT_OPENGL \
+    jack@@CONFIG_SDL2_FT_JACK \
+    libdrm@@CONFIG_SDL2_FT_KMSDRM \
+    pulseaudio@@CONFIG_SDL2_FT_PULSEAUDIO \
+    wayland@@CONFIG_SDL2_FT_WAYLAND \
+    libxkbcommon@@CONFIG_SDL2_FT_WAYLAND \
+    libx11@@CONFIG_SDL2_FT_X11 \
+    libxext@@CONFIG_SDL2_FT_X11 \
+    libxrandr@@CONFIG_SDL2_FT_X11 \
+    libxrender@@CONFIG_SDL2_FT_X11
+
+# fix "error: bits/sys_errlist.h: No such file or directory": sudo apt install gcc-multilib g++-multilib
+
+PACKAGE_NAME     = sdl2
+
+LICENSE          = zlib
+LICFILE          = file://LICENSE.txt
+HOMEPAGE         = http://www.libsdl.org
+DESCRIPTION      = Simple DirectMedia Layer is a cross-platform development library designed to provide low level access \
+                   to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D. It is used by video \
+                   playback software, emulators, and popular games including Valve's award winning catalog and many Humble \
+                   Bundle games.
+
+include $(ENV_CFG_ROOT)/.config
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.30.5
+SRC_DIR          = SDL2-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/libsdl-org/SDL/releases/download/release-$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 6af6db485fcd005b05acc0cb00499dd5
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+
+$(eval $(call ft-config,CONFIG_SDL2_FT_ALSA,-DSDL_ALSA=ON,-DSDL_ALSA=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_DIRECTFB,-DSDL_DIRECTFB=ON,-DSDL_DIRECTFB=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_OPENGL,-DSDL_OPENGL=ON -DSDL_OPENGLES=ON,-DSDL_OPENGL=OFF -DSDL_OPENGLES=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_JACK,-DSDL_JACK=ON,-DSDL_JACK=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_KMSDRM,-DSDL_KMSDRM=ON,-DSDL_KMSDRM=OFF,))
+$(eval $(call ft-config,CONFIG_SDL2_FT_PULSEAUDIO,-DSDL_PULSEAUDIO=ON,-DSDL_PULSEAUDIO=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_WAYLAND,-DSDL_WAYLAND=ON,-DSDL_WAYLAND=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_X11,-DSDL_X11=ON,-DSDL_X11=OFF))
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

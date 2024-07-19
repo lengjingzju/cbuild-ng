@@ -1,0 +1,105 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) ffmpeg(native psysroot): unselect \
+    alsa-lib@@CONFIG_FFMPEG_FT_ALSA \
+    bzip2@@CONFIG_FFMPEG_FT_BZLIB \
+    fdk-aac@@CONFIG_FFMPEG_FT_FDK_AAC \
+    libgsm@@CONFIG_FFMPEG_FT_GSM \
+    jack@@CONFIG_FFMPEG_FT_JACK \
+    opus@@CONFIG_FFMPEG_FT_LIBOPUS \
+    libvorbis@@CONFIG_FFMPEG_FT_LIBVORBIS \
+    xz@@CONFIG_FFMPEG_FT_LZMA \
+    intel-mediasdk@@CONFIG_FFMPEG_FT_MFX \
+    lame@@CONFIG_FFMPEG_FT_MP3LAME \
+    openssl@@CONFIG_FFMPEG_FT_OPENSSL \
+    sdl2@@CONFIG_FFMPEG_FT_SDL2 \
+    speex@@CONFIG_FFMPEG_FT_SPEEX \
+    srt@@CONFIG_FFMPEG_FT_SRT \
+    libtheora@@CONFIG_FFMPEG_FT_THEORA \
+    libogg@@CONFIG_FFMPEG_FT_THEORA \
+    libva@@CONFIG_FFMPEG_FT_VAAPI \
+    libvdpau@@CONFIG_FFMPEG_FT_VDPAU \
+    libvpx@@CONFIG_FFMPEG_FT_VPX \
+    x264@@CONFIG_FFMPEG_FT_X264 \
+    x265@@CONFIG_FFMPEG_FT_X265 \
+    libxcb@@CONFIG_FFMPEG_FT_XCB \
+    libxv@@CONFIG_FFMPEG_FT_XV \
+    zlib@@CONFIG_FFMPEG_FT_ZLIB
+
+PACKAGE_NAME     = ffmpeg
+
+LICENSE          = GPL-2.0-or-later & LGPL-2.1-or-later & ISC & MIT & BSD-2-Clause & BSD-3-Clause & IJG
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.ffmpeg.org/
+DESCRIPTION      = FFmpeg is the leading multimedia framework, able to decode, encode, transcode, mux, demux, stream, \
+                   filter and play pretty much anything that humans and machines have created. It supports the most \
+                   obscure ancient formats up to the cutting edge.
+
+-include $(ENV_CFG_ROOT)/.config
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 7.0.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://ffmpeg.org/releases/$(SRC_NAME)
+SRC_MD5          = 81d5e65494f573ec28c9f56e99247815
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+AUTOTOOLS_FLAGS += --enable-pic --enable-pthreads --enable-shared
+AUTOTOOLS_FLAGS += --disable-mipsdsp --disable-mipsdspr2 --disable-asm
+AUTOTOOLS_FLAGS += --pkg-config=pkg-config
+AUTOTOOLS_FLAGS += --extra-cflags="$(call link_hdrs)" --extra-ldflags="$(call link_libs)"
+INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
+
+# libraries to build in addition to avutil
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVDEVICE,--enable-avdevice,--disable-avdevice))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFILTER,--enable-avfilter,--disable-avfilter))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVCODEC,--enable-avcodec,--disable-avcodec))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFORMAT,--enable-avformat,--disable-avformat))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_SWRESAMPLE,--enable-swresample,--disable-swresample))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_SWSCALE,--enable-swscale,--disable-swscale))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_POSTPROC,--enable-postproc,--disable-postproc))
+
+# features to support
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_ALSA,--enable-alsa,--disable-alsa))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_ALTIVEC,--enable-altivec,--disable-altivec))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_BZLIB,--enable-bzlib,--disable-bzlib))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_FDK_AAC,--enable-libfdk-aac --enable-nonfree,--disable-libfdk-aac))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_GPL,--enable-gpl,--disable-gpl))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_GSM,--enable-libgsm,--disable-libgsm))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_JACK,--enable-indev=jack,--disable-indev=jack))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_LIBOPUS,--enable-libopus,--disable-libopus))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_LIBVORBIS,--enable-libvorbis,--disable-libvorbis))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_LZMA,--enable-lzma,--disable-lzma))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_MFX,--enable-libmfx,--disable-libmfx))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_MP3LAME,--enable-libmp3lame,--disable-libmp3lame))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_OPENSSL,--enable-openssl --enable-version3,--disable-openssl))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_SDL2,--enable-sdl2,--disable-sdl2))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_SPEEX,--enable-libspeex,--disable-libspeex))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_SRT,--enable-libsrt,--disable-libsrt))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_THEORA,--enable-libtheora,--disable-libtheora))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_VAAPI,--enable-vaapi,--disable-vaapi))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_VDPAU,--enable-vdpau,--disable-vdpau))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_VPX,--enable-libvpx,--disable-libvpx))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_X264,--enable-libx264,--disable-libx264))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_X265,--enable-libx265,--disable-libx265))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_XCB,--enable-libxcb,--disable-libxcb))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_XV,--enable-outdev=xv,--disable-outdev=xv))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_ZLIB,--enable-zlib,--disable-zlib))
+
+CUSTOM_TARGETS   = compile
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+compile:
+	@cd $(OBJ_PREFIX) && \
+		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),--enable-cross-compile --cross-prefix=$(CROSS_COMPILE) \
+				--arch=$(shell $(MACHINE_SCRIPT) arch) --target-os=linux) \
+			$(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(FT_CONFIG) $(TOLOG) && \
+		$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+

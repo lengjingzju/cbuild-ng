@@ -527,6 +527,10 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * `$(call link_hdrs)`   : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
 * `$(call link_libs)`   : Automatically sets CFLAGS that looks for libraries
 * `$(call install_lics)`: Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
+* `$(eval $(call ft-config,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>))`: Dynamic feature configuration
+    * Set the value of variable `FT_CONFIG` based on the configuration name specified in the `.config`
+* `$(eval $(call FT-CONFIG,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>))`: Dynamic feature configuration
+    * The function is the same as above, except that the `ft-config` function will change the `CONFIG_NAME` to `CONFIG_NAME_NATIVE` when `NATIVE-BUILD=y`; The `FT-CONFIG` function does not.
 
 
 #### Variables of Environment Template
@@ -1109,7 +1113,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
     * `-e <extra>`    : Specify the extra directories to get system dynamic libraries, Multiple directories can be separated by colons
         * When certain dynamic libraries cannot be found in the search directories of the rootfs specified by `-r` and the compiler specified by `-c`, the option needs to be specified
         * Command: `make package-name-cpk CPK_EXTRA_PATH=additional directory`
- 
+
 * Note: Because Linux does not support relative paths for the linker 'interpreter', running the standalone package's executable file for the first time after decompressing or moving the location on the target machine requires running 'update.sh' first.
 
 * Self-extracting package processing gen_cpk_binary.sh

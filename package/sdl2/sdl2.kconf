@@ -1,0 +1,46 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+config SDL2_FT_ALSA
+    default y
+    bool "SDL2: Enable or disable alsa"
+    depends on ALSA_LIB
+
+config SDL2_FT_DIRECTFB
+    default n
+    bool "SDL2: Enable or disable directfb"
+    depends on DIRECTFB
+
+config SDL2_FT_OPENGL
+    default y
+    bool "SDL2: Enable or disable opengl and opengles"
+    depends on MESA
+
+config SDL2_FT_JACK
+    default n
+    bool "SDL2: Enable or disable jack"
+    depends on JACK
+
+config SDL2_FT_KMSDRM
+    default y
+    bool "SDL2: Enable or disable kmsdrm"
+    depends on LIBDRM
+    depends on SDL2_FT_OPENGL
+
+config SDL2_FT_PULSEAUDIO
+    default y
+    bool "SDL2: Enable or disable pulseaudio"
+    depends on PULSEAUDIO
+
+config SDL2_FT_WAYLAND
+    default n
+    bool "SDL2: Enable or disable wayland"
+    depends on WAYLAND && LIBXKBCOMMON
+
+config SDL2_FT_X11
+    default n
+    bool "SDL2: Enable or disable libx11"
+    depends on LIBX11 && LIBXEXT && LIBXRANDR && LIBXRENDER
