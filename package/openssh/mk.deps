@@ -1,0 +1,51 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) openssh(native psysroot): unselect zlib openssl
+
+PACKAGE_NAME     = openssh
+
+LICENSE          = BSD-2-Clause & BSD-3-Clause & ISC & MIT
+LICFILE          = file://LICENCE
+HOMEPAGE         = https://www.openssh.com/
+DESCRIPTION      = OpenSSH is the premier connectivity tool for remote login with the SSH protocol. It encrypts all \
+                   traffic to eliminate eavesdropping, connection hijacking, and other attacks. In addition, OpenSSH \
+                   provides a large suite of secure tunneling capabilities, several authentication methods, and \
+                   sophisticated configuration options. The OpenSSH suite consists of the following tools: \
+                   * Remote operations are done using ssh, scp, and sftp. \
+                   * Key management with ssh-add, ssh-keysign, ssh-keyscan, and ssh-keygen. \
+                   * The service side consists of sshd, sftp-server, and ssh-agent.
+
+-include $(ENV_CFG_ROOT)/.config
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = tar
+VERSION          = 9.8p1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/$(SRC_NAME)
+SRC_MD5          = bc04ff77796758c0b37bd0bc9314cd3f
+INS_FULLER       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-privsep-path=$(INS_TOPDIR)/var/empty --disable-strip
+AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+ifeq ($(CROSS_COMPILE), )
+ifneq ($(NATIVE_BUILD),y)
+export LD_LIBRARY_PATH:=$(DEP_PREFIX)/usr/lib$(if $(LD_LIBRARY_PATH),:$(LD_LIBRARY_PATH))
+endif
+endif
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's/ host-key check-config$$//g' $(SRC_PATH)/Makefile.in
+

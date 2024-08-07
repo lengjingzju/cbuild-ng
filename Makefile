@@ -89,6 +89,9 @@ $(ENV_CROSS_ROOT)/packages/$(patsubst %-pkg,%,$1)/usr/share/license
 endef
 PKG_BUILD      ?= y
 PKG_STRIP      ?= y
+ifneq ($(ENV_BUILD_TOOL), )
+PKG_EOS        ?= y
+endif
 
 %-pkg: export MFLAG ?= -s
 %-pkg:
@@ -126,16 +129,18 @@ endif
 	@$(MAKE) $(MFLAG) $(patsubst %-cpk,%-pkg,$@)
 	@PATH=$(ENV_NATIVE_ROOT)/objects/patchelf/image/usr/bin:$(PATH) \
 		python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@) \
-		-i include:share:etc:srv:com:var:run \
+		-i include:share:etc:srv:com:var:run $(if $(PKG_EOS),-o $(PKG_EOS)) \
 		-c $(ENV_BUILD_TOOL)gcc -t $(ENV_BUILD_TOOL)readelf $(if $(CPK_EXTRA_PATH),-e $(CPK_EXTRA_PATH))
-	@cp -fp $(ENV_TOOL_DIR)/gen_cpk_package.py $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
 	@cp -fp $(ENV_CROSS_ROOT)/objects/patchelf/image/usr/bin/patchelf $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
+ifneq ($(PKG_EOS),y)
+	@cp -fp $(ENV_TOOL_DIR)/gen_cpk_package.py $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
 	@ush=$(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)/update.sh && \
-		echo '#!/bin/bash' > $${ush} && \
+		echo '#!/bin/sh' > $${ush} && \
 		echo 'curdir=$$(dirname $$(realpath $$0))' >> $${ush} && \
 		echo 'PATH=$$curdir:$$PATH python3 $$curdir/gen_cpk_package.py -r $$curdir -i include:share:etc:srv:com:var:run' >> $${ush} && \
 		chmod +x $${ush}
-	@$(ENV_TOOL_DIR)/gen_cpk_binary.sh pack $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
+endif
+	@bash $(ENV_TOOL_DIR)/gen_cpk_binary.sh pack $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
 
 
 ifneq ($(PGCMD), )

@@ -25,11 +25,11 @@ VERSION          = 2.1.1
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/json.git
-SRC_REV          = 3644088102b38d774df969ad92f498911471469c
+SRC_REV          = 85a6333a432ee3146292c97f0082e410bc7d64c5
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-MAKE_FLAGS       = INS_PREFIX=$(INS_PREFIX) OBJ_PREFIX=$(OBJ_PREFIX) -C $(SRC_PATH)
+MAKE_FLAGS       = -C $(SRC_PATH)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

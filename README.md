@@ -1113,6 +1113,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
     * `-e <extra>`    : Specify the extra directories to get system dynamic libraries, Multiple directories can be separated by colons
         * When certain dynamic libraries cannot be found in the search directories of the rootfs specified by `-r` and the compiler specified by `-c`, the option needs to be specified
         * Command: `make package-name-cpk CPK_EXTRA_PATH=additional directory`
+    * `-o <y or n>`   : Specify whether to generate `update.sh`, it is used for embedded systems, ld.so will not be modified during packaging
 
 * Note: Because Linux does not support relative paths for the linker 'interpreter', running the standalone package's executable file for the first time after decompressing or moving the location on the target machine requires running 'update.sh' first.
 

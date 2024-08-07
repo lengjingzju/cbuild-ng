@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ "$1" = "pack" ]; then
     rm -f $2.cpk $2.tar
@@ -38,7 +38,7 @@ if [ "$insdir" = "def" ] ||  [ "$insdir" = "default" ]; then
 fi
 
 if [ -e $insdir ]; then
-    if [ "$(basename $insdir)" == "$pkgdir" ]; then
+    if [ "$(basename $insdir)" = "$pkgdir" ]; then
         choice=$2
         if [ -z "$choice" ]; then
             read -p "Delete the original app [$insdir] first? (y or n): " choice
@@ -71,7 +71,7 @@ fi
 rm -f $insdir/tmp.tar
 
 if [ -e $insdir/update.sh ]; then
-    bash $insdir/update.sh
+    sh $insdir/update.sh
     if [ $? -ne 0 ]; then
         echo -e "\033[31mERROR: run $insdir/update.sh failed.\033[0m"
         exit 1

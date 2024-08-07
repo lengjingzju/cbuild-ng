@@ -1100,6 +1100,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
     * `-e <extra>`    : 指定动态库的目录，多个目录使用冒号隔开
         * 在 `-r` 指定的rootfs和 `-c` 指定的编译器的搜索目录都找不到某些动态库时，需要指定此选项
         * 命令: `make 包名-cpk CPK_EXTRA_PATH=附加的目录`
+    * `-o <y or n>`   : 指定是否生成 `update.sh`，用于嵌入式系统，此时打包时不会修改ld.so
 
 注: 由于Linux不支持链接器 `interpreter` 的相对路径，所以在目标机上解压或移动位置后首次运行独立包的可执行文件需要先运行 `update.sh`。
 

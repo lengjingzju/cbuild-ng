@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-import sys, os, re, shutil, subprocess
+import sys, os, stat, re, shutil, subprocess
 from argparse import ArgumentParser
 
 syslib_dir = 'syslib'
@@ -200,7 +200,7 @@ class Cbuild_Package:
                 libs.remove(lib)
 
 
-    def process_patchelf(self):
+    def process_patchelf(self, oflag):
         syslib = os.path.join(self.rootfs, syslib_dir)
         ldpath = ''
         if self.ldso:
@@ -221,17 +221,41 @@ class Cbuild_Package:
         print('ELFs copied from system: ' + str(self.wanted_libs))
 
         if self.ldso:
-            interpreter = ldpath
-            for item in self.process_ldso:
-                #interpreter = '\$ORIGIN/' + os.path.relpath(ldpath, item[0])
-                for var in item[1]:
-                    varpath = os.path.join(item[0], var)
-                    cmd = 'patchelf --set-interpreter %s %s' % (interpreter, varpath)
-                    ret = subprocess.call(cmd, shell = True)
+            if oflag:
+                items = []
+                interpreter = os.path.relpath(ldpath, self.rootfs)
+                for item in self.process_ldso:
+                    for var in item[1]:
+                        items.append(os.path.relpath(os.path.join(item[0], var), self.rootfs))
 
-                    if ret != 0:
-                        print('\033[31mERROR: run (%s) failed.\033[0m' % (cmd))
-                        sys.exit(1)
+                sfile = os.path.join(self.rootfs, 'update.sh')
+                with open(sfile, 'w') as fp:
+                    fp.write('''#!/bin/sh
+
+curdir=$(dirname $(realpath $0))
+interpreter=%s
+items="%s"
+
+export PATH=$curdir:$PATH
+for item in $items; do
+    patchelf --set-interpreter $curdir/$interpreter $curdir/$item
+done
+''' % (interpreter, ' '.join(items)))
+                os.chmod(sfile, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+                print('\033[32mGenerate %s OK.\033[0m' % (sfile))
+
+            else:
+                interpreter = ldpath
+                for item in self.process_ldso:
+                    #interpreter = '\$ORIGIN/' + os.path.relpath(ldpath, item[0])
+                    for var in item[1]:
+                        varpath = os.path.join(item[0], var)
+                        cmd = 'patchelf --set-interpreter %s %s' % (interpreter, varpath)
+                        ret = subprocess.call(cmd, shell = True)
+
+                        if ret != 0:
+                            print('\033[31mERROR: run (%s) failed.\033[0m' % (cmd))
+                            sys.exit(1)
 
         #rpath = ':'.join(self.pathes)
         for item in self.process_rpath:
@@ -268,6 +292,10 @@ def parse_options():
             dest='extra',
             help='Specify the extra directories to get system dynamic libraries.')
 
+    parser.add_argument('-o', '--output',
+            dest='output',
+            help='Specify the choice whether to save update.sh instead of modifying ldso immediately.')
+
     args = parser.parse_args()
     if not args.rootfs:
         print('\033[31mERROR: Please set rootfs to process.\033[0m')
@@ -292,7 +320,7 @@ if __name__ == '__main__':
     cpk.process_rootfs(args.ignore)
     cpk.process_system(args.extra)
     cpk.process_syslib()
-    cpk.process_patchelf()
+    cpk.process_patchelf(True if args.output == 'y' else False)
 
     if cpk.unknown_libs:
         print('\033[31mERROR: These shared libs (%s) can not be found, please set "-e <extra searched pathes>".\033[0m' % (str(cpk.unknown_libs)))

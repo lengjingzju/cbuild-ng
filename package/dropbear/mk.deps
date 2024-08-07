@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) dropbear(native psysroot): unselect zlib
+
+PACKAGE_NAME     = dropbear
+
+LICENSE          = MIT & dropbear
+LICFILE          = file://LICENSE
+HOMEPAGE         = http://matt.ucc.asn.au/dropbear/dropbear.html
+DESCRIPTION      = A lightweight SSH and SCP implementation. \
+                   Dropbear is a relatively small SSH server and client. It runs on a variety of unix platforms. \
+                   Dropbear is open source software, distributed under a MIT-style license. Dropbear is particularly \
+                   useful for "embedded"-type Linux (or other Unix) systems, such as wireless routers.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2024.85
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://matt.ucc.asn.au/dropbear/releases/$(SRC_NAME)
+SRC_MD5          = 0386235a72abb261ef48b67b0f99ebbf
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-zlib=$(DEP_PREFIX)/usr
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
