@@ -5,10 +5,9 @@
 ############################################
 
 #DEPS(mk.deps) harfbuzz(native psysroot): unselect icu libpng freetype glib
-#DEPS(harfbuzz-without-freetype.mk) harfbuzz-without-freetype(native psysroot norelease): unselect icu glib
 
-PACKAGE_NAME    ?= harfbuzz
-SEARCH_HDRS      = icu glib
+PACKAGE_NAME     = harfbuzz
+SEARCH_HDRS      = icu glib freetype2 libpng16
 
 LICENSE          = MIT
 LICFILE          = file://COPYING
@@ -27,16 +26,9 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS  = --with-icu=yes --with-glib=yes
+AUTOTOOLS_FLAGS  = --with-icu=yes --with-glib=yes --with-freetype=yes
 AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
 AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
-
-ifeq ($(findstring -without-freetype,$(PACKAGE_NAME)), )
-SEARCH_HDRS     += freetype2 libpng16
-AUTOTOOLS_FLAGS += --with-freetype=yes
-else
-AUTOTOOLS_FLAGS += --with-freetype=no
-endif
 
 CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk

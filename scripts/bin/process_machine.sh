@@ -26,7 +26,7 @@ linux_src=
 linux_out=
 linux_version=6.6.33
 
-gcc_version=14.1.0
+gcc_version=14.2.0
 
 if [ ! -z $soc ]; then
     case $soc in

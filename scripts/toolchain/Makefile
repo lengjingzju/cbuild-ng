@@ -25,12 +25,16 @@ GMP_VER        ?= 6.3.0
 MPFR_VER       ?= 4.2.1
 MPC_VER        ?= 1.3.1
 ISL_VER        ?= 0.26
-BINUTILS_VER   ?= 2.42
+BINUTILS_VER   ?= 2.43
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GDB_VER        ?= 14.2
+GDB_VER        ?= 15.1
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
-GLIBC_VER      ?= 2.38
+GLIBC_VER      ?= 2.40
+USE_LIBXCRYPT  := $(shell echo "$(GLIBC_VER) > 2.38" | bc)
+ifeq ($(USE_LIBXCRYPT),1)
+LIBXCRYPT_VER  ?= 4.4.36
+endif
 endif
 
 GMP_URL        := https://ftp.gnu.org/gnu/gmp/gmp-$(GMP_VER).tar.xz
@@ -43,6 +47,9 @@ GDB_URL        := https://ftp.gnu.org/gnu/gdb/gdb-$(GDB_VER).tar.xz
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_URL      := https://www.kernel.org/pub/linux/kernel/v$(shell echo $(LINUX_VER) | cut -d '.' -f 1).x/linux-$(LINUX_VER).tar.xz
 GLIBC_URL      := https://ftp.gnu.org/gnu/glibc/glibc-$(GLIBC_VER).tar.xz
+ifeq ($(USE_LIBXCRYPT),1)
+LIBXCRYPT_URL  := https://github.com/besser82/libxcrypt/releases/download/v$(LIBXCRYPT_VER)/libxcrypt-$(LIBXCRYPT_VER).tar.xz
+endif
 endif
 
 BUILD_TARGET   := $(shell uname -m)-linux-gnu
@@ -85,19 +92,22 @@ define do_cache
 		-c $(shell pwd)/Makefile -a '$(CACHE_APPENDS)'
 endef
 
-.PHONY: all cachebuild clean fetch-all \
+.PHONY: all check cachebuild clean fetch-all \
 	fetch-gmp fetch-mpfr fetch-mpc fetch-isl \
 	fetch-binutils fetch-gcc fetch-gdb \
-	fetch-linux fetch-glibc \
+	fetch-linux fetch-glibc fetch-libxcrypt \
 	build-gmp build-mpfr build-mpc build-isl \
 	build-binutils-initial build-gcc-initial \
-	build-linux-headers build-glibc \
+	build-linux-headers build-glibc build-libxcrypt \
 	build-binutils build-gcc build-gdb \
 	install-append
 
 all:
 	@$(call do_cache,check)
 	@$(MAKE) cachebuild
+
+check:
+	@$(call do_cache,check)
 
 cachebuild:
 ifeq ($(wildcard $(CACHE_STATUS)), )
@@ -114,6 +124,11 @@ ifneq ($(HOST_TOOLCHAIN),y)
 endif
 	@$(MAKE) build-binutils
 	@$(MAKE) build-gcc
+ifneq ($(HOST_TOOLCHAIN),y)
+ifeq ($(USE_LIBXCRYPT),1)
+	@$(MAKE) build-libxcrypt
+endif
+endif
 	@$(MAKE) build-gdb
 	@$(MAKE) install-append
 	@$(call do_cache,push)
@@ -135,6 +150,9 @@ fetch-all: fetch-gmp fetch-mpfr fetch-mpc fetch-isl \
 	fetch-binutils fetch-gcc fetch-gdb
 ifneq ($(HOST_TOOLCHAIN),y)
 fetch-all: fetch-linux fetch-glibc
+ifeq ($(USE_LIBXCRYPT),1)
+fetch-all: fetch-libxcrypt
+endif
 endif
 
 fetch-gmp:
@@ -185,6 +203,13 @@ fetch-glibc:
 	@$(COLORECHO) "\033[034m++++++++++ $@ ... ++++++++++\033[0m"
 	$(FETCH_SCRIPT) tar "$(GLIBC_URL)" glibc-$(GLIBC_VER).tar.xz $(SRCS_PATH) glibc-$(GLIBC_VER)
 	@$(COLORECHO) "\033[032m++++++++++ $@ done. ++++++++++\033[0m"
+
+ifeq ($(USE_LIBXCRYPT),1)
+fetch-libxcrypt:
+	@$(COLORECHO) "\033[034m++++++++++ $@ ... ++++++++++\033[0m"
+	$(FETCH_SCRIPT) tar "$(LIBXCRYPT_URL)" libxcrypt-$(LIBXCRYPT_VER).tar.xz $(SRCS_PATH) libxcrypt-$(LIBXCRYPT_VER)
+	@$(COLORECHO) "\033[032m++++++++++ $@ done. ++++++++++\033[0m"
+endif
 endif
 
 ########## Build dependency libraries ##########
@@ -273,7 +298,11 @@ GLIBC_COMMON_OPTIONS    += --disable-multi-arch
 GDB_COMMON_OPTIONS      += gl_cv_c_multiarch=no
 endif
 
+ifeq ($(USE_LIBXCRYPT),1)
+GLIBC_COMMON_OPTIONS    += --disable-crypt
+else
 GLIBC_COMMON_OPTIONS    += --enable-crypt # only for glibc-2.38, glibc-2.39 has deleted libcrypt
+endif
 
 ifneq ($(HOST_TOOLCHAIN),y)
 BINUTILS_SYSROOT_OPTIONS = --with-sysroot=$(GLIBC_SYSROOT) \
@@ -357,6 +386,24 @@ build-glibc:
 			$(TOLOG) && \
 		$(MAKE) $(TOLOG) && $(MAKE) install_root=$(GLIBC_SYSROOT) install $(TOLOG)
 	@$(COLORECHO) "\033[032m++++++++++ $@ done. ++++++++++\033[0m"
+
+ifeq ($(USE_LIBXCRYPT),1)
+build-libxcrypt:
+	@$(COLORECHO) "\033[034m++++++++++ $@ ... ++++++++++\033[0m"
+	@mkdir -p $(OBJS_PATH)/libxcrypt && cd $(OBJS_PATH)/libxcrypt; \
+		export PATH=$(DEST_SYSROOT)/bin:$(PATH); \
+		$(SRCS_PATH)/libxcrypt-$(LIBXCRYPT_VER)/configure \
+			--build=$(BUILD_TARGET) \
+			--host=$(DEST_TARGET) \
+			--prefix=/usr \
+			$(TOLOG) && \
+		$(MAKE) $(TOLOG) && $(MAKE) DESTDIR=$(OBJS_PATH)/libxcrypt/image install $(TOLOG) && \
+		cp -rfp $(OBJS_PATH)/libxcrypt/image/usr/include/* $(GLIBC_SYSROOT)/usr/include && \
+		cp -rfp $(OBJS_PATH)/libxcrypt/image/usr/lib/*.a* $(GLIBC_SYSROOT)/usr/lib && \
+		cp -rfp $(OBJS_PATH)/libxcrypt/image/usr/lib/*.so* $(GLIBC_SYSROOT)/usr/lib
+	@$(COLORECHO) "\033[032m++++++++++ $@ done. ++++++++++\033[0m"
+endif
+
 endif
 
 ########## Build binutils / gcc / gdb ##########
