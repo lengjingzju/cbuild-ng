@@ -94,9 +94,12 @@ PKG_EOS        ?= y
 endif
 
 %-pkg: export MFLAG ?= -s
-%-pkg:
+%-pkg: progress
 ifeq ($(PKG_BUILD),y)
-	@$(MAKE) $(MFLAG) $(ENV_BUILD_JOBS) MAKEFLAGS= $(patsubst %-pkg,%,$@)
+	@$(PGPATH)/progress $(PGTOUT)$(WORKDIR)/log make $(MFLAG) $(ENV_BUILD_JOBS) \
+		pg_total_pkgs=$(shell make -n $(patsubst %-pkg,%,$@) | grep -c '^echo "Build .* Done\."$$') \
+		MAKEFLAGS= PGCMD="$(PGPATH)/progress \$$(PGPORT)" $(patsubst %-pkg,%,$@)
+	@$(PGPATH)/progress $$(cat $(WORKDIR)/log/port) stop
 endif
 	@rm -rf $(call pkg_dst,$@)
 	@mkdir -p $(call pkg_dst,$@)
@@ -146,7 +149,7 @@ endif
 ifneq ($(PGCMD), )
 
 progress_init:
-	@$(PGCMD) total=$(words $(ALL_TARGETS))
+	@$(PGCMD) total=$(if $(pg_total_pkgs),$(pg_total_pkgs),$(words $(ALL_TARGETS)))
 
 $(ALL_TARGETS): progress_init
 
