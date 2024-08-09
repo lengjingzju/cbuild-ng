@@ -69,7 +69,8 @@ CUSTOM_TARGETS   = build
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 build:
-	@
+	@mkdir -p $(INS_TOPDIR)
+
 else
 
 CUSTOM_TARGETS   = append

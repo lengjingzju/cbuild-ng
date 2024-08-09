@@ -1,0 +1,39 @@
+From 20715040404cf297ac5ffd8f0f1cb9e7b88c5dfb Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Fri, 9 Aug 2024 18:00:00 +0800
+Subject: [PATCH] Support getting DRI driver dir from env
+
+The default DRI driver dir is specified by '-Ddri-search-path=xxx'
+configured by meson, and it's default value is '$(libdir)/dri', for
+example: '/usr/lib/x86_64-linux-gnu/dri' or '/usr/lib/dri'. Now the
+DRI driver dir can be changed by `export MESA_DRI_DIR=<DRI driver dir>`.
+
+Signed-off-by: Jing Leng <lengjingzju@163.com>
+---
+ src/loader/loader.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/loader/loader.c b/src/loader/loader.c
+index db242b8..c54e185 100644
+--- a/src/loader/loader.c
++++ b/src/loader/loader.c
+@@ -882,11 +882,14 @@ loader_open_driver(const char *driver_name,
+    char *get_extensions_name;
+    const struct __DRIextensionRec **extensions = NULL;
+    const struct __DRIextensionRec **(*get_extensions)(void);
++   const char *env_dri_dir = (const char *)getenv("MESA_DRI_DIR");
+    void *driver = loader_open_driver_lib(driver_name, "_dri", search_path_vars,
+-                                         DEFAULT_DRIVER_DIR, true);
++                                         env_dri_dir ? env_dri_dir : DEFAULT_DRIVER_DIR, true);
+ 
+-   if (!driver)
++   if (!driver) {
++      log_(_LOADER_WARNING, "Please export the right value: 'export MESA_DRI_DIR=<dri driver dir>'.\n");
+       goto failed;
++   }
+ 
+    get_extensions_name = loader_get_extensions_name(driver_name);
+    if (get_extensions_name) {
+-- 
+2.25.1
+

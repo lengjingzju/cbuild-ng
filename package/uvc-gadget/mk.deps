@@ -21,10 +21,8 @@ SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
 SRC_URL          = git://git.ideasonboard.org/$(SRC_NAME).git
 SRC_TAG          = v$(VERSION)
-PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y
-CACHE_CHECKSUM  += $(PATCH_FOLDER)
 CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = meson

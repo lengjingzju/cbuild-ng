@@ -29,10 +29,8 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://www.alsa-project.org/files/pub/utils/$(SRC_NAME)
 SRC_MD5          = 095a31a5924695a7cc5b40f9574ba85e
-PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y
-CACHE_CHECKSUM  += $(PATCH_FOLDER)
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools

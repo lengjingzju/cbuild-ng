@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libxrandr(native psysroot): unselect libx11 xorgproto libxrender libxext
+
+PACKAGE_NAME     = libxrandr
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.x.org
+DESCRIPTION      = XRandR: X Resize, Rotate and Reflect extension library. \
+                   The X Resize, Rotate and Reflect Extension, called RandR for short, brings the ability to resize, \
+                   rotate and reflect the root window of a screen. It is based on the X Resize and Rotate Extension as \
+                   specified in the Proceedings of the 2001 Usenix Technical Conference [RANDR].
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.4
+SRC_DIR          = libXrandr-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
+SRC_MD5          = 24e0b72abe16efce9bf10579beaffc27
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-malloc0returnsnull
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

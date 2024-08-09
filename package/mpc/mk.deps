@@ -23,10 +23,8 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://ftp.gnu.org/gnu/mpc/$(SRC_NAME)
 SRC_MD5          = 5c9bc658c9fd0f940e8e3e0f09530c62
-PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y
-CACHE_CHECKSUM  += $(PATCH_FOLDER)
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools

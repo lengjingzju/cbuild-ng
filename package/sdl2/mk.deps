@@ -43,6 +43,7 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DCMAKE_REQUIRED_LINK_OPTIONS="$(shell echo $(call link_libs) | sed 's/ /;/g')"
 
 $(eval $(call ft-config,CONFIG_SDL2_FT_ALSA,-DSDL_ALSA=ON,-DSDL_ALSA=OFF))
 $(eval $(call ft-config,CONFIG_SDL2_FT_DIRECTFB,-DSDL_DIRECTFB=ON,-DSDL_DIRECTFB=OFF))
@@ -50,6 +51,7 @@ $(eval $(call ft-config,CONFIG_SDL2_FT_OPENGL,-DSDL_OPENGL=ON -DSDL_OPENGLES=ON,
 $(eval $(call ft-config,CONFIG_SDL2_FT_JACK,-DSDL_JACK=ON,-DSDL_JACK=OFF))
 $(eval $(call ft-config,CONFIG_SDL2_FT_KMSDRM,-DSDL_KMSDRM=ON,-DSDL_KMSDRM=OFF,))
 $(eval $(call ft-config,CONFIG_SDL2_FT_PULSEAUDIO,-DSDL_PULSEAUDIO=ON,-DSDL_PULSEAUDIO=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_VULKAN,-DSDL_VULKAN=ON,-DSDL_VULKAN=OFF))
 $(eval $(call ft-config,CONFIG_SDL2_FT_WAYLAND,-DSDL_WAYLAND=ON,-DSDL_WAYLAND=OFF))
 $(eval $(call ft-config,CONFIG_SDL2_FT_X11,-DSDL_X11=ON,-DSDL_X11=OFF))
 

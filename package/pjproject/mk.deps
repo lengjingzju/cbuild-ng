@@ -34,4 +34,9 @@ COMPILE_TOOL     = autotools
 
 OBJ_PREFIX       = $(SRC_PATH)
 export LD       := $(CC)
+
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's@armv7l@arm@g' $(SRC_PATH)/aconfigure

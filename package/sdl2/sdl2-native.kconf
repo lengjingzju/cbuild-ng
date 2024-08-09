@@ -28,7 +28,12 @@ config SDL2_FT_KMSDRM_NATIVE
     default y
     bool "SDL2: Enable or disable kmsdrm"
     depends on LIBDRM_NATIVE
-    depends on SDL2_FT_OPENGL
+    depends on SDL2_FT_OPENGL_NATIVE
+
+config SDL2_FT_VULKAN_NATIVE
+    default n
+    bool "SDL2: Enable or disable vulkan"
+    depends on SDL2_FT_OPENGL_NATIVE
 
 config SDL2_FT_PULSEAUDIO_NATIVE
     default y

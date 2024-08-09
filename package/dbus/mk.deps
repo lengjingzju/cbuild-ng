@@ -41,4 +41,9 @@ CMAKE_FLAGS      = -DDBUS_BUILD_TESTS=OFF \
                    -DENABLE_QT_HELP=OFF \
                    -DDBUS_SESSION_SOCKET_DIR=$(INS_TOPDIR)/tmp
 
+CC_SYSROOT      := $(shell PATH=$(PATH) $(CC) -print-sysroot)
+ifneq ($(CC_SYSROOT), )
+CMAKE_FLAGS     += -DCMAKE_LIBRARY_PATH="$(CC_SYSROOT)/lib;$(CC_SYSROOT)/usr/lib"
+endif
+
 include $(ENV_MAKE_DIR)/inc.rule.mk

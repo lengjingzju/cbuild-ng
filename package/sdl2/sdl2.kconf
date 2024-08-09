@@ -30,6 +30,11 @@ config SDL2_FT_KMSDRM
     depends on LIBDRM
     depends on SDL2_FT_OPENGL
 
+config SDL2_FT_VULKAN
+    default n
+    bool "SDL2: Enable or disable vulkan"
+    depends on SDL2_FT_OPENGL
+
 config SDL2_FT_PULSEAUDIO
     default y
     bool "SDL2: Enable or disable pulseaudio"

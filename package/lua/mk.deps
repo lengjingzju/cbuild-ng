@@ -26,10 +26,8 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://www.lua.org/ftp/$(SRC_NAME)
 SRC_MD5          = 25a429319dff20dfbfb9956c2b5be911
-PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y
-CACHE_CHECKSUM  += $(PATCH_FOLDER)
 CACHE_DEPENDS    = none
 
 MAKE_FLAGS       = INSTALL_TOP=$(INS_TOPDIR)$(INS_SUBDIR) INSTALL_MAN=$(INS_TOPDIR)$(INS_SUBDIR)/share/man/man1 INSTALL_DATA="cp -rfp" -C $(SRC_PATH)

@@ -156,6 +156,7 @@ write_rule() {
 }
 
 echo "digraph depends {" > ${outdir}/${package}.dot
+echo "rankdir=LR" >> ${outdir}/${package}.dot
 if [ "${ENV_BUILD_MODE}" = "yocto" ]; then
     bitbake -g -I .*-native$ ${package} || exit 1
     cat task-depends.dot | \
@@ -207,6 +208,7 @@ if [ "${coreexist}" != " " ]; then
     dones=" "
 
     echo "digraph depends {" > ${outdir}/${package}.brief.dot
+    echo "rankdir=LR" >> ${outdir}/${package}.brief.dot
     PACKAGE=$(echo "${package}" | tr 'a-z-' 'A-Z_')
     if [ $(grep -c "^CONFIG_${PACKAGE}=y" ${confpath}) -eq 1 ]; then
         echo "\"${package}\" [color = green]" >> ${outdir}/${package}.brief.dot

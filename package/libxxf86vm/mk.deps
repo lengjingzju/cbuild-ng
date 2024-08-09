@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libxxf86vm(native psysroot): unselect xorgproto libxext util-macros
+
+PACKAGE_NAME     = libxxf86vm
+
+LICENSE          = MIT
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.x.org
+DESCRIPTION      = XFree86-VM: XFree86 video mode extension library. \
+                   libXxf86vm provides an interface to the XFree86-VidModeExtension extension, which allows client \
+                   applications to get and set video mode timings in extensive detail.  It is used by the xvidtune \
+                   program in particular.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.1.5
+SRC_DIR          = libXxf86vm-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
+SRC_MD5          = 5b913dac587f2de17a02e17f9a44a75f
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-malloc0returnsnull
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

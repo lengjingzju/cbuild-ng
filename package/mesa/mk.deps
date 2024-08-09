@@ -4,7 +4,8 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) mesa(native psysroot): unselect expat zlib eudev libx11 libdrm libxcb libxext libxfixes libxshmfence glslang-native
+#DEPS(mk.deps) mesa(native psysroot): unselect expat zlib eudev libx11 libdrm libxcb \
+    libxext libxfixes libxshmfence libxxf86vm glslang-native
 
 PACKAGE_NAME     = mesa
 
@@ -33,8 +34,9 @@ COMPILE_TOOL     = meson
 MESON_FLAGS      = -Dc_link_args="$(call link_libs)" -Dcpp_link_args="$(call link_libs)"
 MESON_FLAGS     += -Dgallium-opencl=disabled -Dopencl-spirv=false -Dllvm=disabled
 MESON_FLAGS     += -Dgles1=enabled -Dgles2=enabled -Degl=enabled
-MESON_FLAGS     += -Dgallium-drivers="swrast" -Dvulkan-drivers="" -Dplatforms="x11"
-MESON_FLAGS     += -Dmicrosoft-clc=false -Dgallium-rusticl=false -Dglx-direct=false -Dxlib-lease=false
+MESON_FLAGS     += -Ddri-search-path="/usr/lib/dri"
+MESON_FLAGS     += -Dgallium-drivers="swrast,svga" -Dvulkan-drivers="" -Dplatforms="x11" -Dglx-direct=true
+MESON_FLAGS     += -Dmicrosoft-clc=false -Dgallium-rusticl=false -Dxlib-lease=false
 
 CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
