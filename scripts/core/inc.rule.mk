@@ -27,6 +27,7 @@ SRC_PATH        ?= $(WORKDIR)/$(SRC_DIR)
 else
 SRC_PATH        ?= $(ENV_DOWN_DIR)/$(SRC_DIR)
 endif
+PATCH_FOLDER    ?= $(if $(wildcard $(shell pwd)/patch/*.patch),$(shell pwd)/patch)
 else
 SRC_PATH        ?= $(shell pwd)
 endif
@@ -83,7 +84,8 @@ CACHE_OUTPATH   ?= $(WORKDIR)
 CACHE_INSPATH   ?= $(INS_TOPDIR)
 CACHE_STATUS    ?= $(WORKDIR)/MATCH.status
 CACHE_GRADE     ?= 2
-CACHE_CHECKSUM  += $(wildcard $(shell pwd)/$(MAKE_FNAME))
+CACHE_CHECKSUM  += $(wildcard $(shell pwd)/$(MAKE_FNAME)) $(if $(PATCH_FOLDER),$(PATCH_FOLDER))
+
 CACHE_DEPENDS   ?=
 ifneq ($(SRC_MD5)$(SRC_TAG)$(SRC_REV), )
 CACHE_APPENDS   += $(SRC_MD5)$(SRC_TAG)$(SRC_REV)

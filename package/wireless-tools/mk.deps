@@ -19,11 +19,9 @@ SRC_DIR          = $(subst -,_,$(PACKAGE_NAME)).$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://hewlettpackard.github.io/wireless-tools/$(SRC_NAME)
 SRC_MD5          = e06c222e186f7cc013fd272d023710cb
-PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
-CACHE_CHECKSUM  += $(PATCH_FOLDER)
 
 MAKE_FLAGS       = PREFIX=$(INS_TOPDIR) INSTALL_INC=$(INS_TOPDIR)/usr/include INSTALL_MAN=$(INS_TOPDIR)/usr/share/man -C $(SRC_PATH)
 MAKE_FLAGS      += $(if $(CROSS_COMPILE),CC=$(CC) AR=$(AR) RANLIB=$(RANLIB))

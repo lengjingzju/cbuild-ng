@@ -23,10 +23,8 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://sourceware.org/pub/bzip2/$(SRC_NAME)
 SRC_MD5          = 67e051268d0c475ea773822f7500d0e5
-PATCH_FOLDER     = $(shell pwd)/patch
 
 CACHE_BUILD      = y
-CACHE_CHECKSUM  += $(PATCH_FOLDER)
 CACHE_DEPENDS    = none
 
 MAKE_FLAGS       = -C $(SRC_PATH) PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
