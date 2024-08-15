@@ -304,11 +304,9 @@ class Deps:
                     self.__init_item(item)
 
                     item['path'] = root
+                    item['spath'] = root.replace(rootdir, '', 1)
                     if self.yocto_flag:
-                        item['spath'] = root.replace(os.path.dirname(rootdir) + '/', '', 1)
                         item['make'] = vir_name
-                    else:
-                        item['spath'] = root.replace(rootdir + '/', '', 1)
 
                     item['vtype'] = ret.groups()[0]
                     if item['vtype'] != 'menuconfig' and item['vtype'] != 'config' and \
@@ -348,9 +346,16 @@ class Deps:
 
 
     def search_normal_depends(self, dep_name, vir_name, search_dirs, ignore_dirs = [], go_on_dirs = []):
+        root_change = False if len(search_dirs) == 1 else True
         for rootdir in search_dirs:
             if rootdir[-1] == '/':
                 rootdir = rootdir[:-1]
+
+            root_dir = ''
+            if root_change:
+                root_dir = os.path.dirname(rootdir) + '/'
+            else:
+                root_dir = rootdir + '/'
 
             for root, dirs, files in os.walk(rootdir):
                 if ignore_dirs and dirs:
@@ -366,10 +371,10 @@ class Deps:
                     dirs.sort()
 
                 if vir_name and vir_name in files:
-                    self.__add_virtual_deps(vir_name, root, rootdir)
+                    self.__add_virtual_deps(vir_name, root, root_dir)
 
                 if dep_name in files:
-                    self.PathList.append((root, root.replace(rootdir + '/', '', 1), ''))
+                    self.PathList.append((root, root.replace(root_dir, '', 1), ''))
                     if 'continue' not in files:
                         if not go_on_dirs or root not in go_on_dirs:
                             dirs.clear() # don't continue to search sub dirs.
@@ -380,6 +385,8 @@ class Deps:
         for rootdir in search_dirs:
             if rootdir[-1] == '/':
                 rootdir = rootdir[:-1]
+
+            root_dir = os.path.dirname(rootdir) + '/'
 
             user_flag = False
             if self.user_metas and rootdir.split('/')[-1] in self.user_metas:
@@ -397,7 +404,7 @@ class Deps:
                     files.sort()
 
                 if vir_name and vir_name in files:
-                    self.__add_virtual_deps(vir_name, root, rootdir)
+                    self.__add_virtual_deps(vir_name, root, root_dir)
 
                 for fname in files:
                     if fname.endswith('.bb') and '-native' not in fname:
@@ -406,7 +413,7 @@ class Deps:
 
                         fullname = os.path.join(root, fname)
                         item['path'] = os.path.dirname(fullname)
-                        item['spath'] = os.path.dirname(fullname.replace(os.path.dirname(rootdir) + '/', '', 1))
+                        item['spath'] = os.path.dirname(fullname.replace(root_dir, '', 1))
                         item['make'] = fname
                         item['target'] = fname[0:fname.rindex('_') if '_' in fname else fname.rindex('.')]
 
