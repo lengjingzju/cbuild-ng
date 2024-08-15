@@ -1389,7 +1389,7 @@ class Deps:
                 # install
                 phony.append(item['target'] + '_install')
                 phony.append(item['target'] + '_install_single')
-                fp.write('%s_install: %s\n' % (item['target'], item['target']))
+                fp.write('%s_install: %s $(addsuffix _install,$(%s-deps))\n' % (item['target'], item['target'], item['target']))
                 fp.write('%s_install %s_install_single:\n' % (item['target'], item['target']))
                 if pkg_flags['empty']:
                     fp.write('\t@\n\n')
