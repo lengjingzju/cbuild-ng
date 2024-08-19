@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) spirv-tools(native psysroot): unselect spirv-headers cmake-native
+
+PACKAGE_NAME     = spirv-tools
+
+LICENSE          = Apache-2.0
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/KhronosGroup/SPIRV-Tools
+DESCRIPTION      = The project includes an assembler, binary module parser, disassembler, validator, and optimizer for SPIR-V.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2024.3
+SRC_DIR          = SPIRV-Tools-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = ae29eff28446e6619439b94ad9d89247
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DSPIRV-Headers_SOURCE_DIR=$(DEP_PREFIX)/usr
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

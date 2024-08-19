@@ -1,0 +1,42 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) swig(native psysroot): unselect pcre2
+
+PACKAGE_NAME     = swig
+
+LICENSE          = BSD-3-Clause & GPL-3.0-only
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://swig.sourceforge.net/
+DESCRIPTION      = The GNU Multiple Precision Arithmetic Library. \
+                   SWIG is a software development tool that connects programs written in C and C++ with a variety of \
+                   high-level programming languages. SWIG is used with different types of target languages including \
+                   common scripting languages such as Javascript, Perl, PHP, Python, Tcl and Ruby. The list of supported \
+                   languages also includes non-scripting languages such as C#, D, Go language, Java including Android, Lua, \
+                   OCaml, Octave, Scilab and R. Also several interpreted and compiled Scheme implementations (Guile, \
+                   MzScheme/Racket) are supported. SWIG is most commonly used to create high-level interpreted or compiled \
+                   programming environments, user interfaces, and as a tool for testing and prototyping C/C++ software. SWIG \
+                   is typically used to parse C/C++ interfaces and generate the 'glue code' required for the above target \
+                   languages to call into the C/C++ code. SWIG can also export its parse tree in the form of XML. SWIG is \
+                   free software and the code that SWIG generates is compatible with both commercial and non-commercial projects.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 4.2.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://versaweb.dl.sourceforge.net/project/swig/swig/$(SRC_DIR)/$(SRC_NAME)
+SRC_MD5          = 7697b443d7845381d64c90ab54d244af
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+
+CFLAGS          += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

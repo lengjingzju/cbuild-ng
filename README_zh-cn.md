@@ -523,10 +523,11 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * SEARCH_HDRS       : 查找头文件子目录列表，默认值等于 PACKAGE_DEPS 的值
 <br>
 
-* ENV_OPTIMIZER     : CC 优化等级选项，总共3个选项:
-    * release       : OPTIMIZER_FLAG 默认取值 `-O2`
-    * speed         : OPTIMIZER_FLAG 默认取值 `-O3`
+* ENV_BUILD_TYPE    : CC 优化等级选项，默认取值是 `optimized`，总共4个选项:
     * debug         : OPTIMIZER_FLAG 默认取值 `-O0 -g -ggdb`
+    * minsize       : OPTIMIZER_FLAG 默认取值 `-Os`
+    * optimized     : OPTIMIZER_FLAG 默认取值 `-O2`
+    * release       : OPTIMIZER_FLAG 默认取值 `-O3`
 * OPTIMIZER_FLAG    : 优化等级值
 <br>
 

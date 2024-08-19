@@ -36,6 +36,8 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS += --disable-docs LDFLAGS="$(call link_libs)"
+AUTOTOOLS_FLAGS += --disable-docs
+
+LDFLAGS         += $(call link_libs)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

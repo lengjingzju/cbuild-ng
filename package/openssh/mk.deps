@@ -35,7 +35,9 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = --with-privsep-path=$(INS_TOPDIR)/var/empty --disable-strip
-AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+CFLAGS          += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
 
 ifeq ($(CROSS_COMPILE), )
 ifneq ($(NATIVE_BUILD),y)

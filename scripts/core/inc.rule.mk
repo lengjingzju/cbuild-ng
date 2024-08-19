@@ -57,6 +57,18 @@ else
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
 endif
 
+rel_cpflags     += $(OPTIMIZER_FLAG)
+ifneq ($(ENV_BUILD_TYPE),debug)
+rel_cpflags     += -ffunction-sections -fdata-sections
+rel_ldflags     += -Wl,--gc-sections
+else
+rel_ldflags     += -Wl,-O1
+endif
+REL_CONFIG      ?= CFLAGS="$(rel_cpflags) $(CFLAGS)" \
+                   CPPFLAGS="$(rel_cpflags) $(CPPFLAGS)" \
+                   CXXFLAGS="$(rel_cpflags) $(CXXFLAGS)" \
+                   LDFLAGS="$(rel_ldflags) $(LDFLAGS)"
+
 else ifeq ($(COMPILE_TOOL),cmake)
 CMAKE_CROSS     ?= $(shell $(MACHINE_SCRIPT) cmake_cross)
 ifeq ($(INS_FULLER),y)
@@ -67,12 +79,32 @@ endif
 dep_config      ?=$(shell echo $(wildcard $(DEP_PREFIX) $(DEP_PREFIX)/usr) | sed 's@ @;@g')
 DEP_CONFIG      ?=$(if $(dep_config),-DCMAKE_PREFIX_PATH="$(dep_config)")
 
+ifeq ($(ENV_BUILD_TYPE),debug)
+REL_CONFIG      ?= -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON --debug-output --trace --trace-expand
+else ifeq ($(ENV_BUILD_TYPE),release)
+REL_CONFIG      ?= -DCMAKE_BUILD_TYPE=Release
+else ifeq ($(ENV_BUILD_TYPE),minsize)
+REL_CONFIG      ?= -DCMAKE_BUILD_TYPE=MinSizeRel
+else
+REL_CONFIG      ?= -DCMAKE_BUILD_TYPE=RelWithDebInfo
+endif
+
 else ifeq ($(COMPILE_TOOL),meson)
 MESON_WRAP_MODE ?= --wrap-mode=nodownload
 ifeq ($(INS_FULLER),y)
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include data info locale man,$(call ins_common_cfg,$(v)))
 else
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR) --libdir=$(INS_TOPDIR)$(INS_SUBDIR)/lib
+endif
+
+ifeq ($(ENV_BUILD_TYPE),debug)
+REL_CONFIG      ?= -Dbuildtype=debug --debug
+else ifeq ($(ENV_BUILD_TYPE),release)
+REL_CONFIG      ?= -Dbuildtype=release
+else ifeq ($(ENV_BUILD_TYPE),minsize)
+REL_CONFIG      ?= -Dbuildtype=minsize
+else
+REL_CONFIG      ?= -Dbuildtype=debugoptimized
 endif
 
 else
@@ -146,15 +178,15 @@ ifneq ($(filter prepend,$(CUSTOM_TARGETS)), )
 endif
 ifeq ($(COMPILE_TOOL),autotools)
 	@cd $(OBJ_PREFIX) && \
-		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(FT_CONFIG) $(TOLOG)
+		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(FT_CONFIG) $(REL_CONFIG) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
 	@cd $(OBJ_PREFIX) && \
-		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(FT_CONFIG) $(TOLOG)
+		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(FT_CONFIG) $(REL_CONFIG) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
 	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
 	@$(if $(do_meson_cfg),$(call do_meson_cfg))
 	@cd $(SRC_PATH) && \
-		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(FT_CONFIG) $(OBJ_PREFIX) $(TOLOG)
+		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(FT_CONFIG) $(OBJ_PREFIX) $(REL_CONFIG) $(TOLOG)
 endif
 	@rm -rf $(INS_TOPDIR)
 ifneq ($(filter compile,$(CUSTOM_TARGETS)), )

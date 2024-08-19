@@ -31,6 +31,6 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = --with-gmp-prefix=$(DEP_PREFIX)/usr
-AUTOTOOLS_FLAGS += LDFLAGS="$(call link_libs)"
+LDFLAGS         += $(call link_libs)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

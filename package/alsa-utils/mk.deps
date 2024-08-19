@@ -37,7 +37,8 @@ COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = --with-udev-rules-dir=$(INS_TOPDIR)/lib/udev/rules.d
 AUTOTOOLS_FLAGS += --with-systemdsystemunitdir=$(INS_TOPDIR)/lib/systemd/system
 AUTOTOOLS_FLAGS += --disable-alsamixer --disable-xmlto --disable-rst2man
-CPFLAGS          = $(call link_hdrs) -I$(SRC_PATH)/include
-AUTOTOOLS_FLAGS += CFLAGS="$(CPFLAGS)" CPPFLAGS="$(CPFLAGS)" LDFLAGS="$(call link_libs)"
+
+CFLAGS          += $(call link_hdrs) -I$(SRC_PATH)/include
+LDFLAGS         += $(call link_libs)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

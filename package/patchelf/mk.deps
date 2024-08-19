@@ -30,7 +30,7 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS  = LDFLAGS=-static
+LDFLAGS         += -static
 
 #CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk

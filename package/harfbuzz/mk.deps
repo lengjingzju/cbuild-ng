@@ -28,7 +28,9 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = --with-icu=yes --with-glib=yes --with-freetype=yes
 AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
-AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+CFLAGS          += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
 
 CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk

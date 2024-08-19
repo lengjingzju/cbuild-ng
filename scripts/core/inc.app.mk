@@ -32,10 +32,11 @@ imake_cpflags  += $(call link_hdrs)
 imake_ldflags  += $(call link_libs)
 
 imake_cpflags  += $(OPTIMIZER_FLAG)
-imake_ldflags  += -Wl,-O1
-ifeq ($(ENV_OPTIMIZER),release)
+ifneq ($(ENV_BUILD_TYPE),debug)
 imake_cpflags  += -ffunction-sections -fdata-sections
 imake_ldflags  += -Wl,--gc-sections
+else
+imake_ldflags  += -Wl,-O1
 endif
 #imake_ldflags += -static
 
@@ -115,7 +116,7 @@ imake_cpflags  += $(IMAKE_CPFLAGS)
 imake_ldflags  += $(IMAKE_LDFLAGS)
 prior_ldflags  += $(PRIOR_LDFLAGS)
 
-CHECK_INFO     += ENV_OPTIMIZER=$(ENV_OPTIMIZER)        \
+CHECK_INFO     += ENV_BUILD_TYPE=$(ENV_BUILD_TYPE)      \
                   ENV_SECURITY=$(ENV_SECURITY)          \
                   ENV_SANITIZER=$(ENV_SANITIZER)        \
                   ENV_ANALYZER=$(ENV_ANALYZER)          \

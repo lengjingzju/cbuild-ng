@@ -35,7 +35,7 @@ MESON_FLAGS      = -Dc_link_args="$(call link_libs)" -Dcpp_link_args="$(call lin
 MESON_FLAGS     += -Dgallium-opencl=disabled -Dopencl-spirv=false -Dllvm=disabled
 MESON_FLAGS     += -Dgles1=enabled -Dgles2=enabled -Degl=enabled
 MESON_FLAGS     += -Ddri-search-path="/usr/lib/dri"
-MESON_FLAGS     += -Dgallium-drivers="swrast,svga" -Dvulkan-drivers="" -Dplatforms="x11" -Dglx-direct=true
+MESON_FLAGS     += -Dgallium-drivers="swrast,svga,nouveau,virgl,zink" -Dvulkan-drivers="" -Dplatforms="x11" -Dglx-direct=true
 MESON_FLAGS     += -Dmicrosoft-clc=false -Dgallium-rusticl=false -Dxlib-lease=false
 
 CUSTOM_TARGETS   = prepend

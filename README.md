@@ -542,10 +542,11 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * SEARCH_HDRS       : Sub-folders to search headers, its default value is equal to `PACKAGE_DEPS`
 <br>
 
-* ENV_OPTIMIZER     : CC optimization option, it has three options:
-    * release       : the default value od OPTIMIZER_FLAG is `-O2`
-    * speed         : the default value od OPTIMIZER_FLAG is `-O3`
+* ENV_BUILD_TYPE    : CC optimization option, its default value is `optimized`, it has four options:
     * debug         : the default value od OPTIMIZER_FLAG is `-O0 -g -ggdb`
+    * minsize       : the default value od OPTIMIZER_FLAG is `-Os`
+    * optimized     : the default value od OPTIMIZER_FLAG is `-O2`
+    * release       : the default value od OPTIMIZER_FLAG is `-O3`
 * OPTIMIZER_FLAG    : CC optimization value
 <br>
 

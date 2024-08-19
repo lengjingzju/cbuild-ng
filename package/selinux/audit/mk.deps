@@ -30,7 +30,8 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS += --without-python --without-python3 --disable-zos-remote
-AUTOTOOLS_FLAGS += LDFLAGS="$(call link_libs) -Wl,-rpath-link=$(OBJ_PREFIX)/lib/.libs"
+
+LDFLAGS         += $(call link_libs) -Wl,-rpath-link=$(OBJ_PREFIX)/lib/.libs
 
 CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk

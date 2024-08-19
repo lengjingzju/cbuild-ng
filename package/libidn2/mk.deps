@@ -26,7 +26,9 @@ SRC_MD5          = de2818c7dea718a4f264f463f595596b
 AUTOTOOLS_FLAGS  = --with-libiconv-prefix=$(DEP_PREFIX)/usr \
                    --with-libunistring-prefix=$(DEP_PREFIX)/usr \
                    --without-included-libunistring
-AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+CFLAGS          += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

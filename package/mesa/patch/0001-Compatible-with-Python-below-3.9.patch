@@ -1,0 +1,81 @@
+From d83e9d2a788cb7cf933c1c81df8cc5224f55f5a5 Mon Sep 17 00:00:00 2001
+From: Jing Leng <lengjingzju@163.com>
+Date: Fri, 16 Aug 2024 12:34:08 +0800
+Subject: [PATCH] Compatible with Python below 3.9
+
+---
+ src/nouveau/headers/class_parser.py | 26 +++++++++++++++++++-------
+ 1 file changed, 19 insertions(+), 7 deletions(-)
+
+diff --git a/src/nouveau/headers/class_parser.py b/src/nouveau/headers/class_parser.py
+index 296a765..cdf38d0 100644
+--- a/src/nouveau/headers/class_parser.py
++++ b/src/nouveau/headers/class_parser.py
+@@ -230,6 +230,18 @@ pub const ${version[0]}: u16 = ${version[1]};
+ % endif
+ """)
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ def glob_match(glob, name):
+     if glob.endswith('*'):
+         return name.startswith(glob[:-1])
+@@ -293,7 +305,7 @@ def parse_header(nvcl, f):
+                 if ":" in list[2]:
+                     state = 1
+                 elif teststr in list[1]:
+-                    curmthd.field_defs[curfield][list[1].removeprefix(teststr)] = list[2]
++                    curmthd.field_defs[curfield][str_removeprefix(list[1], teststr)] = list[2]
+                 else:
+                     state = 1
+ 
+@@ -303,7 +315,7 @@ def parse_header(nvcl, f):
+                     if ("0x" in list[2]):
+                         state = 1
+                     else:
+-                        field = list[1].removeprefix(teststr)
++                        field = str_removeprefix(list[1], teststr)
+                         bitfield = list[2].split(":")
+                         curmthd.field_name_start[field] = bitfield[1]
+                         curmthd.field_name_end[field] = bitfield[0]
+@@ -324,13 +336,13 @@ def parse_header(nvcl, f):
+                 is_array = 0
+                 if (':' in list[2]):
+                     continue
+-                name = list[1].removeprefix(teststr)
++                name = str_removeprefix(list[1], teststr)
+                 if name.endswith("(i)"):
+                     is_array = 1
+-                    name = name.removesuffix("(i)")
++                    name = str_removesuffix(name, "(i)")
+                 if name.endswith("(j)"):
+                     is_array = 1
+-                    name = name.removesuffix("(j)")
++                    name = str_removesuffix(name, "(j)")
+                 x = method()
+                 x.name = name
+                 x.addr = list[2]
+@@ -357,8 +369,8 @@ def main():
+ 
+     clheader = os.path.basename(args.in_h)
+     nvcl = clheader
+-    nvcl = nvcl.removeprefix("cl")
+-    nvcl = nvcl.removesuffix(".h")
++    nvcl = str_removeprefix(nvcl, "cl")
++    nvcl = str_removesuffix(nvcl, ".h")
+     nvcl = nvcl.upper()
+     nvcl = "NV" + nvcl
+ 
+-- 
+2.25.1
+

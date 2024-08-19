@@ -16,11 +16,13 @@ else
 PACKAGE_ID     := $(PACKAGE_NAME)-native
 endif
 
-ENV_OPTIMIZER  ?= release
-ifeq ($(ENV_OPTIMIZER),debug)
+ENV_BUILD_TYPE ?= optimized
+ifeq ($(ENV_BUILD_TYPE),debug)
 OPTIMIZER_FLAG ?= -O0 -g -ggdb
-else ifeq ($(ENV_OPTIMIZER),speed)
+else ifeq ($(ENV_BUILD_TYPE),release)
 OPTIMIZER_FLAG ?= -O3
+else ifeq ($(ENV_BUILD_TYPE),minsize)
+OPTIMIZER_FLAG ?= -Os
 else
 OPTIMIZER_FLAG ?= -O2
 endif

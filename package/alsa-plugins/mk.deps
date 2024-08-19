@@ -37,7 +37,9 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
-AUTOTOOLS_FLAGS += CFLAGS="$(call link_hdrs)" CPPFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)"
+
+CFLAGS          += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
 
 CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
