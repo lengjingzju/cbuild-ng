@@ -686,6 +686,17 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 #### 应用模板的函数说明
 
+* compile_obj: 创建一组编译c/cxx/asm源文件规则
+    * `$(eval $(call compile_obj,源文件后缀,编译器))`
+    * 一般不会被用户调用，除非有新的C++源文件后缀
+* compile_vobj: 创建一条自定义编译源文件规则
+    * `$(eval $(call compile_obj,源文件后缀,编译器,虚拟源文件,真实源文件))` (虚拟源文件需要加入到变量VSRCS)
+    * 一般用于一个源文件根据不同的CFLAGS编译出不同的.o文件，例子见 [JCore](https://github.com/lengjingzju/jcore) 的Makefile
+* compile_oobj: 创建一组自定义编译输出目录的源文件规则
+    * `$(eval $(call compile_obj,源文件后缀,编译器,虚拟源文件列表))` (虚拟源文件需要加入到变量VSRCS)
+    * 一般用于生成在输出目录的源文件的编译，例如kconfig的编译
+<br>
+
 * add-liba-build: 创建一条编译静态库规则
     * `$(eval $(call add-liba-build,静态库名,源文件列表))`
     * `$(eval $(call add-liba-build,静态库名,源文件列表,依赖的静态库路径列表))`
@@ -704,6 +715,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数))`
     * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数,私有的CFLAGS参数))`
     * `$(eval $(call add-bin-build,可执行文件名,源文件列表,链接参数,私有的CFLAGS参数,额外的依赖列表))`
+<br>
+
 * set_flags: 单独为指定源码集合设置编译标记
     * `$(call set_flags,标记名称,源文件列表,标记值)`
         * 编译标志可以是C/C++编译标记(CFLAGS)或汇编标记(AFLAGS)
@@ -711,7 +724,6 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * set_links: 设置链接库，加上 `-l`，此函数用于一个库同时提供静态库和动态库时，强制链接它的静态库
     * `$(call set_links,静态库列表)`
     * `$(call set_links,静态库列表,动态库列表)`
-
 
 注: 提供上述函数的原因是可以在一个 Makefile 中编译出多个库或可执行文件
 
@@ -738,10 +750,11 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
         include $(ENV_MAKE_DIR)/inc.app.mk
         $(eval $(call compile_obj,CXX,$$(CXX)))
         ```
-* USING_CXX_BUILD_C: 设置为 y 时 `*.c` 文件也用 CXX 编译
+* USING_CXX_BUILD_C: 设置为 y 时 `*.c` 文件也用 CXX 编译，`$(CCC)` 指定了具体的C编译器
 * SRCS: 所有的源码文件，默认是 SRC_PATH 下的所有的 `*.c *.cpp *.S` 文件
     * 如果用户指定了 SRCS，也可以设置 SRC_PATH，将 SRC_PATH 和 SRC_PATH 下的 include 加入到头文件搜索的目录
     * 如果用户指定了 SRCS，忽略 IGNORE_PATH 的值
+* VSRCS: 虚拟的源码文件，和函数 `compile_vobj` 或 `compile_oobj` 共用，用于编译输出目录的 `.o` 编译文件对应的源码目录虚拟源码文件
 <br>
 
 * CPFLAGS: 用户可以设置C和C++共有的一些全局编译标记

@@ -706,6 +706,19 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 #### Functions of Application Template
 
+* compile_obj: Creates a set of rules for compiling c/cxx/asm source files
+    * `$(eval $(call compile_obj,source file suffix,compiler))`
+    * Generally it is not called by users unless there is a new C++ source file suffix
+* compile_vobj: Creates a custom compile source file rule
+    * `$(eval $(call compile_obj,source file suffix,compiler,virtual source file,real source file))`
+    * The virtual source file needs to be added to the variable `VSRCS`
+    * Generally it is used to compile different .o files from one source file according to different CFLAGS, for example: the Makefile of [JCore](https://github.com/lengjingzju/jcore)
+* compile_oobj: Creates a set of custom rules when the source files are in output directory
+    * `$(eval $(call compile_obj,source file suffix,compiler,virtual source file list))`
+    * The virtual source files need to be added to the variable `VSRCS`
+    * Generally it is used to compile source files in the output directory, such as kconfig compilation
+<br>
+
 * add-liba-build: Creates a rule for compiling static library
     * `$(eval $(call add-liba-build,<static library name>,<source files>))`
     * `$(eval $(call add-liba-build,<static library name>,<source files>,<appended static library paths>))`
@@ -724,6 +737,8 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>))`
     * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>,<private CFLAGS>))`
     * `$(eval $(call add-bin-build,<executable name>,<source files>,<link parameters>,<private CFLAGS>,<extra dependencies>))`
+<br>
+
 * set_flags: Sets the compilation flags for the specified source codes
     * `$(call set_flags,<Flag Type>,<source files>,<value>)`
         * `Flag Type` can be `CFLAGS` and `AFLAGS`
@@ -758,9 +773,10 @@ Note: The reason for providing the above functions is that multiple libraries or
             include $(ENV_MAKE_DIR)/inc.app.mk
             $(eval $(call compile_obj,CXX,$$(CXX)))
             ```
-* USING_CXX_BUILD_C: When set to y, indicates compiling `*.c` files with CXX compiler
+* USING_CXX_BUILD_C: When set to y, indicates compiling `*.c` files with CXX compiler, `$(CCC)` specifies the specific compiler of C source code
 * SRCS: All source code files, its default value is all files with suffix of `REG_SUFFIX` in the `SRC_PATH`
     * If users specifies `SRCS`, they can also set `SRC_PATH`, and `IGNORE_PATH` is ignored
+* VSRCS: Virtual source code files, which is used together with the functions `compile_vobj` or `compile_oobj`, it is used to compile the virtual source code files (not real files) in the source directory corresponding to the `.o` compiled file in the output directory
 <br>
 
 * CPFLAGS: Sets the global compilation flags for C and C++
