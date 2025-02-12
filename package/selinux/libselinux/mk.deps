@@ -19,11 +19,11 @@ DESCRIPTION      = The libselinux packages contain the core library of an SELinu
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = tar
-VERSION          = 3.6
+VERSION          = 3.8
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = 06149dae0a3c3af01dde4bb25d314b93
+SRC_REV          = af4b7d1b3b2d32d4c1397604d66de76f
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

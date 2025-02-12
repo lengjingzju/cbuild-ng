@@ -23,11 +23,11 @@ DESCRIPTION      = wpa_supplicant is a WPA Supplicant for Linux, BSD, Mac OS X, 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.10
+VERSION          = 2.11
 SRC_DIR          = $(subst -,_,$(PACKAGE_NAME))-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = http://w1.fi/releases/$(SRC_NAME)
-SRC_MD5          = d26797fcb002898d4ee989179346e1cc
+SRC_MD5          = 72a4a00eddb7a499a58113c3361ab094
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -41,4 +41,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
+	@sed -i 's/enum macsec_offload offload/int offload/g' $(SRC_PATH)/src/drivers/driver_macsec_linux.c
 	@cp -f $(SRC_PATH)/wpa_supplicant/defconfig $(SRC_PATH)/wpa_supplicant/.config

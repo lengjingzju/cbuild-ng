@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) strace(native psysroot): unselect
+
+PACKAGE_NAME     = strace
+
+LICENSE          = LGPL-2.1-or-later
+LICFILE          = file://COPYING* file://LGPL-2.1-or-later
+HOMEPAGE         = https://github.com/strace/strace
+DESCRIPTION      = This is strace -- a diagnostic, debugging and instructional userspace utility with a traditional \
+                   command-line interface for Linux. It is used to monitor and tamper with interactions between \
+                   processes and the Linux kernel, which include system calls, signal deliveries, and changes of \
+                   process state. The operation of strace is made possible by the kernel feature known as ptrace.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 6.13
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://github.com/strace/strace/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = d6045bc205c1257a9f561670028cd63f
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS += --enable-mpers=no
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

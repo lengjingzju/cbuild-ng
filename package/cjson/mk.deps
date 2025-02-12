@@ -15,11 +15,11 @@ DESCRIPTION      = Ultralightweight JSON parser in ANSI C.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.7.17
+VERSION          = 1.7.18
 SRC_DIR          = cJSON-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/DaveGamble/cJSON/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 344409fa865ca3440be94089d1cc37ac
+SRC_MD5          = 926245ca76bd04f338efcac489e2da9d
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

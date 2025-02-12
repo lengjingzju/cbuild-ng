@@ -1,13 +1,14 @@
-From 0dacb67fc4d39743fe0ee7f2871bbdea6b5b33bc Mon Sep 17 00:00:00 2001
-From: Jing Leng <lengjingzju@163.com>
-Date: Fri, 3 Feb 2023 15:40:18 +0800
+From 50f4fcda364a805f4114cbc7cc0092d45947c661 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Thu, 13 Feb 2025 20:21:31 +0800
 Subject: [PATCH] Add bulk transport support
 
 ---
  include/uvcgadget/configfs.h |  1 +
+ lib/configfs.c               |  4 ++--
  lib/uvc.c                    |  4 +++-
  src/main.c                   | 10 +++++++++-
- 3 files changed, 13 insertions(+), 2 deletions(-)
+ 4 files changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/include/uvcgadget/configfs.h b/include/uvcgadget/configfs.h
 index e5a7efa..054051e 100644
@@ -21,6 +22,28 @@ index e5a7efa..054051e 100644
  };
  
  struct uvc_function_config *configfs_parse_uvc_function(const char *function);
+diff --git a/lib/configfs.c b/lib/configfs.c
+index a29e576..b11d9a5 100644
+--- a/lib/configfs.c
++++ b/lib/configfs.c
+@@ -686,7 +686,7 @@ static int configfs_parse_streaming_format(const char *path,
+ 	}
+ 
+ 	format->num_frames = n_entries;
+-	format->frames = calloc(sizeof *format->frames, format->num_frames);
++	format->frames = calloc(format->num_frames, sizeof *format->frames);
+ 	if (!format->frames)
+ 		return -ENOMEM;
+ 
+@@ -770,7 +770,7 @@ static int configfs_parse_streaming_header(const char *path,
+ 	}
+ 
+ 	cfg->num_formats = n_entries;
+-	cfg->formats = calloc(sizeof *cfg->formats, cfg->num_formats);
++	cfg->formats = calloc(cfg->num_formats, sizeof *cfg->formats);
+ 	if (!cfg->formats)
+ 		return -ENOMEM;
+ 
 diff --git a/lib/uvc.c b/lib/uvc.c
 index 747cd65..f130332 100644
 --- a/lib/uvc.c
@@ -83,5 +106,5 @@ index cec622a..faa9e88 100644
  	if (cap_device != NULL && img_path != NULL) {
  		printf("Both capture device and still image specified\n");
 -- 
-2.17.1
+2.25.1
 

@@ -16,6 +16,7 @@ DESCRIPTION      = Opus is a totally open, royalty-free, highly versatile audio 
                    applications. It is standardized by the Internet Engineering Task Force (IETF) as RFC 6716 which \
                    incorporated technology from Skype’s SILK codec and Xiph.Org’s CELT codec.
 
+ENV_BUILD_TYPE  := release
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.5.2

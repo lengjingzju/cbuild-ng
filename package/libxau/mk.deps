@@ -17,11 +17,11 @@ DESCRIPTION      = Xau: X Authority Database library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.0.11
+VERSION          = 1.0.12
 SRC_DIR          = libXau-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
-SRC_MD5          = 7f14ba9c84a81a2b9dd023706febab38
+SRC_MD5          = 4c9f81acf00b62e5de56a912691bd737
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

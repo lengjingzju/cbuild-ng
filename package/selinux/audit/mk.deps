@@ -19,11 +19,11 @@ DESCRIPTION      = The Linux Audit System is designed to make Linux compliant wi
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.1.3
+VERSION          = 4.0.3
 SRC_DIR          = $(PACKAGE_NAME)-userspace-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/linux-audit/audit-userspace/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = c4c73a523654ea037bab751be7eeda8d
+SRC_MD5          = c135d82f622e9d2c94136cf0aa796e95
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -37,4 +37,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
+	@if [ ! -e $(SRC_PATH)/README ]; then echo > $(SRC_PATH)/README; fi
 	@cd $(SRC_PATH) && ./autogen.sh

@@ -20,11 +20,11 @@ DESCRIPTION      = Network-related giomodules for glib. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.80.0
+VERSION          = 2.80.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://gitlab.gnome.org/GNOME/glib-networking/-/archive/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = c508aaf6df42bf3e72aca2eb26a152dc
+SRC_MD5          = f0cc5bd8b741e73245b57c62ca171aa5
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

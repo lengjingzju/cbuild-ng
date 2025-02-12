@@ -23,11 +23,11 @@ DESCRIPTION      = LZ4 is lossless compression algorithm, providing compression 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.9.4
+VERSION          = 1.10.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/lz4/lz4/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = e9286adb64040071c5e23498bf753261
+SRC_MD5          = dead9f5f1966d9ae56e1e32761e4e675
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

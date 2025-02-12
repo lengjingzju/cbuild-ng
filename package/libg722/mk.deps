@@ -1,0 +1,38 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libg722(native psysroot): unselect
+
+PACKAGE_NAME     = libg722
+
+LICENSE          = libg722
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/sippy/libg722
+DESCRIPTION      = The G.722 module is a bit exact implementation of the ITU G.722 specification for all three specified \
+                   bit rates - 64000bps, 56000bps and 48000bps. It passes the ITU tests. \
+                   To allow fast and flexible interworking with narrow band telephony, the encoder and decoder support \
+                   an option for the linear audio to be an 8k samples/second stream. In this mode the codec is considerably \
+                   faster, and still fully compatible with wideband terminals using G.722.
+
+ENV_BUILD_TYPE  := release
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = v_1_2_0
+SRC_DIR          = libg722-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/sippy/libg722/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 30bf6f711499222e734cc6937af08610
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@sed -i 's/CMAKE_C_STANDARD 17/CMAKE_C_STANDARD 11/g' $(SRC_PATH)/CMakeLists.txt

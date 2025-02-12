@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) bcg729(native psysroot): unselect
+
+PACKAGE_NAME     = bcg729
+
+LICENSE          = GPL-3.0-only
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://gitlab.linphone.org/BC/public/bcg729
+DESCRIPTION      = Bcg729 is an opensource implementation of both encoder and decoder of the ITU G729 Annex A/B speech codec. \
+                   The library written in C 99 is fully portable and can be executed on many platforms including both ARM \
+                   and x86 processors. libbcg729 supports concurrent channels encoding/decoding for multi call application \
+                   such as conferencing.
+
+ENV_BUILD_TYPE  := release
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.1.1
+SRC_DIR          = bcg729-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://gitlab.linphone.org/BC/public/bcg729/-/archive/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 23b0c28422df3251adbc81e596ef9861
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

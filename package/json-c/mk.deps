@@ -17,11 +17,11 @@ DESCRIPTION      = JSON-C implements a reference counting object model that allo
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.17-20230812
+VERSION          = 0.18-20240915
 SRC_DIR          = $(PACKAGE_NAME)-$(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.gz
 SRC_URL          = https://github.com/json-c/json-c/archive/refs/tags/$(SRC_NAME)
-SRC_MD5          = 6d724389b0a08c519d9dd6e2fac7efb8
+SRC_MD5          = 97f1a79151cae859983afbc46b40b92c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

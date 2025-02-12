@@ -42,11 +42,11 @@ DESCRIPTION      = FFmpeg is the leading multimedia framework, able to decode, e
 -include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 7.0.1
+VERSION          = 7.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ffmpeg.org/releases/$(SRC_NAME)
-SRC_MD5          = 81d5e65494f573ec28c9f56e99247815
+SRC_MD5          = 623aa63a72139a82ccb99cd6ee477b94
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -97,6 +97,7 @@ CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 compile:
+	@sed -i 's@NULL, x265pic_lyrptr_out)@NULL, x265pic_lyrptr_out[i])@g' $(SRC_PATH)/libavcodec/libx265.c
 	@cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),--enable-cross-compile --cross-prefix=$(CROSS_COMPILE) \
 				--arch=$(shell $(MACHINE_SCRIPT) arch) --target-os=linux) \

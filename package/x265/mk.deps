@@ -16,7 +16,7 @@ DESCRIPTION      = x265 is an open source HEVC encoder.
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 3.6
+VERSION          = 4.1
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
 SRC_URL          = https://bitbucket.org/multicoreware/$(PACKAGE_NAME)_git.git

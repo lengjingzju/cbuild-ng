@@ -1,0 +1,34 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) elfutils(native psysroot): unselect zlib
+
+PACKAGE_NAME     = elfutils
+
+LICENSE          = GPL-2.0-only
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://sourceware.org/elfutils
+DESCRIPTION      = elfutils is a collection of utilities and libraries to read, create and modify ELF binary files, \
+                   find and handle DWARF debug data, symbols, thread state and stacktraces for processes and core files \
+                   on GNU/Linux.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.192
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://sourceware.org/elfutils/ftp/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = a6bb1efc147302cfc15b5c2b827f186a
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = 
+
+COMPILE_TOOL     = autotools
+
+CFLAGS          += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

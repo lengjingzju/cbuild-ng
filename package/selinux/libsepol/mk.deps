@@ -18,11 +18,11 @@ DESCRIPTION      = libsepol provides an API for the manipulation of SELinux bina
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = tar
-VERSION          = 3.6
+VERSION          = 3.8
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = e0c71bc448cffada3406cc9a7ad7ea2c
+SRC_REV          = 201200fa797a289eed282dd45b59154a
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

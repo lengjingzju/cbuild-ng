@@ -20,17 +20,17 @@ DESCRIPTION      = Command line tool and library for transferring data with URLs
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 8.7.1
+VERSION          = 8.12.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://curl.se/download/$(SRC_NAME)
-SRC_MD5          = f4f37253c5f1ad9ee85fa6215fdfeb42
+SRC_MD5          = 3005f775ce65b301a27f8d43a8c85511
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS  = --with-zlib=$(DEP_PREFIX)/usr --with-ssl=$(DEP_PREFIX)/usr
+AUTOTOOLS_FLAGS  = --with-zlib=$(DEP_PREFIX)/usr --with-ssl=$(DEP_PREFIX)/usr --without-libpsl
 AUTOTOOLS_FLAGS += PKG_CONFIG=pkg-config
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -23,11 +23,11 @@ DESCRIPTION      = GNU gettext is an important step for the GNU Translation Proj
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.22.5
+VERSION          = 0.23.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ftp.gnu.org/pub/gnu/gettext/$(SRC_NAME)
-SRC_MD5          = 3ae5580599d84be93e6213930facb2db
+SRC_MD5          = 1a174902c396e95c7d9761033fe1360e
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

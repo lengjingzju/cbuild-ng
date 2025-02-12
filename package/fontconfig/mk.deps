@@ -25,11 +25,11 @@ DESCRIPTION      = Fontconfig is a library for configuring and customizing font 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.15.0
+VERSION          = 2.16.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.freedesktop.org/software/fontconfig/release/$(SRC_NAME)
-SRC_MD5          = 5bb3a2829aecb22ae553c39099bd0d6a
+SRC_MD5          = 20d5466544aa62d18c94106faa169a09
 INS_FULLER       = y
 
 CACHE_BUILD      = y

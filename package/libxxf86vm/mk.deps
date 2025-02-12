@@ -18,11 +18,11 @@ DESCRIPTION      = XFree86-VM: XFree86 video mode extension library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.1.5
+VERSION          = 1.1.6
 SRC_DIR          = libXxf86vm-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
-SRC_MD5          = 5b913dac587f2de17a02e17f9a44a75f
+SRC_MD5          = d3db4b6dc924dc151822f5f7e79ae873
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

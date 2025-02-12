@@ -20,11 +20,11 @@ DESCRIPTION      = oneAPI Threading Building Blocks (oneTBB). \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2021.12.0
+VERSION          = 2022.0.0
 SRC_DIR          = oneTBB-$(VERSION)
 SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.gz
 SRC_URL          = https://github.com/oneapi-src/oneTBB/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 558a40c7c3da965a5cfc3fbe0566b5ae
+SRC_MD5          = 78ec44cecf3cd78c4984e61f1bb93134
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

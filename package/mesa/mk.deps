@@ -20,11 +20,11 @@ DESCRIPTION      = A free implementation of the OpenGL API. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 24.1.3
+VERSION          = 24.3.4
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://archive.mesa3d.org/$(SRC_NAME)
-SRC_MD5          = 2783fc23b425a254c0c4f753a66cbfb6
+SRC_MD5          = c64b7e2b4f1c7782c41bf022edbb365c
 INS_FULLER       = y
 
 CACHE_BUILD      = y
@@ -34,12 +34,8 @@ COMPILE_TOOL     = meson
 MESON_FLAGS      = -Dc_link_args="$(call link_libs)" -Dcpp_link_args="$(call link_libs)"
 MESON_FLAGS     += -Dgallium-opencl=disabled -Dopencl-spirv=false -Dllvm=disabled
 MESON_FLAGS     += -Dgles1=enabled -Dgles2=enabled -Degl=enabled
-MESON_FLAGS     += -Ddri-search-path="/usr/lib/dri"
-MESON_FLAGS     += -Dgallium-drivers="swrast,svga,nouveau,virgl,zink" -Dvulkan-drivers="" -Dplatforms="x11" -Dglx-direct=true
+#MESON_FLAGS     += -Ddri-search-path="/usr/lib/dri"
+MESON_FLAGS     = -Dgallium-drivers="softpipe,svga,nouveau,virgl,zink" -Dvulkan-drivers="" -Dplatforms="x11" -Dglx-direct=true
 MESON_FLAGS     += -Dmicrosoft-clc=false -Dgallium-rusticl=false -Dxlib-lease=false
 
-CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
-
-prepend:
-	@sed -i "s:\[ld_args_bsymbolic, ld_args_gc_sections\]:['-lxcb-randr', ld_args_bsymbolic, ld_args_gc_sections]:g" $(SRC_PATH)/src/egl/meson.build

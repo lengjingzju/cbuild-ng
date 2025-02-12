@@ -22,11 +22,11 @@ DESCRIPTION      = hostapd is a user space daemon for access point and authentic
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.10
+VERSION          = 2.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = http://w1.fi/releases/$(SRC_NAME)
-SRC_MD5          = 0be43e9e09ab94a7ebf82de0d1c57761
+SRC_MD5          = 7c1d9203f575a4de7360b907df7aaccd
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

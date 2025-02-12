@@ -17,11 +17,11 @@ DESCRIPTION      = Xlib: C Language X Interface library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.8.9
+VERSION          = 1.8.11
 SRC_DIR          = libX11-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
-SRC_MD5          = b006876e5b749d82801fe9450d700daf
+SRC_MD5          = e12f988eb037b978071e21b2d58d1d70
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -20,11 +20,11 @@ DESCRIPTION      = Libxml2 is the XML C parser and toolkit developed for the Gno
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.12.6
+VERSION          = 2.13.5
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/GNOME/libxml2/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 39fa10eea936496c9809d6b9e52ae681
+SRC_MD5          = b6ead19aff44b49f2641cb26be5e0b4e
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
