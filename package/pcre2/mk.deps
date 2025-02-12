@@ -9,7 +9,7 @@
 PACKAGE_NAME     = pcre2
 
 LICENSE          = BSD-3-Clause
-LICFILE          = file://LICENCE
+LICFILE          = file://COPYING
 HOMEPAGE         = https://github.com/PCRE2Project/pcre2
 DESCRIPTION      = Perl-Compatible Regular Expressions. \
                    The PCRE2 library is a set of C functions that implement regular expression pattern matching using \
@@ -20,11 +20,11 @@ DESCRIPTION      = Perl-Compatible Regular Expressions. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 10.43
+VERSION          = 10.45
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://github.com/PCRE2Project/pcre2/releases/download/$(SRC_DIR)/$(SRC_NAME)
-SRC_MD5          = c8e2043cbc4abb80e76dba323f7c409f
+SRC_MD5          = f71abbe1b5adf25cd9af5d26ef223b66
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

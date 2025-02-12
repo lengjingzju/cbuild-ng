@@ -17,11 +17,11 @@ DESCRIPTION      = An open source project to develop and maintain the reference 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.6.43
+VERSION          = 1.6.45
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://nchc.dl.sourceforge.net/project/libpng/libpng16/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 22b8362d16c3724eba9c1fb8d187320a
+SRC_MD5          = 744b7616a141c9b02965ca3549e13d31
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

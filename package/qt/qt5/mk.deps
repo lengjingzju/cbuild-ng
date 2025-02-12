@@ -18,13 +18,13 @@ DESCRIPTION      = Qt is cross-platform application development framework for cr
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 5.15.14
+VERSION          = 5.15.16
 MV               = $(shell echo $(VERSION) | cut -d '.' -f 1)
 SV               = $(shell echo $(VERSION) | cut -d '.' -f 2)
 SRC_DIR          = qt-everywhere-src-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://download.qt.io/archive/qt/$(MV).$(SV)/$(VERSION)/single/qt-everywhere-opensource-src-$(VERSION).tar.xz
-SRC_MD5          = 0265e7988790d8845441558130d59311
+SRC_MD5          = 2a25d4e90abd05284bf5bb01365c9b44
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

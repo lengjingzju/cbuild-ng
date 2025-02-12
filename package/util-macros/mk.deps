@@ -16,11 +16,11 @@ DESCRIPTION      = X autotools macros. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.20.1
+VERSION          = 1.20.2
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/util/$(SRC_NAME)
-SRC_MD5          = 35a4f264a9852be4ae66f07d4100356e
+SRC_MD5          = 5f683a1966834b0a6ae07b3680bcb863
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

@@ -22,11 +22,11 @@ DESCRIPTION      = D-Bus is a message bus system, a simple way for applications 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.15.8
+VERSION          = 1.16.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://dbus.freedesktop.org/releases/dbus/$(SRC_NAME)
-SRC_MD5          = 66a38f65320762e0734340fb6facdcce
+SRC_MD5          = 66bfcf1f42d4ebc634ca558d14335e92
 INS_SUBDIR       =
 INS_FULLER       = y
 INS_HASRUN       = y

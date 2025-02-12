@@ -16,11 +16,11 @@ DESCRIPTION      = Secure Reliable Transport (SRT) is an open source transport t
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.5.3
+VERSION          = 1.5.4
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/Haivision/srt/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = df8213a3669dd846ddaad0fa1e9f417b
+SRC_MD5          = 08e946bbcdb6f9dc3863de5dd8a48aa3
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = 

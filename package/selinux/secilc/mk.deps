@@ -19,11 +19,11 @@ DESCRIPTION      = The SELinux CIL Compiler is a compiler that converts the CIL 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = tar
-VERSION          = 3.6
+VERSION          = 3.8
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = 6df9570b8ee8d0bda251fdefd53be55e
+SRC_REV          = 0c35dca01cd001c8711edcccc9a8ae01
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -18,11 +18,11 @@ DESCRIPTION      = iw is a new nl80211 based CLI configuration utility for wirel
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 6.7
+VERSION          = 6.9
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.kernel.org/pub/software/network/iw/$(SRC_NAME)
-SRC_MD5          = a63e81b0dcae9caf9ed3a20f2c445a07
+SRC_MD5          = 457c99badf2913bb61a8407ae60e4819
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -17,11 +17,11 @@ DESCRIPTION      = FreeType is a freely available software library to render fon
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.13.2
+VERSION          = 2.13.3
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://download.savannah.gnu.org/releases/freetype/$(SRC_NAME)
-SRC_MD5          = 1f625f0a913c449551b1e3790a1817d7
+SRC_MD5          = f3b4432c4212064c00500e1ad63fbc64
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

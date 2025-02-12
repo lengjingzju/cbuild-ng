@@ -7,7 +7,6 @@
 #DEPS(mk.deps) harfbuzz(native psysroot): unselect icu libpng freetype glib
 
 PACKAGE_NAME     = harfbuzz
-SEARCH_HDRS      = icu glib freetype2 libpng16
 
 LICENSE          = MIT
 LICFILE          = file://COPYING
@@ -16,27 +15,16 @@ DESCRIPTION      = HarfBuzz is a text shaping engine. It primarily supports Open
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 8.4.0
+VERSION          = 10.2.0
 SRC_DIR          = harfbuzz-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://github.com/harfbuzz/harfbuzz/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 961e77201ff4738382ea06e9f15ade70
+SRC_MD5          = f68c05409f18b4a044d71628548aacd9
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
-COMPILE_TOOL     = autotools
-AUTOTOOLS_FLAGS  = --with-icu=yes --with-glib=yes --with-freetype=yes
-AUTOTOOLS_FLAGS  = PKG_CONFIG=pkg-config
+COMPILE_TOOL     = meson
+MESON_FLAGS     += -Dicu=enabled -Dglib=enabled -Dfreetype=enabled
 
-CFLAGS          += $(call link_hdrs)
-LDFLAGS         += $(call link_libs)
-
-CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk
-
-prepend:
-	@sed -i 's/HB_HAS_FREETYPE/HAS_FREETYPE/g' $(SRC_PATH)/test/api/test-paint.c
-
-append:
-	@cp -fp $(SRC_PATH)/src/hb-ft.h $(INS_TOPDIR)$(INS_SUBDIR)/include/harfbuzz

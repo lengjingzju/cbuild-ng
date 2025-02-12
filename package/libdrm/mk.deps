@@ -18,11 +18,11 @@ DESCRIPTION      = Userspace interface to the kernel DRM services. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.4.122
+VERSION          = 2.4.124
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://dri.freedesktop.org/libdrm/$(SRC_NAME)
-SRC_MD5          = 143c8df50e09cd1eeb1fb53f05ecb64a
+SRC_MD5          = 78f7f7ee6aff711696d4b34465b40728
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

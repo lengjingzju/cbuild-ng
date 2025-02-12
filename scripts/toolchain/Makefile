@@ -24,16 +24,16 @@ MACHINE_SCRIPT := $(ENV_TOOL_DIR)/process_machine.sh
 GMP_VER        ?= 6.3.0
 MPFR_VER       ?= 4.2.1
 MPC_VER        ?= 1.3.1
-ISL_VER        ?= 0.26
-BINUTILS_VER   ?= 2.43
+ISL_VER        ?= 0.27
+BINUTILS_VER   ?= 2.44
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GDB_VER        ?= 15.1
+GDB_VER        ?= 16.2
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
-GLIBC_VER      ?= 2.40
+GLIBC_VER      ?= 2.41
 USE_LIBXCRYPT  := $(shell echo "$(GLIBC_VER) > 2.38" | bc)
 ifeq ($(USE_LIBXCRYPT),1)
-LIBXCRYPT_VER  ?= 4.4.36
+LIBXCRYPT_VER  ?= 4.4.38
 endif
 endif
 

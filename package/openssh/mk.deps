@@ -23,11 +23,11 @@ DESCRIPTION      = OpenSSH is the premier connectivity tool for remote login wit
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = tar
-VERSION          = 9.8p1
+VERSION          = 9.9p1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/$(SRC_NAME)
-SRC_MD5          = bc04ff77796758c0b37bd0bc9314cd3f
+SRC_MD5          = 1893c9b712eb8c55ec2d5146e7323b92
 INS_FULLER       = y
 
 CACHE_BUILD      = y

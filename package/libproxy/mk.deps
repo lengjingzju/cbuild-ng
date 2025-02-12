@@ -15,11 +15,11 @@ DESCRIPTION      = libproxy is a library that provides automatic proxy configura
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.5.6
+VERSION          = 0.5.9
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/libproxy/libproxy/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = fbc1522a271527b5ba361f2139b15a46
+SRC_MD5          = 11fd35c17e0ae017bae764fae1651973
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

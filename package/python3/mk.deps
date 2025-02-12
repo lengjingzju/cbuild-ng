@@ -19,11 +19,11 @@ DESCRIPTION      = Python is a high-level, general-purpose programming language.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.12.4
+VERSION          = 3.13.2
 SRC_DIR          = Python-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.python.org/ftp/python/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = d68f25193eec491eb54bc2ea664a05bd
+SRC_MD5          = 4c2d9202ab4db02c9d0999b14655dfe5
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) valgrind(native psysroot): unselect
+
+PACKAGE_NAME     = valgrind
+
+LICENSE          = GPL-2.0-only
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://valgrind.org/
+DESCRIPTION      = Valgrind is a GPL'd system for debugging and profiling Linux programs. With Valgrind's tool suite \
+                   you can automatically detect many memory management and threading bugs, avoiding hours of frustrating \
+                   bug-hunting, making your programs more stable. You can also perform detailed profiling to help \
+                   speed up your programs.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.24.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://sourceware.org/pub/valgrind/$(SRC_NAME)
+SRC_MD5          = 7ae7ffc6b3cff48fe35076266c128226
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

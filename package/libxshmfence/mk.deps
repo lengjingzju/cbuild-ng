@@ -17,11 +17,11 @@ DESCRIPTION      = Shared memory 'SyncFence' synchronization primitive. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.3.2
+VERSION          = 1.3.3
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
-SRC_MD5          = faa74f7483074ce7d4349e6bdc237497
+SRC_MD5          = 9805be7e18f858bed9938542ed2905dc
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -15,11 +15,11 @@ DESCRIPTION      = This library provides an implementation convert from/to Unico
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.17
+VERSION          = 1.18
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://ftp.gnu.org/gnu/libiconv/$(SRC_NAME)
-SRC_MD5          = d718cd5a59438be666d1575855be72c3
+SRC_MD5          = 1af69958b42981d3c3029ffb4c7ebaed
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

@@ -19,11 +19,11 @@ DESCRIPTION      = XRender: X Rendering Extension library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.9.11
+VERSION          = 0.9.12
 SRC_DIR          = libXrender-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
-SRC_MD5          = ebf7fb3241ec03e8a3b2af72f03b4631
+SRC_MD5          = 4c54dce455d96e3bdee90823b0869f89
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
