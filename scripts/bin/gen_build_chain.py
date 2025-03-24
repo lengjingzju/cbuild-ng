@@ -1277,7 +1277,7 @@ class Deps:
 
                 psysroot_target = '%s_psysroot'  % (item['target'])
                 psys_make = '@%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
-                            % ('$(MAKE)', item['target'], item['target'])
+                            % ('$(MAKE)', item['target'].rstrip('-native'), item['target'].rstrip('-native'))
 
                 gsys_dir = ''
                 isys_dir = ''
