@@ -48,6 +48,22 @@ imake_cpflags  += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),102
 imake_cpflags  += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
 #imake_cpflags += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
 
+# Set SIMD acceleration for ARM and X86/AMD64 for cross build
+ifneq ($(NATIVE_BUILD),y)
+ifeq ($(ENV_SIMD_TYPE),neon)
+imake_cpflags  += -DUSING_NEON
+else ifeq ($(ENV_SIMD_TYPE),sse4)
+imake_cpflags  += -DUSING_SSE128 -msse4
+imake_ldflags  += -msse4
+else ifeq ($(ENV_SIMD_TYPE),avx2)
+imake_cpflags  += -DUSING_AVX256 -mavx2
+imake_ldflags  += -mavx2
+else ifeq ($(ENV_SIMD_TYPE),avx512)
+imake_cpflags  += -DUSING_AVX512 -mavx512bw
+imake_ldflags  += -mavx512bw
+endif
+endif
+
 # Use https://github.com/slimm609/checksec.sh/ to check the secure
 ifeq ($(ENV_SECURITY),y)
 # NX(No-eXecute) or DEP(Data Execution Prevention)

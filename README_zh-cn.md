@@ -399,6 +399,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
+    ENV_SIMD_TYPE    :
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
     ENV_TOOL_DIR     : /home/lengjing/data/cbuild-ng/scripts/bin
@@ -420,6 +421,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
     ENV_BUILD_SOC    : cortex-a53
+    ENV_SIMD_TYPE    : neon
     ENV_BUILD_TOOL   : /home/lengjing/data/cbuild-ng/output/toolchain/cortex-a53-toolchain-gcc12.2.0-linux5.15/bin/aarch64-linux-gnu-
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
@@ -454,6 +456,15 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * ENV_BUILD_JOBS    : 指定编译线程数
 * ENV_BUILD_SOC     : 指定交叉编译的 SOC，根据 SOC 和 process_machine.sh 脚本得到和 SOC 相关的一系列参数
 * ENV_BUILD_TOOL    : 指定交叉编译器前缀
+<br>
+
+* ENV_SIMD_TYPE     : 设置SIMD加速指令
+    * 当选择SOC为 `generic` 时，取变量 `HOST_SIMD_TYPE` 的值
+    * SIMD的有效值如下:
+        * neon      : aarch64(ARM64)可设置，CFLAGS/CXXFLAGS会自动加上 `-DUSING_NEON`
+        * sse4      : X86/X86_64支持SSE4可设置，CFLAGS/CXXFLAGS会自动加上 `-DUSING_SSE128`
+        * avx2      : X86_64支持AVX2可设置，CFLAGS/CXXFLAGS会自动加上 `-DUSING_AVX256`
+        * avx512    : X86_64支持AVX512BW可设置，CFLAGS/CXXFLAGS会自动加上 `-DUSING_AVX512`
 <br>
 
 * KERNEL_ARCH       : 指定交叉编译 linux 模块的 ARCH

@@ -17,6 +17,8 @@ machine=
 arch=
 cpu_family=
 endian=
+simd=
+
 cross_target=
 toolchain=
 gcc_arch_option=
@@ -62,6 +64,7 @@ if [ ! -z $soc ]; then
         'armv8-a' | 'armv8.2-a')
             cpu_family=aarch64
             endian=little
+            simd=neon
             linux_arch=arm64
             cross_target=aarch64-linux-gnu
             ;;
@@ -110,6 +113,9 @@ case $choice in
         ;;
     endian)
         echo "$endian"
+        ;;
+    simd)
+        echo "$simd"
         ;;
 
     cross_target)

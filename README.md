@@ -415,6 +415,7 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ============================================================
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
+    ENV_SIMD_TYPE    :
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
     ENV_TOOL_DIR     : /home/lengjing/data/cbuild-ng/scripts/bin
@@ -436,6 +437,7 @@ Note: Special dependencies are set to the `Depend_Names` of DEPS-statement in Cl
     ENV_BUILD_MODE   : classic
     ENV_BUILD_JOBS   : -j8
     ENV_BUILD_SOC    : cortex-a53
+    ENV_SIMD_TYPE    : neon
     ENV_BUILD_TOOL   : /home/lengjing/data/cbuild-ng/output/toolchain/cortex-a53-toolchain-gcc12.2.0-linux5.15/bin/aarch64-linux-gnu-
     ENV_TOP_DIR      : /home/lengjing/data/cbuild-ng
     ENV_MAKE_DIR     : /home/lengjing/data/cbuild-ng/scripts/core
@@ -471,6 +473,14 @@ Note: Users need to fill in the SOC-related parameters in the `process_machine.s
 * ENV_BUILD_SOC     : Specifies the cross-compilation SOC, build system obtains a series of parameters related to the SOC through the `process_machine.sh` script
 * ENV_BUILD_TOOL    : Specifies the cross-compiler prefix
 <br>
+
+* ENV_SIMD_TYPE: Set SIMD acceleration instruction
+    * When selecting SOC as `generic`, take the value of the variable `HOST_SIMD_TYPE`
+    * The valid values for SIMD are as follows:
+        * neon      :  Aarch64 (ARM64) can be set, CFLAGS/CXXFLAGS will automatically add `-DUSING_NEON`
+        * sse4      :  X86/X86_64 can be set if it supports SSE4, CFLAGS/CXXFLAGS will automatically add `-DUSING_SSE128`
+        * avx2      :  X86_64 can be set if it supports AVX2, and CFLAGS/CXXFLAGS will automatically add `-DUSING_AVX256`
+        * avx512    :  X86_64 can be set if it supports AVX512BW, and CFLAGS/CXXFLAGS will automatically add `-DUSING_AVX512`
 
 * KERNEL_ARCH       : Specifies the ARCH for cross-compilation of linux modules
 * KERNEL_VER        : Linux kernel version
