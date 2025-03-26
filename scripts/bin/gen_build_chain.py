@@ -1230,7 +1230,7 @@ class Deps:
                 MAKEA = '@make $(MFLAG)'
                 if 'singletask' not in item['targets']:
                     MAKEA += ' $(ENV_BUILD_JOBS)'
-                MAKEB = '@$(MAKE) $(MFLAG)'
+                MAKEB = '@make $(MFLAG)'
 
                 makes = ''
                 makes += ' -C $(%s-path)' % (item['target'])
@@ -1277,7 +1277,7 @@ class Deps:
 
                 psysroot_target = '%s_psysroot'  % (item['target'])
                 psys_make = '@%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
-                            % ('$(MAKE)', item['target'].rstrip('-native'), item['target'].rstrip('-native'))
+                            % ('make', item['target'].rstrip('-native'), item['target'].rstrip('-native'))
 
                 gsys_dir = ''
                 isys_dir = ''
