@@ -9,7 +9,7 @@ ifeq ($(KERNELRELEASE), )
 
 COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 SRC_PATH       ?= .
-IGNORE_PATH    ?= .git .pc scripts output
+IGNORE_PATH    ?= .git .pc scripts output obj objects
 REG_SUFFIX     ?= c cpp S
 ifeq ($(USING_CXX_BUILD_C),y)
 CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
@@ -23,7 +23,7 @@ ASM_SUFFIX     ?= S s asm
 ifeq ($(SRCS), )
 SRCS           := $(shell find $(SRC_PATH) $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
                       $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
-                  | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs)
+                  | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs) $(ASRCS)
 endif
 
 imake_cpflags  := -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)

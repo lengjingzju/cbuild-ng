@@ -701,10 +701,10 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * `$(eval $(call compile_obj,源文件后缀,编译器))`
     * 一般不会被用户调用，除非有新的C++源文件后缀
 * compile_vobj: 创建一条自定义编译源文件规则
-    * `$(eval $(call compile_obj,源文件后缀,编译器,虚拟源文件,真实源文件))` (虚拟源文件需要加入到变量VSRCS)
+    * `$(eval $(call compile_vobj,源文件后缀,编译器,虚拟源文件,真实源文件))` (虚拟源文件需要加入到变量VSRCS)
     * 一般用于一个源文件根据不同的CFLAGS编译出不同的.o文件，例子见 [JCore](https://github.com/lengjingzju/jcore) 的Makefile
 * compile_oobj: 创建一组自定义编译输出目录的源文件规则
-    * `$(eval $(call compile_obj,源文件后缀,编译器,虚拟源文件列表))` (虚拟源文件需要加入到变量VSRCS)
+    * `$(eval $(call compile_oobj,源文件后缀,编译器,虚拟源文件列表))` (虚拟源文件需要加入到变量VSRCS)
     * 一般用于生成在输出目录的源文件的编译，例如kconfig的编译
 <br>
 
@@ -766,6 +766,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
     * 如果用户指定了 SRCS，也可以设置 SRC_PATH，将 SRC_PATH 和 SRC_PATH 下的 include 加入到头文件搜索的目录
     * 如果用户指定了 SRCS，忽略 IGNORE_PATH 的值
 * VSRCS: 虚拟的源码文件，和函数 `compile_vobj` 或 `compile_oobj` 共用，用于编译输出目录的 `.o` 编译文件对应的源码目录虚拟源码文件
+* ASRCS: 附加的源码文件，可能是由脚本生成在输出目录，直接设置此变量，不用使用 `compile_oobj` ，方法更简单
 <br>
 
 * CPFLAGS: 用户可以设置C和C++共有的一些全局编译标记
