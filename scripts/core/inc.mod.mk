@@ -68,7 +68,7 @@ ifneq ($(filter $(OBJ_PREFIX),. $(MOD_PATH)), )
 MOD_MAKES      += M=$(MOD_PATH)
 else
 
-MOD_MAKES      += M=$(OBJ_PREFIX) src=$(MOD_PATH)
+MOD_MAKES      += M=$(shell realpath -m $(OBJ_PREFIX)) src=$(MOD_PATH)
 KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
 
 modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
