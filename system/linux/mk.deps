@@ -1,0 +1,136 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) linux(singletask menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
+
+PACKAGE_NAME     = linux
+
+LICENSE          = GPL-2.0-only
+HOMEPAGE         = https://www.kernel.org/
+DESCRIPTION      = Linux is a clone of the operating system Unix, written from scratch by Linus Torvalds with assistance \
+                   from a loosely-knit team of hackers across the Net. It aims towards POSIX and Single UNIX Specification \
+                   compliance. \
+                   It has all the features you would expect in a modern fully-fledged Unix, including true multitasking, \
+                   virtual memory, shared libraries, demand loading, shared copy-on-write executables, proper memory \
+                   management, and multistack networking including IPv4 and IPv6. \
+                   Although originally developed first for 32-bit x86-based PCs (386 or higher), today Linux also runs on \
+                   a multitude of other processor architectures, in both 32- and 64-bit variants.
+
+MACHINE_SCRIPT  := $(ENV_TOOL_DIR)/process_machine.sh
+FETCH_SCRIPT    := $(ENV_TOOL_DIR)/fetch_package.sh
+VERSION          = $(shell $(MACHINE_SCRIPT) linux_version)
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://www.kernel.org/pub/linux/kernel/v$(shell echo $(VERSION) | cut -d '.' -f 1).x/$(SRC_NAME)
+SRC_MD5          = d5fa9f79f21bff6269466b0e5652aa83
+
+-include $(ENV_CFG_ROOT)/.config
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+ifeq ($(KERNEL_SRC), )
+
+%:
+	@echo "KERNEL_SRC is not set, do nothing!"
+
+else
+
+LINUX_CONFIG    := $(shell echo $(CONFIG_LINUX_CONFIG))
+LINUX_CFGDIR    := $(ENV_TOP_DIR)/board/$(ENV_BUILD_SOC)/linux-configs
+LINUX_MAKES     := make $(ENV_BUILD_JOBS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_PREFIX)
+
+.PHONY: all clean install menuconfig defconfig getlinux dofetch setdev unsetdev
+
+all: defconfig
+	@if [ ! -f $(KERNEL_OUT)/.config ] || [ ! -e $(KERNEL_SRC) ]; then \
+		make -s -f mk.deps defconfig; \
+	fi
+	@echo "Compiling linux-$(KERNEL_VER) to $(KERNEL_OUT) ..."
+	@$(LINUX_MAKES) all $(TOLOG)
+	@echo "Build $(PACKAGE_NAME) Done."
+
+clean:
+	@if [ -e $(KERNEL_SRC) ]; then \
+		$(LINUX_MAKES) clean $(TOLOG); \
+		$(LINUX_MAKES) mrproper $(TOLOG); \
+	fi
+	@echo "Clean $(PACKAGE_NAME) Done."
+
+install:
+	@echo "Install linux-$(KERNEL_VER) to $(INS_PREFIX) ..."
+	@mkdir -p $(INS_PREFIX)/boot
+	@cp -dfp $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/*Image* $(INS_PREFIX)/boot
+	@$(LINUX_MAKES) modules_install $(TOLOG)
+	@echo "Install $(PACKAGE_NAME) Done."
+
+menuconfig:
+	@if [ ! -f $(KERNEL_OUT)/.config ] || [ ! -e $(KERNEL_SRC) ]; then \
+		make -s -f mk.deps defconfig; \
+	fi
+	@$(LINUX_MAKES) menuconfig
+
+ifeq ($(LINUX_CONFIG), )
+
+defconfig: getlinux
+	@mkdir -p $(KERNEL_OUT)
+	@$(LINUX_MAKES) defconfig
+else
+
+defconfig: getlinux
+	@mkdir -p $(KERNEL_OUT)
+	@if [ -f $(LINUX_CFGDIR)/$(LINUX_CONFIG) ]; then \
+		echo "Loading '$(LINUX_CFGDIR)/$(LINUX_CONFIG)' as linux config"; \
+		cp -f $(LINUX_CFGDIR)/$(LINUX_CONFIG) $(KERNEL_OUT)/.config; \
+	else \
+		echo "loaLoadingd '$(LINUX_CONFIG)' as linux config"; \
+		$(LINUX_MAKES) $(LINUX_CONFIG); \
+	fi
+endif
+
+%_defconfig: getlinux
+	@mkdir -p $(KERNEL_OUT)
+	@if [ -f $(LINUX_CFGDIR)/$@ ]; then \
+		echo "Loading '$(LINUX_CFGDIR)/$@' as linux config"; \
+		cp -f $(LINUX_CFGDIR)/$@ $(KERNEL_OUT)/.config; \
+	else \
+		echo "Loading '$@' as linux config"; \
+		$(LINUX_MAKES) $@; \
+	fi
+
+BUILD_DEVF      ?= $(WORKDIR)/$(PACKAGE_NAME)-dev
+getlinux:
+	@if [ -e $(BUILD_DEVF) ]; then \
+		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
+	fi; \
+	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(shell dirname $(KERNEL_SRC))/$(SRC_DIR) ]; then \
+		mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock; \
+		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) tar \"$(SRC_URL);md5=$(SRC_MD5)\" $(SRC_NAME) $(shell dirname $(KERNEL_SRC)) $(SRC_DIR)"; \
+	fi
+
+dofetch:
+	@mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
+	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) tar \"$(SRC_URL);md5=$(SRC_MD5)\" $(SRC_NAME)"
+
+setdev:
+	@mkdir -p $(shell dirname $(BUILD_DEVF))
+	@echo > $(BUILD_DEVF)
+	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Development Mode.\033[0m"
+
+unsetdev:
+	@rm -f $(BUILD_DEVF)
+	@$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Development Mode.\033[0m"
+
+status:
+	@status=""; \
+		if [ -e $(BUILD_DEVF) ]; then \
+			status=" dev"; \
+		fi; \
+		if [ -e $(CACHE_OUTPATH)/$(PACKAGE_NAME)-force ]; then \
+			status="$${status} force"; \
+		fi; \
+		if [ ! -z "$${status}" ]; then \
+			$(COLORECHO) "\033[31mSTATUS ($(PACKAGE_ID)):$${status}\033[0m"; \
+		fi
+endif

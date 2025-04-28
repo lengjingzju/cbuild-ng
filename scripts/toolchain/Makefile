@@ -22,12 +22,12 @@ CACHE_SCRIPT   := $(ENV_TOOL_DIR)/process_cache.sh
 MACHINE_SCRIPT := $(ENV_TOOL_DIR)/process_machine.sh
 
 GMP_VER        ?= 6.3.0
-MPFR_VER       ?= 4.2.1
+MPFR_VER       ?= 4.2.2
 MPC_VER        ?= 1.3.1
 ISL_VER        ?= 0.27
 BINUTILS_VER   ?= 2.44
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GDB_VER        ?= 16.2
+GDB_VER        ?= 16.3
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
 GLIBC_VER      ?= 2.41

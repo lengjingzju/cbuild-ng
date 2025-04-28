@@ -992,15 +992,15 @@ class Deps:
                     env_pair = dep.split('!=')
                     env_name = env_pair[0]
                     env_vals = env_pair[1].split(',')
-                    deps += ['$(%s)!="%s"' % (env_name, t) for t in env_vals]
+                    deps += ['"$(%s)"!="%s"' % (env_name, t) for t in env_vals]
                 else:
                     env_pair = dep.split('=')
                     env_name = env_pair[0]
                     env_vals = env_pair[1].split(',')
                     if bracket_flag:
-                        deps.append('(%s)' % (' || '.join(['$(%s)="%s"' % (env_name, t) for t in env_vals])))
+                        deps.append('(%s)' % (' || '.join(['"$(%s)"="%s"' % (env_name, t) for t in env_vals])))
                     else:
-                        deps.append('%s' % (' || '.join(['$(%s)="%s"' % (env_name, t) for t in env_vals])))
+                        deps.append('%s' % (' || '.join(['"$(%s)"="%s"' % (env_name, t) for t in env_vals])))
 
         if item['src'] and not os.path.exists(item['src']):
             deps.append('%s%s' % (config_prepend, escape_toupper("src-path-existed")))

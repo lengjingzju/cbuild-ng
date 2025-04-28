@@ -22,11 +22,11 @@ DESCRIPTION      = GDB, the GNU Project debugger, allows you to see what is goin
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 16.2
+VERSION          = 16.3
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ftp.gnu.org/gnu/gdb/$(SRC_NAME)
-SRC_MD5          = 05e4a7e3b177432771aa7277af9bccee
+SRC_MD5          = f7a7e2d0a6d28622ac69a3623b23876b
 INS_FULLER       = n
 
 CACHE_BUILD      = y
