@@ -181,15 +181,15 @@ export CROSS_COMPILE
 endif
 
 ifeq ($(CC_TOOL),clang)
-CC             := $(CROSS_COMPILE)clang
-CPP            := $(CROSS_COMPILE)clang -E
-CXX            := $(CROSS_COMPILE)clang++
-AS             := $(CROSS_COMPILE)llvm-as
-LD             := $(CROSS_COMPILE)lld
-AR             := $(CROSS_COMPILE)llvm-ar
-RANLIB         := $(CROSS_COMPILE)llvm-ranlib
-OBJCOPY        := $(CROSS_COMPILE)llvm-objcopy
-STRIP          := $(CROSS_COMPILE)llvm-strip
+CC             := clang
+CPP            := clang -E
+CXX            := clang++
+AS             := llvm-as
+LD             := lld
+AR             := llvm-ar
+RANLIB         := llvm-ranlib
+OBJCOPY        := llvm-objcopy
+STRIP          := llvm-strip
 else
 CC             := $(CROSS_COMPILE)gcc
 CPP            := $(CROSS_COMPILE)gcc -E
@@ -232,6 +232,20 @@ endif
 export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
 
 endif # NATIVE_BUILD
+
+ifeq ($(CC_TOOL),clang)
+ifeq ($(CROSS_COMPILE), )
+clang_ldflags  := -fuse-ld=lld
+else  # CROSS_COMPILE
+CROSS_SYSROOT  := $(shell PATH=$(PATH) $(CROSS_COMPILE)gcc -print-sysroot)
+ifeq ($(CROSS_SYSROOT),/)
+CROSS_SYSROOT  := /usr/$(patsubst %-,%,$(CROSS_COMPILE))
+endif
+clang_cpflags  := --target=$(patsubst %-,%,$(CROSS_COMPILE)) --sysroot=$(CROSS_SYSROOT)
+clang_ldflags  := $(clang_cpflags) -fuse-ld=lld
+endif # CROSS_COMPILE
+endif # clang
+
 endif # ENV_BUILD_MODE
 
 # Defines the GNU standard installation directories

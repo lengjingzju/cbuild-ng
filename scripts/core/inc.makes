@@ -5,7 +5,7 @@
 # https://github.com/lengjingzju/cbuild-ng #
 ############################################
 
-############# Date: 2025-04-16 #############
+############# Date: 2025-05-15 #############
 
 # The default behavior only includes inc.env.mk and inc.ins.mk.
 # INC_MAKES can be set to a combination of `disenv` `conf` `app` `mod` `disins`.
@@ -195,15 +195,15 @@ export CROSS_COMPILE
 endif
 
 ifeq ($(CC_TOOL),clang)
-CC             := $(CROSS_COMPILE)clang
-CPP            := $(CROSS_COMPILE)clang -E
-CXX            := $(CROSS_COMPILE)clang++
-AS             := $(CROSS_COMPILE)llvm-as
-LD             := $(CROSS_COMPILE)lld
-AR             := $(CROSS_COMPILE)llvm-ar
-RANLIB         := $(CROSS_COMPILE)llvm-ranlib
-OBJCOPY        := $(CROSS_COMPILE)llvm-objcopy
-STRIP          := $(CROSS_COMPILE)llvm-strip
+CC             := clang
+CPP            := clang -E
+CXX            := clang++
+AS             := llvm-as
+LD             := lld
+AR             := llvm-ar
+RANLIB         := llvm-ranlib
+OBJCOPY        := llvm-objcopy
+STRIP          := llvm-strip
 else
 CC             := $(CROSS_COMPILE)gcc
 CPP            := $(CROSS_COMPILE)gcc -E
@@ -246,6 +246,20 @@ endif
 export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
 
 endif # NATIVE_BUILD
+
+ifeq ($(CC_TOOL),clang)
+ifeq ($(CROSS_COMPILE), )
+clang_ldflags  := -fuse-ld=lld
+else  # CROSS_COMPILE
+CROSS_SYSROOT  := $(shell PATH=$(PATH) $(CROSS_COMPILE)gcc -print-sysroot)
+ifeq ($(CROSS_SYSROOT),/)
+CROSS_SYSROOT  := /usr/$(patsubst %-,%,$(CROSS_COMPILE))
+endif
+clang_cpflags  := --target=$(patsubst %-,%,$(CROSS_COMPILE)) --sysroot=$(CROSS_SYSROOT)
+clang_ldflags  := $(clang_cpflags) -fuse-ld=lld
+endif # CROSS_COMPILE
+endif # clang
+
 endif # ENV_BUILD_MODE
 
 # Defines the GNU standard installation directories
@@ -434,6 +448,11 @@ endif
 imake_cpflags  := -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
 imake_ldflags  := -L$(OBJ_PREFIX) -Wl,-rpath-link=$(OBJ_PREFIX)
 prior_ldflags  :=
+
+ifeq ($(CC_TOOL),clang)
+imake_cpflags  += $(clang_cpflags)
+imake_ldflags  += $(clang_ldflags)
+endif
 
 imake_cpflags  += $(call link_hdrs)
 imake_ldflags  += $(call link_libs)

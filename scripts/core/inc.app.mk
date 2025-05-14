@@ -30,6 +30,11 @@ imake_cpflags  := -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) 
 imake_ldflags  := -L$(OBJ_PREFIX) -Wl,-rpath-link=$(OBJ_PREFIX)
 prior_ldflags  :=
 
+ifeq ($(CC_TOOL),clang)
+imake_cpflags  += $(clang_cpflags)
+imake_ldflags  += $(clang_ldflags)
+endif
+
 imake_cpflags  += $(call link_hdrs)
 imake_ldflags  += $(call link_libs)
 

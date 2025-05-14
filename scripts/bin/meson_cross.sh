@@ -7,6 +7,7 @@
 ############################################
 
 out_path=$1
+cc_tool=$2
 cross_infos=$(${ENV_TOOL_DIR}/process_machine.sh meson_cross)
 
 cross_compile=$(echo ${cross_infos} | cut -d ' ' -f 1)
@@ -15,6 +16,33 @@ cpu=$(echo ${cross_infos} | cut -d ' ' -f 3)
 endian=$(echo ${cross_infos} | cut -d ' ' -f 4)
 
 mkdir -p ${out_path}
+
+if [ "${cc_tool}" = "clang" ]; then
+
+cat <<EOF> ${out_path}/cross.ini
+[constants]
+arch = '${cross_compile}'
+
+[binaries]
+
+c = 'clang'
+cpp = 'clang++'
+as = 'llvm-as'
+ld = 'lld'
+ar = 'llvm-ar'
+ranlib = 'llvm-ranlib'
+objcopy = 'llvm-objcopy'
+strip = 'llvm-strip'
+pkgconfig = 'pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = '${cpu_family}'
+cpu = '${cpu}'
+endian = '${endian}'
+EOF
+
+else
 
 cat <<EOF> ${out_path}/cross.ini
 [constants]
@@ -37,3 +65,5 @@ cpu_family = '${cpu_family}'
 cpu = '${cpu}'
 endian = '${endian}'
 EOF
+
+fi

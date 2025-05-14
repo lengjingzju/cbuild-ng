@@ -27,6 +27,8 @@ CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = cmake
-CMAKE_FLAGS      = -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-fPIC"
+
+CFLAGS          += -fPIC
+CXXFLAGS        += -fPIC
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

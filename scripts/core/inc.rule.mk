@@ -49,6 +49,13 @@ define ins_cmake_cfg
 endef
 endif
 
+ifeq ($(CC_TOOL),clang)
+CFLAGS          += $(clang_cpflags)
+CPPFLAGS        += $(clang_cpflags)
+CXXFLAGS        += $(clang_cpflags)
+LDFLAGS         += $(clang_ldflags)
+endif
+
 ifeq ($(COMPILE_TOOL),autotools)
 AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
 ifeq ($(INS_FULLER),y)
@@ -89,6 +96,16 @@ else
 REL_CONFIG      ?= -DCMAKE_BUILD_TYPE=RelWithDebInfo
 endif
 
+ifneq ($(CFLAGS), )
+REL_CONFIG      += -DCMAKE_C_FLAGS="$(CFLAGS)"
+endif
+ifneq ($(CXXFLAGS), )
+REL_CONFIG      += -DCMAKE_CXX_FLAGS="$(CXXFLAGS)"
+endif
+ifneq ($(LDFLAGS), )
+REL_CONFIG      += -DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS)" -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
+endif
+
 else ifeq ($(COMPILE_TOOL),meson)
 MESON_WRAP_MODE ?= --wrap-mode=nodownload
 ifeq ($(INS_FULLER),y)
@@ -105,6 +122,16 @@ else ifeq ($(ENV_BUILD_TYPE),minsize)
 REL_CONFIG      ?= -Dbuildtype=minsize
 else
 REL_CONFIG      ?= -Dbuildtype=debugoptimized
+endif
+
+ifneq ($(CFLAGS), )
+REL_CONFIG      += -Dc_args="$(CFLAGS)"
+endif
+ifneq ($(CXXFLAGS), )
+REL_CONFIG      += -Dcpp_args="$(CXXFLAGS)"
+endif
+ifneq ($(LDFLAGS), )
+REL_CONFIG      += -Dc_link_args="$(LDFLAGS)" -Dcpp_link_args="$(LDFLAGS)"
 endif
 
 else
@@ -183,7 +210,7 @@ else ifeq ($(COMPILE_TOOL),cmake)
 	@cd $(OBJ_PREFIX) && \
 		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(FT_CONFIG) $(REL_CONFIG) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
-	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX))
+	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX) $(CC_TOOL))
 	@$(if $(do_meson_cfg),$(call do_meson_cfg))
 	@cd $(SRC_PATH) && \
 		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(FT_CONFIG) $(OBJ_PREFIX) $(REL_CONFIG) $(TOLOG)

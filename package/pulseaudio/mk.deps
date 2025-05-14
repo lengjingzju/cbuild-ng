@@ -33,7 +33,9 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = meson
 MESON_FLAGS      = -Dtests=false -Ddatabase=simple
 MESON_FLAGS     += -Dudevrulesdir=$(INS_TOPDIR)/lib/udev/rules.d
-MESON_FLAGS     += -Dc_link_args="$(call link_libs)" -Dcpp_link_args="$(call link_libs)"
-MESON_FLAGS     += -Dc_args="$(call link_hdrs)" -Dcpp_args="$(call link_hdrs)"
+
+CFLAGS          += $(call link_hdrs)
+CXXFLAGS        += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
 
 include $(ENV_MAKE_DIR)/inc.rule.mk
