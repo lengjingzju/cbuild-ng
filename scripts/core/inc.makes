@@ -788,10 +788,29 @@ else
 
 endif
 
+#
+# Starting from kernel version 6.10, the compilation dependency rule has been changed
+# from "$(obj)/%.o: $(src)/%.c" to "$(obj)/%.o: $(obj)/%.c", the original method of separating
+# compilation output from source code has failed, so the following rules has been added.
+#
+ifneq ($(obj), $(src))
+$(obj)/%.c : $(src)/%.c
+	@mkdir -p $(shell dirname $@)
+	@ln -sfT $< $@
+
+$(obj)/%.rs : $(src)/%.rs
+	@mkdir -p $(shell dirname $@)
+	@ln -sfT $< $@
+
+$(obj)/%.S : $(src)/%.S
+	@mkdir -p $(shell dirname $@)
+	@ln -sfT $< $@
+endif
+
 else # KERNELRELEASE
 
 KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
-MOD_PATH       ?= $(shell pwd)
+MOD_PATH       ?= $(shell realpath $(shell pwd))
 
 ifeq ($(MOD_MAKES), )
 MOD_MAKES      := -C $(KERNEL_SRC)
@@ -804,17 +823,11 @@ MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
 endif
 
 ifneq ($(filter $(OBJ_PREFIX),. $(MOD_PATH)), )
+MOD_OPATH      ?= $(MOD_PATH)
 MOD_MAKES      += M=$(MOD_PATH)
 else
-
-MOD_MAKES      += M=$(shell realpath -m $(OBJ_PREFIX)) src=$(MOD_PATH)
-KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
-
-modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
-
-$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
-	@-mkdir -p $(dir $@)
-	@-cp -f $< $@
+MOD_OPATH      ?= $(shell realpath -m $(OBJ_PREFIX))
+MOD_MAKES      += M=$(MOD_OPATH) src=$(MOD_PATH)
 
 #
 # Note:
@@ -825,6 +838,11 @@ $(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
 #   -             $(KBUILD_EXTMOD)/Kbuild, $(KBUILD_EXTMOD)/Makefile)
 #   +include $(if $(wildcard $(src)/Kbuild), $(src)/Kbuild, $(src)/Makefile)
 #
+KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
+modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
+$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
+	@-mkdir -p $(dir $@)
+	@-cp -f $< $@
 
 endif
 
@@ -837,6 +855,9 @@ modules:
 
 modules_clean:
 	@$(MAKE) $(MOD_MAKES) clean
+ifeq ($(filter $(MOD_OPATH)/% $(MOD_OPATH),$(MOD_PATH)), )
+	@rm -rf $(MOD_OPATH)
+endif
 
 modules_install:
 	@$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install

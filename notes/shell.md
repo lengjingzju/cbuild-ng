@@ -5,7 +5,7 @@
 * `echo $SHELL` 或 `echo $0` 可获知当前用户的默认 shell (即 `cat /etc/passwd` 对应用户的最后一列)，一般是 `bash`
     * 修改用户默认 shell 可以使用以下3种方法: 修改 `/etc/passwd` 文件最后一列，`sudo usermod --shell shell命令路径 用户名` 或 `sudo chsh --shell shell命令路径 用户名`
 * Makefile 使用的默认 shell 是 `/bin/sh` 指向的 shell (即 `readlink /bin/sh`)，Ubuntu 一般是 `dash`
-    * 修改 Makefile 默认 shell 可以重新设置符号链接 `cd /bin && sudo ln -sf shell名称 sh`，例如 `cd /bin && sudo ls -sf bash sh`
+    * 修改 Makefile 默认 shell 可以重新设置符号链接 `cd /bin && sudo ln -sf shell名称 sh`，例如 `cd /bin && sudo ln -sf bash sh`
 
 ## 用户和配置
 
