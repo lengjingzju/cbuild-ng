@@ -941,7 +941,7 @@ class Deps:
         target = '%s%s' % (config_prepend, escape_toupper(item['target']))
 
         if 'choice' in item['vtype']:
-            fp.write('choice %s\n' % (target))
+            fp.write('choice\n')
             fp.write('\tprompt "%s@virtual (%s)"\n' % (item['target'], item['spath']))
             if item['targets']:
                 fp.write('\tdefault %s%s\n' % (config_prepend, escape_toupper(item['targets'][0])))

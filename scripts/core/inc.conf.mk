@@ -18,11 +18,13 @@ CONF_HEADER      ?= $(shell echo __$(PACKAGE_NAME)_CONFIG_H__ | tr '[:lower:]' '
 CONF_APPEND_CMD  ?=
 
 CONFIG_PATH      := $(CONF_OUT)/.config
-AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
 AUTOHEADER_PATH  := $(CONF_OUT)/config.h
+AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
+RUSTCCFG_PATH    := $(CONF_OUT)/autoconfig/rustc.conf
 CONF_OPTIONS     := $(KCONFIG) --configpath $(CONFIG_PATH) \
+					--autoheaderpath $(AUTOHEADER_PATH) \
 					--autoconfigpath $(AUTOCONFIG_PATH) \
-					--autoheaderpath $(AUTOHEADER_PATH)
+					--rustccfgpath $(RUSTCCFG_PATH)
 
 define gen_config_header
 	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --syncconfig && \
@@ -125,6 +127,6 @@ endif
 	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
 
 cleanconfig: cleankconfig
-	@rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(dir $(AUTOCONFIG_PATH)) $(AUTOHEADER_PATH)
+	@rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(AUTOHEADER_PATH) $(dir $(AUTOCONFIG_PATH))
 
 endif

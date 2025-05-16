@@ -199,7 +199,7 @@ comment "comment item learning"
 * `类型关键字` / `prompt` / `default` / `select` / `imply` / `visible` / `range` 关键字可使用 `if 表达式语法`
 * 表达式语法
     * `配置项`              : bool 和 tristate 简单转换为相应配置项的值，其他类型转换为 n
-    * `配置项 = 配置项/值 ` : 两个配置项相等返回 y，否则返回 n 
+    * `配置项 = 配置项/值 ` : 两个配置项相等返回 y，否则返回 n
     * `!=` `<` `<=` `>` `>=`: 使用方法参考相等
     * `(表达式)`            : 改变计算优先级
     *  `! 表达式`           : 逻辑非
@@ -275,7 +275,7 @@ endif
 ## choice 模块语法
 
 ```
-choice 配置项
+choice
     prompt "配置项名"
     其它选项
 
@@ -289,9 +289,10 @@ endchoice
 ```
 
 * 移动到 choice 配置项后，按 `回车键` 可以进入子菜单界面，只能选中其中一个选项
+* 老语法第一行可以是 "choice 配置项"，新语法不能加“配置项”
 
 ```
-choice CHOICE_ITEM
+choice
     prompt "choice item learning"
     default CHOICE_SUBITEM2
 

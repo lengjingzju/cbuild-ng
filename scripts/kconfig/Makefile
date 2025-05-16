@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0         #
 # Copyright (C) 2021-.... Jing Leng        #
 # Contact: Jing Leng <lengjingzju@163.com> #
+# kconfig from linux-6.12.28               #
 ############################################
 
 OBJ_PREFIX     ?= $(if $(O),$(O),./build)
@@ -17,7 +18,7 @@ MCONF_OBJS      = $(patsubst %.c,$(OBJ_PREFIX)/%.o,mconf.c)
 DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_OBJS) $(CONF_OBJS) $(MCONF_OBJS))
 
 CONF_CC        ?= gcc
-CONF_CFLAGS     = -I. -I./parser -I./lxdialog
+CONF_CFLAGS     = -I. -I./include -I./parser -I./lxdialog
 CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
 
 CONF_CFLAGS    += $(shell sh mconf-cfg.sh | grep "cflags=" | sed 's/cflags="\(.*\)"/\1/')

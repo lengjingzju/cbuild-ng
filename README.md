@@ -832,8 +832,8 @@ Note: The reason for providing the above functions is that multiple libraries or
 
 #### scripts/kconfig Project
 
-* The source code comes entirely from the `scripts/kconfig` of linux-5.18
-* CBuild adds additional support  `CONFIG_PATH` `AUTOCONFIG_PATH` `AUTOHEADER_PATH` which are originally passed in as environment variables
+* The source code comes entirely from the `scripts/kconfig` of linux-6.12.28
+* CBuild adds additional support  `CONFIG_PATH` `AUTOCONFIG_PATH` `AUTOHEADER_PATH` `RUSTCCFG_PATH` which are originally passed in as environment variables
 
 
 ### Driver Template inc.mod.mk

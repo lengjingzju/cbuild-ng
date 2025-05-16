@@ -267,7 +267,7 @@ endif
 # 5. choice模块语法
 #
 #####################
-# choice 配置项
+# choice
 #     prompt "配置项名"
 #     其它选项
 #
@@ -281,8 +281,9 @@ endif
 #####################
 #
 # 移动到choice配置项后，按回车键可以进入子菜单界面，只能选中其中一个选项
+# 老语法第一行可以是 "choice 配置项"，新语法不能加“配置项”
 
-choice CHOICE_ITEM
+choice
     prompt "choice item learning"
     default CHOICE_SUBITEM2
 

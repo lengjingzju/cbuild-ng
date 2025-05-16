@@ -813,8 +813,8 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 
 #### scripts/kconfig 工程说明
 
-* 源码完全来自 linux-5.18 内核的 `scripts/kconfig`
-* 在原始代码的基础上增加了命令传入参数 `CONFIG_PATH` `AUTOCONFIG_PATH` `AUTOHEADER_PATH`，原先这些参数要作为环境变量传入
+* 源码完全来自 linux-6.12.28 内核的 `scripts/kconfig`
+* 在原始代码的基础上增加了命令传入参数 `CONFIG_PATH` `AUTOCONFIG_PATH` `AUTOHEADER_PATH` `RUSTCCFG_PATH`，原先这些参数要作为环境变量传入
 * Makefile 是完全重新编写的
 
 
