@@ -4,11 +4,49 @@
 
 ## 概述
 
-CBuild-ng 编译系统是一个比 Buildroot 更强大灵活，比 Yocto 更快速简洁的编译系统。他没有陡峭的学习曲线，也没有定义新的语言，他仅仅由约 4000 行的 Python / Shell / Makefile 脚本组成，比 Buildroot 和 Yocto 更易于理解和使用。<br>
-CBuild-ng 支持两种编译方式: Classic Build 和 Yocto Build，并且对 Yocto 封装了一层 make 命令层和 menuconfig 配置层使之更易于使用。<br>
-CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile 编译模板 (IMake)、网络和缓存处理工具。<br>
+CBuild-ng是一款由中国开发者打造的高性能编译系统，专为嵌入式Linux及复杂软件栈构建而设计。它以轻量级核心（仅4000行代码）、极简设计和灵活兼容为核心理念，融合传统编译与Yocto模式的优势，提供比Buildroot更强大的功能，同时规避Yocto的复杂性。
+
+* 零门槛上手：无需学习新语言，基于Python/Shell/Makefile脚本实现，配置直观（支持类Linux的`menuconfig`），比Buildroot/Yocto更易理解。
+* 双模式驱动：
+    * Classic Build：独立构建模式，依赖隔离清晰，支持缓存加速与跨平台部署。
+    * Yocto Build：深度封装Yocto，提供 `make` 命令层和图形化配置，简化复杂元数据操作。
+* 企业级特性：智能依赖分析、多版本兼容、安全补丁管理，满足工业级开发需求。
+
 CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别是 Classic Build 引入了 `WORKDIR` 概念，每个包都在自己的 `WORKDIR` 下的特定目录下准备依赖、编译、安装，包之间的依赖关系和 sysroot 由自动生成的顶层 Makefile 处理。
-<br>
+
+
+## 为何选择 CBuild-ng
+
+1️⃣ **极致性能与资源优化**
+* 编译速度快：实测300个软件包构建耗时仅5分钟，重编译仅49秒，速度远超Yocto（节省2/3时间）。
+* 低资源占用：输出文件系统体积仅为Yocto的1/4（1.8G vs 7.4G），显著降低存储成本。
+* 编译缓存机制：支持本地/远程镜像缓存，重复构建直接复用结果，节省90%以上时间。
+
+2️⃣ **零学习曲线的友好设计**
+* 无新语言：基于Python/Shell/Makefile，开发者无需学习DSL，开箱即用。
+* Kconfig图形化配置：提供类Linux内核的`make menuconfig`界面，依赖关系可视化，配置直观。
+* 中文文档支持：项目提供完整中文文档（README_zh-cn.md），降低本土开发者门槛。
+
+3️⃣ **灵活兼容双模式**
+* Classic模式：类似Buildroot的独立构建，每个包在独立WORKDIR中处理，依赖隔离清晰。
+* Yocto模式：扩展Yocto的元数据层，封装`bitbake`命令，提供菜单配置支持，无缝兼容现有生态。
+* 混合编译支持：同一Makefile同时支持交叉编译与本地编译，简化多平台开发流程。
+
+4️⃣ **企业级高级特性**
+* 智能依赖管理：自动生成依赖图（支持强弱依赖/冲突检测），一键生成SVG可视化图表。
+* 独立软件包分发：类似AppImage的`gen_cpk`工具，自动打包运行时依赖，实现跨系统部署。
+* 安全合规支持：自动生成许可证清单（HTML），内置CVE补丁管理，满足企业合规需求。
+
+5️⃣ **开源生态贡献与创新**
+* 内核社区认可：项目贡献的Kconfig补丁已合并至Linux 5.19+主线，技术实力获国际认可。
+* 全中文技术栈：从文档到社区讨论全面支持中文，降低本土开发者参与门槛。
+* 使用方高度评价：某公司在CES2024上称其开发平台为颠覆性创新（Cooper Core 即是 CBuild）。
+    * [微信公众号文章](https://mp.weixin.qq.com/s?__biz=MzUxNjUyNjAwNg==&mid=2247485681&idx=1&sn=a40da02663c6d27ea63eb28451095bbf&chksm=f875874e9d244c5cd4e3fec1d0a26469cba18277642af5dd5eb86eda58c3871d3f783f9d78a7&mpshare=1&scene=1&srcid=0112YvuxcOvCqTb2WhEqJGOn&sharer_shareinfo=2ff8614102cab4059235848ebb37a645&sharer_shareinfo_first=c944849c1a53d51b268847a57c945069&exportkey=n_ChQIAhIQC0jysnU80ORUSwbcNGn9TxKfAgIE97dBBAEAAAAAAEWNId2KaLMAAAAOpnltbLcz9gKNyK89dVj0crs1w3S3dkK0YOtHZXXYm26U4Sn7iQnEsI9BaHTDNQJi0z%2F3MgYqf9czIPlkBs%2FnUKwf5Rj5nPqJU5x1WN%2B2%2FBv5oh2YQMBtYk09W3LmEszADTCfJtU78xe6uXnTAXXIPlfXKwOfTGs46tmLVZkffDzww66N%2BaXQm1aikAxWfTw0JilDxvQba4fpYk8nMxuDRUC4GlGYEyNcHYL1Hi518R3T1DK4T2jj1vr%2Fr%2Bkyo2qpp2VpxLOEtsl8Vx1RfTQEnbWflkTB8ImlJKJwN78BHIgbvM4Sra%2BbYrLXWb%2FrhcaoBni5HqyE49AGuDSCULcL1GR%2FfOayftvl&acctmode=0&pass_ticket=ZutZ1C5h7DFNHhjqPfFzxvsZn7AwriXI3P8gmInU67TJ6fAnWGvdPrMDg0epCVbv&wx_header=0#rd)
+
+
+## 功能组成
+
+CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile 编译模板 (IMake)、网络和缓存处理工具。<br>
 
 * 任务分析处理工具: 分析所有任务并自动生成总配置 Kconfig 和执行脚本 Makefile
     * 所有任务由 Python 脚本 `gen_build_chain.py` 分析组装
