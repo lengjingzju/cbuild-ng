@@ -21,10 +21,10 @@ DESCRIPTION      = LJSON is a C implemented JSON library that is much faster tha
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 2.1.2
+VERSION          = 3.2.3
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
-SRC_URL          = https://gitee.com/lengjingzju/json.git
+SRC_URL          = https://github.com/lengjingzju/json.git
 SRC_TAG          = v$(VERSION)
 
 CACHE_BUILD      = y

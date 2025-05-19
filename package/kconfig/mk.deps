@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) kconfig(native psysroot): unselect ncurses
+
+PACKAGE_NAME     = kconfig
+
+LICENSE          = GPL-2.0-only
+HOMEPAGE         = https://github.com/lengjingzju/kconfig
+DESCRIPTION      = This kconfig is from the Linux kernel, retaining only the menuconfig implementation and adding \
+                   configuration to specify the output locations.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 6.12.28
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/lengjingzju/kconfig.git
+SRC_TAG          = v$(VERSION)
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+MAKE_FLAGS       = -C $(SRC_PATH) CONF_CC=$(CC) EXTRA_LDFLAGS=-L${DEP_PREFIX}/usr/lib O=$(OBJ_PREFIX) DESTDIR=$(INS_PREFIX)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
