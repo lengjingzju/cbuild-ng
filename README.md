@@ -1612,7 +1612,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     lengjing@lengjing:~/data/cbuild-ng$ cd output
     lengjing@lengjing:~/data/cbuild-ng/output$ mv mirror-cache mirror
     lengjing@lengjing:~/data/cbuild-ng/output$ cd mirror
-    lengjing@lengjing:~/data/cbuild-ng/output/mirror$ rm -rf downloads/lock downloads/*.src.hash
+    lengjing@lengjing:~/data/cbuild-ng/output/mirror$ rm -rf downloads/lock downloads/checksum
     lengjing@lengjing:~/data/cbuild-ng/output/mirror$ tree
     .
     ├── build-cache

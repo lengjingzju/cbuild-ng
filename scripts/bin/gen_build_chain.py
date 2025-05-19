@@ -942,20 +942,20 @@ class Deps:
 
         if 'choice' in item['vtype']:
             fp.write('choice\n')
-            fp.write('\tprompt "%s@virtual (%s)"\n' % (item['target'], item['spath']))
+            fp.write('\tprompt "[v]-%s (%s)"\n' % (item['target'], item['spath']))
             if item['targets']:
                 fp.write('\tdefault %s%s\n' % (config_prepend, escape_toupper(item['targets'][0])))
         elif 'menuconfig' == item['vtype']:
             fp.write('menuconfig %s\n' % (target))
-            fp.write('\tbool "%s@virtual (%s)"\n' % (item['target'], item['spath']))
+            fp.write('\tbool "[v]-%s (%s)"\n' % (item['target'], item['spath']))
             fp.write('\tdefault %s\n' % ('y' if item['default'] else 'n'))
         elif 'config' == item['vtype']:
                 fp.write('config %s\n' % (target))
                 if not choice_flag:
-                    fp.write('\tbool "%s@virtual (%s)"\n' % (item['target'], item['spath']))
+                    fp.write('\tbool "[v]-%s (%s)"\n' % (item['target'], item['spath']))
                     fp.write('\tdefault %s\n' % ('y' if item['default'] else 'n'))
                 else:
-                    fp.write('\tbool "%s@virtual"\n' % (item['target']))
+                    fp.write('\tbool "[v]-%s"\n' % (item['target']))
         else:
             if not choice_flag and item['conf'] and item['conf'] != 'kconfig':
                 fp.write('menuconfig %s\n' % (target))

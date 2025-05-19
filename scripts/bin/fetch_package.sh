@@ -18,8 +18,11 @@ md5=
 package=$3
 outdir=$4
 outname=$5
+
 checktool=md5sum
-checksuffix=src.hash
+checkdir=${ENV_DOWN_DIR}/checksum
+checksrc=$checkdir/$package.md5
+checkdst=$outdir/$outname.md5
 
 urln=$(echo "$urls" | grep -o ';' | wc -l)
 if [ $urln -ne 0 ]; then
@@ -81,25 +84,29 @@ do_check() {
 
 do_fetch() {
     packname=$package
+
+    if [ ! -e ${checkdir} ]; then
+        mkdir -p ${checkdir}
+    fi
     if [ $method = git ]; then
         packname=$package-$method-br.$branch-rev.$tag$rev.tar.gz
     elif [ $method = svn ]; then
         packname=$package-$method-rev.$rev.tar.gz
     fi
 
-    if [ ! -e ${ENV_DOWN_DIR}/$package ] || [ ! -e ${ENV_DOWN_DIR}/$package.$checksuffix ]; then
+    if [ ! -e ${ENV_DOWN_DIR}/$package ] || [ ! -e ${checksrc} ]; then
         download_req=1
-        if [ "$packname" != "$package" ] && [ -e ${ENV_DOWN_DIR}/$packname ] && [ -e ${ENV_DOWN_DIR}/$package.$checksuffix ]; then
+        if [ "$packname" != "$package" ] && [ -e ${ENV_DOWN_DIR}/$packname ] && [ -e ${checksrc} ]; then
             cd ${ENV_DOWN_DIR}
             tar -xf $packname || rm -rf $packname $package
             if [ -e ${ENV_DOWN_DIR}/$packname ]; then
                 download_req=0
-                rm -f ${ENV_DOWN_DIR}/$package.$checksuffix
+                rm -f ${checksrc}
             fi
         fi
 
         if [ $download_req -eq 1 ]; then
-            rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+            rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$packname ${checksrc}
             mkdir -p ${ENV_DOWN_DIR}
 
             # download package from mirror
@@ -149,7 +156,7 @@ do_fetch() {
                         exit 1
                     fi
                 fi
-                $checktool ${ENV_DOWN_DIR}/$package | cut -d ' ' -f 1 > ${ENV_DOWN_DIR}/$package.$checksuffix
+                $checktool ${ENV_DOWN_DIR}/$package | cut -d ' ' -f 1 > ${checksrc}
                 ;;
 
             git)
@@ -197,7 +204,7 @@ do_fetch() {
                         fi
                     fi
                 fi
-                echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${checksrc}
                 ;;
 
             svn)
@@ -228,7 +235,7 @@ do_fetch() {
                         fi
                     fi
                 fi
-                echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${checksrc}
                 ;;
 
             *)
@@ -248,7 +255,7 @@ do_fetch() {
                 changed=0
                 if [ "$branch" != "$rbranch" ]; then
                     changed=1
-                    rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                    rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                     git pull -q
                     git checkout -q $branch
                     if [ $? -ne 0 ]; then
@@ -263,14 +270,14 @@ do_fetch() {
                     rev2=$(git log -1 --pretty=format:%H)
                     if [ "$rev1" != "$rev2" ]; then
                         changed=1
-                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                     fi
                 else
                     rrev=$(git log -1 --pretty=format:%H)
                     rtag=$(git show-ref --tags -d | grep "$rrev" | cut -d ' ' -f 2 | sed -e 's:^refs/tags/::g' -e 's:\^{}::g')
                     if [ ! -z "$tag" ] && [ "$tag" != "$rtag" ]; then
                         changed=1
-                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                         git pull -q
                         git reset -q --hard $tag
                         if [ $? -ne 0 ]; then
@@ -279,7 +286,7 @@ do_fetch() {
                         fi
                     elif [ ! -z "$rev" ] && [ "$rev" != "$rrev" ]; then
                         changed=1
-                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                         git pull -q
                         git reset -q --hard $rev
                         if [ $? -ne 0 ]; then
@@ -291,7 +298,7 @@ do_fetch() {
 
                 if [ $changed -ne 0 ]; then
                     cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
-                    echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                    echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${checksrc}
                 fi
                 ;;
 
@@ -301,7 +308,7 @@ do_fetch() {
                     rrev=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
 
                     if [ "$rev" != "$rrev" ]; then
-                        rm -rf ${ENV_DOWN_DIR}/$packname ${ENV_DOWN_DIR}/$package.$checksuffix
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                         svn update -q
                         svn update -q -r $rev
                         if [ $? -ne 0 ]; then
@@ -309,7 +316,7 @@ do_fetch() {
                             exit 1
                         fi
                         cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
-                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${checksrc}
                     fi
                 else
                     cd ${ENV_DOWN_DIR}/$package
@@ -318,7 +325,7 @@ do_fetch() {
                     rev2=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
                     if [ "$rev1" != "$rev2" ]; then
                         cd ${ENV_DOWN_DIR} && rm -f $packname && tar -zcf $packname $package
-                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${ENV_DOWN_DIR}/$package.$checksuffix
+                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${checksrc}
                     fi
                 fi
                 ;;
@@ -329,9 +336,9 @@ do_fetch() {
 }
 
 do_unpack() {
-    if [ ! -e $outdir/$outname ] || [ ! -e $outdir/$outname.$checksuffix ] || \
-        [ "$(cat ${ENV_DOWN_DIR}/$package.$checksuffix)" != "$(cat $outdir/$outname.$checksuffix)" ]; then
-            rm -rf $outdir/$outname $outdir/$outname.$checksuffix
+    if [ ! -e $outdir/$outname ] || [ ! -e ${checkdst} ] || \
+        [ "$(cat ${checksrc})" != "$(cat ${checkdst})" ]; then
+            rm -rf $outdir/$outname ${checkdst}
             mkdir -p $outdir
 
             case $method in
@@ -339,7 +346,7 @@ do_unpack() {
                     echo -e "\033[32munzip ${ENV_DOWN_DIR}/$package to $outdir\033[0m"
                     unzip -q ${ENV_DOWN_DIR}/$package -d $outdir
                     if [ $? -ne 0 ]; then
-                        rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$package.$checksuffix
+                        rm -rf ${ENV_DOWN_DIR}/$package ${checksrc}
                         echo "ERROR: ${ENV_DOWN_DIR}/$package is invalid zip file." >&2
                         exit 1
                     fi
@@ -348,7 +355,7 @@ do_unpack() {
                     echo -e "\033[32muntar ${ENV_DOWN_DIR}/$package to $outdir\033[0m"
                     tar -xf ${ENV_DOWN_DIR}/$package -C $outdir
                     if [ $? -ne 0 ]; then
-                        rm -rf ${ENV_DOWN_DIR}/$package ${ENV_DOWN_DIR}/$package.$checksuffix
+                        rm -rf ${ENV_DOWN_DIR}/$package ${checksrc}
                         echo "ERROR: ${ENV_DOWN_DIR}/$package is invalid tar file." >&2
                         exit 1
                     fi
@@ -361,7 +368,7 @@ do_unpack() {
                     ;;
             esac
 
-            cp -fp ${ENV_DOWN_DIR}/$package.$checksuffix $outdir/$outname.$checksuffix
+            cp -fp ${checksrc} ${checkdst}
     fi
 }
 
