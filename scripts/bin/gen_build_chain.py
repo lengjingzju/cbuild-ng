@@ -1276,8 +1276,12 @@ class Deps:
                 unionstr = '%s-' % (item['target']) if 'union' in item['targets'] else ''
 
                 psysroot_target = '%s_psysroot'  % (item['target'])
+                package_name = item['target']
+                if item['target'].endswith('-native'):
+                    package_name = package_name[:-len('-native')]
+
                 psys_make = '@%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
-                            % ('make', item['target'].rstrip('-native'), item['target'].rstrip('-native'))
+                            % ('make', package_name, package_name)
 
                 gsys_dir = ''
                 isys_dir = ''
