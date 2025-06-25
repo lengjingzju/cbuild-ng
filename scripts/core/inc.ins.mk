@@ -22,13 +22,13 @@ INSTALL_HDRS           ?= $(INSTALL_HEADERS)
 define install_obj
 .PHONY: install_$(1)s
 install_$(1)s:
-	@install -d $$(INS_PREFIX)$$($(1)dir)
-	@cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
+	$(PREAT)install -d $$(INS_PREFIX)$$($(1)dir)
+	$(PREAT)cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
 endef
 
 define install_ext
 install_$(1)s_%:
-	@ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
+	$(PREAT)ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
 	isrc="$$$$(echo $$$${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$$$//g')"; \
 	idst="$$(INS_PREFIX)$$($(1)dir)$$$$(echo $$$${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$$$/\1/g')"; \
 	install -d $$$${idst} && cp -drf --preserve=mode,timestamps $$$${isrc} $$$${idst}
@@ -59,13 +59,13 @@ $(eval $(call install_ext,data))
 $(eval $(call install_ext,sysconf))
 
 install_todir_%:
-	@ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
+	$(PREAT)ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
 	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
 	install -d $${idst} && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
 
 install_tofile_%:
-	@ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
+	$(PREAT)ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
 	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
 	install -d $$(dirname $${idst}) && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
@@ -78,7 +78,7 @@ SRC_PATH        ?= .
 
 install release: license
 license:
-	@$(call install_lics)
+	$(PREAT)$(call install_lics)
 endif
 endif
 

@@ -7,6 +7,7 @@
 
 ifeq ($(KERNELRELEASE), )
 
+PREAT            ?= @
 CONF_WORKDIR     ?= $(ENV_NATIVE_ROOT)/objects/kconfig
 CONF_SRC         ?= $(ENV_MAKE_DIR)/../kconfig
 CONF_PATH        ?= $(CONF_WORKDIR)/image/usr/bin
@@ -76,11 +77,11 @@ endif
 
 buildkconfig:
 ifeq ($(wildcard $(CONF_PATH)/mconf), )
-	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
+	$(PREAT)unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
 endif
 
 cleankconfig:
-	@-$(MAKE) $(CONF_MAKES) clean
+	$(PREAT)-$(MAKE) $(CONF_MAKES) clean
 
 else
 
@@ -89,8 +90,8 @@ buildkconfig cleankconfig:
 endif
 
 menuconfig: buildkconfig
-	@mkdir -p $(CONF_OUT)
-	@mtime="$(if $(wildcard $(CONFIG_PATH)),$(if $(wildcard $(AUTOHEADER_PATH)),$$(stat -c %Y $(CONFIG_PATH)),0),0)"; \
+	$(PREAT)mkdir -p $(CONF_OUT)
+	$(PREAT)mtime="$(if $(wildcard $(CONFIG_PATH)),$(if $(wildcard $(AUTOHEADER_PATH)),$$(stat -c %Y $(CONFIG_PATH)),0),0)"; \
 		$(CONF_PREFIX) $(CONF_PATH)/mconf $(CONF_OPTIONS); \
 		if [ "$${mtime}" != "$$(stat -c %Y $(CONFIG_PATH))" ]; then \
 			$(call gen_config_header); \
@@ -102,31 +103,31 @@ ifneq ($(DEF_CONFIG), )
 menuconfig: loadconfig
 
 loadconfig: buildkconfig
-	@if [ ! -e $(CONFIG_PATH) ] || [ ! -e $(config_hash_file) ]; then \
+	$(PREAT)if [ ! -e $(CONFIG_PATH) ] || [ ! -e $(config_hash_file) ]; then \
 		$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG)); \
 	else \
 		$(call sync_config_header); \
 	fi
 
 defconfig: buildkconfig
-	@$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG))
+	$(PREAT)$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG))
 endif
 
 %_config: $(CONF_SAVE_PATH)/%_config buildkconfig
-	@$(call load_specific_config,$<)
+	$(PREAT)$(call load_specific_config,$<)
 
 %_defconfig: $(CONF_SAVE_PATH)/%_defconfig buildkconfig
-	@$(call load_specific_config,$<)
+	$(PREAT)$(call load_specific_config,$<)
 
 %_saveconfig: $(CONFIG_PATH) buildkconfig
-	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
-	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+	$(PREAT)$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+	$(PREAT)echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
 
 %_savedefconfig: $(CONFIG_PATH) buildkconfig
-	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
-	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+	$(PREAT)$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+	$(PREAT)echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
 
 cleanconfig: cleankconfig
-	@rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(AUTOHEADER_PATH) $(dir $(AUTOCONFIG_PATH))
+	$(PREAT)rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(AUTOHEADER_PATH) $(dir $(AUTOCONFIG_PATH))
 
 endif

@@ -546,7 +546,8 @@ Note: bitbake cann't directly use the environment variables of the current shell
     * When it is set to empty, more compilation messages will be displayed
 * TOLOG             : Compilation output redirection, its default value is `1>/dev/null` when MFLAG is `-s`
     * When it is set to empty, more messages will be displayed
-
+* PREAT             : Setting for echo running, its default value is `@`, running commands will not be displayed
+    * When it is set to empty, running commands will be displayed
 
 ## Compilation Template
 

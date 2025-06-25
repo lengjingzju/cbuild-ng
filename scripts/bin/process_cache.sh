@@ -155,12 +155,12 @@ check_env() {
         exit 1
     fi
 
-    if [ -z "$(which git)" ]; then
+    if [ "${url:1:3}" = "git" ] && [ -z "$(which git)" ]; then
         wlog "ERROR: please install git first."
         exit 1
     fi
 
-    if [ -z "$(which svn)" ]; then
+    if [ "${url:1:3}" = "svn" ] && [ -z "$(which svn)" ]; then
         wlog "ERROR: please install svn first."
         exit 1
     fi

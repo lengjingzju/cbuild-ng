@@ -1212,6 +1212,7 @@ class Deps:
         with open(filename, 'w') as fp:
             fp.write('INSTALL_OPTION ?= link\n')
             fp.write('SYSROOT_SCRIPT := $(ENV_TOOL_DIR)/process_sysroot.sh\n')
+            fp.write('PREAT          ?= @\n')
             fp.write('\n')
 
             if self.FinallyList:
@@ -1227,10 +1228,10 @@ class Deps:
                 real_targets = [t for t in item['targets'] if t not in ignore_targets]
                 ideps = [re.split(r'@+', dep)[0] for dep in item['ideps']]
 
-                MAKEA = '@make $(MFLAG)'
+                MAKEA = '$(PREAT)make $(MFLAG)'
                 if 'singletask' not in item['targets']:
                     MAKEA += ' $(ENV_BUILD_JOBS)'
-                MAKEB = '@make $(MFLAG)'
+                MAKEB = '$(PREAT)make $(MFLAG)'
 
                 makes = ''
                 makes += ' -C $(%s-path)' % (item['target'])
@@ -1277,10 +1278,9 @@ class Deps:
 
                 psysroot_target = '%s_psysroot'  % (item['target'])
                 package_name = item['target']
-                if item['target'].endswith('-native'):
+                if package_name.endswith('-native'):
                     package_name = package_name[:-len('-native')]
-
-                psys_make = '@%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
+                psys_make = '$(PREAT)%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
                             % ('make', package_name, package_name)
 
                 gsys_dir = ''
@@ -1289,15 +1289,15 @@ class Deps:
                 if pkg_flags['native'] :
                     gsys_dir = '$(ENV_NATIVE_ROOT)/sysroot'
                     isys_dir = '$(ENV_NATIVE_ROOT)/objects/%s/image' % (item['target'].replace('-native', ''))
-                    isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(NATIVE_DESTDIR)' % (isys_dir)
+                    isys_cmd = '$(PREAT)$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(NATIVE_DESTDIR)' % (isys_dir)
                 else:
                     gsys_dir = '$(ENV_CROSS_ROOT)/sysroot'
                     isys_dir = '$(ENV_CROSS_ROOT)/objects/%s/image' % (item['target'])
-                    isys_cmd = '@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(CROSS_DESTDIR)' % (isys_dir)
+                    isys_cmd = '$(PREAT)$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(CROSS_DESTDIR)' % (isys_dir)
 
-                gsys_make = '@flock %s -c "%s%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
+                gsys_make = '$(PREAT)flock %s -c "%s%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
                             % (gsys_dir, MAKEA[1:], makes, unionstr, 'install')
-                gsys_cmd = '@flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
+                gsys_cmd = '$(PREAT)flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
 
                 cache_str = ''
                 if pkg_flags['cache']:
@@ -1356,14 +1356,14 @@ class Deps:
                         fp.write('%s\t%s %s\n\n' % (cache_str, psys_make, psysroot_target))
 
                 # all
-                compile_str = '\t@$(if $(PGCMD),$(PGCMD) begin=$@)\n'
+                compile_str = '\t$(PREAT)$(if $(PGCMD),$(PGCMD) begin=$@)\n'
                 if 'prepare' in item['targets']:
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'prepare')
                 compile_str += '\t%s%s%s\n' % (MAKEA.replace('@', '@$(PRECMD)', 1), makes, ' %s%s' % (unionstr, 'all') if unionstr else '')
                 if pkg_flags['isysroot']:
-                    compile_str += '\t@install -d %s\n' % (isys_dir)
+                    compile_str += '\t$(PREAT)install -d %s\n' % (isys_dir)
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'install')
-                compile_str += '\t@$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n' % (item['target'])
+                compile_str += '\t$(PREAT)$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n' % (item['target'])
 
                 phony.append(item['target'])
                 if pkg_flags['empty']:
@@ -1371,8 +1371,8 @@ class Deps:
                         fp.write('%s: $(%s-deps)\n' % (item['target'], item['target']))
                     else:
                         fp.write('%s:\n' % (item['target']))
-                    fp.write('\t@$(if $(PGCMD),$(PGCMD) begin=$@)\n')
-                    fp.write('\t@$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n\n' % (item['target']))
+                    fp.write('\t$(PREAT)$(if $(PGCMD),$(PGCMD) begin=$@)\n')
+                    fp.write('\t$(PREAT)$(if $(PGCMD),$(PGCMD) end=$@,echo "Build %s Done.")\n\n' % (item['target']))
                 else:
                     if pkg_flags['finally']:
                         fp.write('%s: finaldeps\n' % (item['target']))
@@ -1405,7 +1405,7 @@ class Deps:
                 if pkg_flags['empty']:
                     fp.write('\t@\n\n')
                 else:
-                    fp.write('\t@install -d %s\n' % (gsys_dir))
+                    fp.write('\t$(PREAT)install -d %s\n' % (gsys_dir))
                     if pkg_flags['isysroot']:
                         fp.write('\t%s\n\n' % (gsys_cmd))
                     else:
@@ -1436,7 +1436,7 @@ class Deps:
                     if 'norelease' in item['targets']:
                         fp.write('\t@\n\n')
                     else:
-                        fp.write('\t@echo "    %s" >&2 \n' % (item['target']))
+                        fp.write('\t$(PREAT)echo "    %s" >&2 \n' % (item['target']))
                         if pkg_flags['isysroot']:
                             fp.write('\t%s\n\n' % (isys_cmd.replace('$(INSTALL_OPTION)', 'release', 1)))
                         else:
@@ -1557,9 +1557,9 @@ class Deps:
                 fp.write('else\n\n')
 
                 fp.write('%s:\n' % (item['target']))
-                fp.write('\t@echo "%s is not enabled!" >&2 && exit 1\n\n' % (item['target']))
+                fp.write('\t$(PREAT)echo "%s is not enabled!" >&2 && exit 1\n\n' % (item['target']))
                 fp.write('%s_%%:\n' % (item['target']))
-                fp.write('\t@echo "%s is not enabled!" >&2 && exit 1\n\n' % (item['target']))
+                fp.write('\t$(PREAT)echo "%s is not enabled!" >&2 && exit 1\n\n' % (item['target']))
                 fp.write('.PHONY: %s\n\n' % (item['target']))
                 fp.write('endif\n\n')
 

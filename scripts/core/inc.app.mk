@@ -185,16 +185,16 @@ $(if $(filter $(patsubst %,\%.%,$(CXX_SUFFIX)),$(1)),$(CXX),$(CC))
 endef
 
 define compile_cmd
-	@mkdir -p $$(dir $$@)
+	$(PREAT)mkdir -p $$(dir $$@)
 ifeq ($(filter $(1),$(ASM_SUFFIX)), )
-	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
-	@cat $$(patsubst %.o,%.d,$$@) | sed -e 's/#.*//' -e 's/^[^:]*:\s*//' -e 's/\s*\\$$$$//' -e 's/[ \t\v][ \t\v]*/\n/g' | sed -e '/^$$$$/ d' -e 's/$$$$/:/g' >> $$(patsubst %.o,%.d,$$@)
+	$(PREAT)$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
+	$(PREAT)cat $$(patsubst %.o,%.d,$$@) | sed -e 's/#.*//' -e 's/^[^:]*:\s*//' -e 's/\s*\\$$$$//' -e 's/[ \t\v][ \t\v]*/\n/g' | sed -e '/^$$$$/ d' -e 's/$$$$/:/g' >> $$(patsubst %.o,%.d,$$@)
 endif
-	@$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
+	$(PREAT)$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
 ifneq ($(2),$(AS))
-	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -o $$@ $$<
+	$(PREAT)$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -o $$@ $$<
 else
-	@$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
+	$(PREAT)$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
 endif
 endef
 
@@ -237,35 +237,35 @@ $(OBJS): $(MAKEFILE_LIST) $(CHECK_FILE)
 -include $(DEPS)
 
 $(CHECK_FILE): $(CHECK_FILE).tmp
-	@if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
+	$(PREAT)if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
 		rm -f $<; \
 	else \
 		mv -f $< $@; \
 	fi
 
 $(CHECK_FILE).tmp:
-	@mkdir -p $(OBJ_PREFIX)
-	@echo "$(CHECK_INFO)" > $@
+	$(PREAT)mkdir -p $(OBJ_PREFIX)
+	$(PREAT)echo "$(CHECK_INFO)" > $@
 
 .PHONY: clean_objs
 
 clean_objs:
-	@rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)
+	$(PREAT)rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)
 
 define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := -fPIC $(4)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3) $(5)
-	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
-	@rm -f $$@
-	@$$(AR) rc $$@ $$(call translate_obj,$(2))
+	$(PREAT)$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	$(PREAT)rm -f $$@
+	$(PREAT)$$(AR) rc $$@ $$(call translate_obj,$(2))
 ifneq ($(3), )
-	@echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
-	@echo ADDLIB $(lib) >> $$@.mri)
-	@echo SAVE >> $$@.mri
-	@echo END >> $$@.mri
-	@$$(AR) -M < $$@.mri
-	@rm -f $$@.mri
+	$(PREAT)echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
+	$(PREAT)echo ADDLIB $(lib) >> $$@.mri)
+	$(PREAT)echo SAVE >> $$@.mri
+	$(PREAT)echo END >> $$@.mri
+	$(PREAT)$$(AR) -M < $$@.mri
+	$(PREAT)rm -f $$@.mri
 endif
 endef
 
@@ -275,23 +275,23 @@ LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
 
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): PRIVATE_CPFLAGS := -fPIC $(4)
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2)) $(5)
-	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
-	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
+	$(PREAT)$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	$(PREAT)$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
 		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
 
 ifneq ($$(word 2,$$(libso_names)), )
 $$(OBJ_PREFIX)/$$(word 2,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 1,$$(libso_names))
-	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
 endif
 
 ifneq ($$(word 3,$$(libso_names)), )
 $$(OBJ_PREFIX)/$$(word 3,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 2,$$(libso_names))
-	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
 endif
 
 ifneq ($$(word 4,$$(libso_names)), )
 $$(OBJ_PREFIX)/$$(word 4,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 3,$$(libso_names))
-	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
 endif
 
 endef
@@ -300,8 +300,8 @@ define add-bin-build
 BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := $(if $(filter y,$(ENV_SECURITY)),-fPIE) $(4)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(5)
-	@$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
-	@$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
+	$(PREAT)$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	$(PREAT)$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
 endef
 
 ifneq ($(LIBA_NAME), )

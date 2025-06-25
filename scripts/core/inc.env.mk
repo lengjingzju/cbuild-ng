@@ -7,6 +7,7 @@
 
 COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 TOLOG          ?= $(if $(filter -s,$(MFLAG)),1>/dev/null)
+PREAT          ?= @
 
 INSTALL_HDR    ?= $(PACKAGE_NAME)
 SEARCH_HDRS    ?= $(PACKAGE_DEPS)

@@ -56,16 +56,16 @@ endif
 #
 ifneq ($(obj), $(src))
 $(obj)/%.c : $(src)/%.c
-	@mkdir -p $(shell dirname $@)
-	@ln -sfT $< $@
+	$(PREAT)mkdir -p $(shell dirname $@)
+	$(PREAT)ln -sfT $< $@
 
 $(obj)/%.rs : $(src)/%.rs
-	@mkdir -p $(shell dirname $@)
-	@ln -sfT $< $@
+	$(PREAT)mkdir -p $(shell dirname $@)
+	$(PREAT)ln -sfT $< $@
 
 $(obj)/%.S : $(src)/%.S
-	@mkdir -p $(shell dirname $@)
-	@ln -sfT $< $@
+	$(PREAT)mkdir -p $(shell dirname $@)
+	$(PREAT)ln -sfT $< $@
 endif
 
 else # KERNELRELEASE
@@ -102,8 +102,8 @@ MOD_MAKES      += M=$(MOD_OPATH) src=$(MOD_PATH)
 KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
 modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
 $(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
-	@-mkdir -p $(dir $@)
-	@-cp -f $< $@
+	$(PREAT)-mkdir -p $(dir $@)
+	$(PREAT)-cp -f $< $@
 
 endif
 
@@ -112,20 +112,20 @@ export SEARCH_HDRS PACKAGE_NAME
 .PHONY: modules modules_clean modules_install symvers_install
 
 modules:
-	@$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
+	$(PREAT)$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
 
 modules_clean:
-	@$(MAKE) $(MOD_MAKES) clean
+	$(PREAT)$(MAKE) $(MOD_MAKES) clean
 ifeq ($(filter $(MOD_OPATH)/% $(MOD_OPATH),$(MOD_PATH)), )
-	@rm -rf $(MOD_OPATH)
+	$(PREAT)rm -rf $(MOD_OPATH)
 endif
 
 modules_install:
-	@$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
+	$(PREAT)$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
 
 symvers_install:
-	@install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
-	@cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+	$(PREAT)install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+	$(PREAT)cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
 
 install_hdrs: symvers_install
 

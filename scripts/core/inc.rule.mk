@@ -190,7 +190,7 @@ all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
 
 ifeq ($(filter build,$(CUSTOM_TARGETS)), )
 build:
-	@if [ "$(OBJ_DISRM)" != "y" ] && [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ]; then \
+	$(PREAT)if [ "$(OBJ_DISRM)" != "y" ] && [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ]; then \
 		rm -rf $(OBJ_PREFIX); \
 		if [ "$(findstring $(OBJ_PREFIX),$(SRC_PATH))" = "" ]; then \
 			mkdir -p $(OBJ_PREFIX); \
@@ -198,60 +198,60 @@ build:
 	else \
 		rm -f $(OBJ_PREFIX)/$(BUILD_MARK); \
 	fi
-	@$(if $(SRC_URLS),$(call do_fetch))
-	@$(if $(PATCH_FOLDER),$(call do_patch))
+	$(PREAT)$(if $(SRC_URLS),$(call do_fetch))
+	$(PREAT)$(if $(PATCH_FOLDER),$(call do_patch))
 ifneq ($(filter prepend,$(CUSTOM_TARGETS)), )
-	@$(MAKE) -f $(MAKE_FNAME) prepend
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) prepend
 endif
 ifeq ($(COMPILE_TOOL),autotools)
-	@cd $(OBJ_PREFIX) && \
+	$(PREAT)cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),$(AUTOTOOLS_CROSS)) $(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(FT_CONFIG) $(REL_CONFIG) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
-	@cd $(OBJ_PREFIX) && \
+	$(PREAT)cd $(OBJ_PREFIX) && \
 		cmake $(SRC_PATH) $(if $(CROSS_COMPILE),$(CMAKE_CROSS)) $(INS_CONFIG) $(DEP_CONFIG) $(CMAKE_FLAGS) $(FT_CONFIG) $(REL_CONFIG) $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
-	@$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX) $(CC_TOOL))
-	@$(if $(do_meson_cfg),$(call do_meson_cfg))
-	@cd $(SRC_PATH) && \
+	$(PREAT)$(if $(CROSS_COMPILE),$(MESON_SCRIPT) $(OBJ_PREFIX) $(CC_TOOL))
+	$(PREAT)$(if $(do_meson_cfg),$(call do_meson_cfg))
+	$(PREAT)cd $(SRC_PATH) && \
 		meson $(if $(CROSS_COMPILE),--cross-file $(OBJ_PREFIX)/cross.ini) $(INS_CONFIG) $(MESON_WRAP_MODE) $(MESON_FLAGS) $(FT_CONFIG) $(OBJ_PREFIX) $(REL_CONFIG) $(TOLOG)
 endif
-	@rm -rf $(INS_TOPDIR)
+	$(PREAT)rm -rf $(INS_TOPDIR)
 ifneq ($(filter compile,$(CUSTOM_TARGETS)), )
-	@$(MAKE) -f $(MAKE_FNAME) compile
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) compile
 else
 ifeq ($(COMPILE_TOOL),autotools)
-	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+	$(PREAT)cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
-	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+	$(PREAT)cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 else ifeq ($(COMPILE_TOOL),meson)
-	@cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(TOLOG) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(TOLOG)
+	$(PREAT)cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(TOLOG) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(TOLOG)
 else
-	@$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 endif
 endif
-	@$(call install_lics)
-	@$(SYSROOT_SCRIPT) replace $(INS_TOPDIR)
+	$(PREAT)$(call install_lics)
+	$(PREAT)$(SYSROOT_SCRIPT) replace $(INS_TOPDIR)
 ifneq ($(filter append,$(CUSTOM_TARGETS)), )
-	@$(MAKE) -f $(MAKE_FNAME) append
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) append
 endif
-	@echo > $(OBJ_PREFIX)/$(BUILD_MARK)
+	$(PREAT)echo > $(OBJ_PREFIX)/$(BUILD_MARK)
 endif
 
 ifeq ($(filter clean,$(CUSTOM_TARGETS)), )
 clean:
-	@rm -rf $(OBJ_PREFIX)
-	@echo "Clean $(PACKAGE_ID) Done."
+	$(PREAT)rm -rf $(OBJ_PREFIX)
+	$(PREAT)echo "Clean $(PACKAGE_ID) Done."
 endif
 
 ifeq ($(filter distclean,$(CUSTOM_TARGETS)), )
 distclean:
-	@rm -rf $(WORKDIR)
-	@echo "Distclean $(PACKAGE_ID) Done."
+	$(PREAT)rm -rf $(WORKDIR)
+	$(PREAT)echo "Distclean $(PACKAGE_ID) Done."
 endif
 
 ifeq ($(filter install,$(CUSTOM_TARGETS)), )
 install:
-	@$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
+	$(PREAT)$(SYSROOT_SCRIPT) $(INSTALL_OPTION) $(INS_TOPDIR) $(INS_PREFIX)
 endif
 
 ifneq ($(LICFILE), )
@@ -300,74 +300,74 @@ endef
 .PHONY: checksum psysroot cachebuild setforce set1force unsetforce
 
 checksum:
-	@$(call do_checksum)
+	$(PREAT)$(call do_checksum)
 
 psysroot:
-	@$(if $(wildcard $(CACHE_STATUS)),,$(MAKE) $(PREPARE_SYSROOT))
+	$(PREAT)$(if $(wildcard $(CACHE_STATUS)),,$(MAKE) $(PREPARE_SYSROOT))
 
 cachebuild:
 ifeq ($(wildcard $(CACHE_STATUS)), )
-	@$(MAKE) -f $(MAKE_FNAME) build
-	@$(call do_pushcache)
-	@$(COLORECHO) "\033[33mUpdate $(PACKAGE_ID) Cache.\033[0m"
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) build
+	$(PREAT)$(call do_pushcache)
+	$(PREAT)$(COLORECHO) "\033[33mUpdate $(PACKAGE_ID) Cache.\033[0m"
 else
-	@$(call do_pullcache)
-	@$(COLORECHO) "\033[33mMatch $(PACKAGE_ID) Cache.\033[0m"
+	$(PREAT)$(call do_pullcache)
+	$(PREAT)$(COLORECHO) "\033[33mMatch $(PACKAGE_ID) Cache.\033[0m"
 endif
-	@rm -f $(CACHE_STATUS)
+	$(PREAT)rm -f $(CACHE_STATUS)
 
 setforce:
-	@$(call do_setforce)
-	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build.\033[0m"
+	$(PREAT)$(call do_setforce)
+	$(PREAT)$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build.\033[0m"
 
 set1force:
-	@$(call do_set1force)
-	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build Once.\033[0m"
+	$(PREAT)$(call do_set1force)
+	$(PREAT)$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Force Build Once.\033[0m"
 
 unsetforce:
-	@$(call do_unsetforce)
-	@$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Force Build.\033[0m"
+	$(PREAT)$(call do_unsetforce)
+	$(PREAT)$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Force Build.\033[0m"
 
 else # CACHE_BUILD
 
 .PHONY: nocachebuild psysroot
 
 nocachebuild:
-	@$(MAKE) -f $(MAKE_FNAME) build
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) build
 
 psysroot:
-	@$(MAKE) $(PREPARE_SYSROOT)
+	$(PREAT)$(MAKE) $(PREPARE_SYSROOT)
 
 endif # CACHE_BUILD
 
 .PHONY: setdev unsetdev dofetch
 
 setdev:
-	@mkdir -p $(shell dirname $(BUILD_DEVF))
-	@echo > $(BUILD_DEVF)
+	$(PREAT)mkdir -p $(shell dirname $(BUILD_DEVF))
+	$(PREAT)echo > $(BUILD_DEVF)
 ifeq ($(CACHE_BUILD),y)
-	@$(call do_setforce)
+	$(PREAT)$(call do_setforce)
 endif
-	@$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Development Mode.\033[0m"
+	$(PREAT)$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Development Mode.\033[0m"
 
 unsetdev:
-	@rm -f $(BUILD_DEVF)
+	$(PREAT)rm -f $(BUILD_DEVF)
 ifeq ($(CACHE_BUILD),y)
-	@$(call do_unsetforce)
+	$(PREAT)$(call do_unsetforce)
 endif
-	@$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Development Mode.\033[0m"
+	$(PREAT)$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Development Mode.\033[0m"
 
 dofetch:
 ifneq ($(SRC_URLS), )
-	@mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
-	@flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
+	$(PREAT)mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
+	$(PREAT)flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
 else
 	@
 endif
 
 ifneq ($(SRC_URLS), )
 status:
-	@status=""; \
+	$(PREAT)status=""; \
 		if [ -e $(BUILD_DEVF) ]; then \
 			status=" dev"; \
 		fi; \
@@ -378,7 +378,7 @@ status:
 			$(COLORECHO) "\033[31mSTATUS ($(PACKAGE_ID)):$${status}\033[0m"; \
 		fi
 ifeq ($(FETCH_METHOD),git)
-	@srcpath=""; \
+	$(PREAT)srcpath=""; \
 		if [ "$(SRC_SHARED)" != "y" ]; then \
 			srcpath=$(WORKDIR)/$(SRC_DIR); \
 		else \
@@ -396,6 +396,6 @@ endif
 endif
 
 %:
-	@$(MAKE) $(MAKE_FLAGS) $@
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) $@
 
 endif
