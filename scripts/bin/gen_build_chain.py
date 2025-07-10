@@ -1296,7 +1296,7 @@ class Deps:
                     isys_cmd = '$(PREAT)$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(CROSS_DESTDIR)' % (isys_dir)
 
                 gsys_make = '$(PREAT)flock %s -c "%s%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
-                            % (gsys_dir, MAKEA[1:], makes, unionstr, 'install')
+                            % (gsys_dir, MAKEA[8:], makes, unionstr, 'install')
                 gsys_cmd = '$(PREAT)flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
 
                 cache_str = ''
