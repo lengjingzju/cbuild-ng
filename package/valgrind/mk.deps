@@ -6,6 +6,8 @@
 
 #DEPS(mk.deps) valgrind(native psysroot): unselect
 
+# Fix "fatal error: asm/types.h": sudo apt install gcc-multilib libc6-dev-i386
+
 PACKAGE_NAME     = valgrind
 
 LICENSE          = GPL-2.0-only

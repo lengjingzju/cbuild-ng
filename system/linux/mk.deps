@@ -25,7 +25,7 @@ VERSION          = $(shell $(MACHINE_SCRIPT) linux_version)
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.kernel.org/pub/linux/kernel/v$(shell echo $(VERSION) | cut -d '.' -f 1).x/$(SRC_NAME)
-SRC_MD5          = d5fa9f79f21bff6269466b0e5652aa83
+SRC_MD5          = 431025bc44af107ceeccac178bf32237
 
 -include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk

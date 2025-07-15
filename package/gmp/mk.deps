@@ -35,5 +35,6 @@ CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS += exec_prefix=$(INS_TOPDIR)/usr
+CFLAGS          += -std=c99
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

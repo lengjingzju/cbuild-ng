@@ -1,0 +1,48 @@
+From 28f73c9628be54224053af7114b17f1a223891e1 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Tue, 15 Jul 2025 12:15:40 +0800
+Subject: [PATCH] fix compile failure with c23
+
+---
+ src/ALAC/alac_decoder.c | 6 +-----
+ src/ALAC/alac_encoder.c | 7 +------
+ 2 files changed, 2 insertions(+), 11 deletions(-)
+
+diff --git a/src/ALAC/alac_decoder.c b/src/ALAC/alac_decoder.c
+index 46d3330..6023f5e 100644
+--- a/src/ALAC/alac_decoder.c
++++ b/src/ALAC/alac_decoder.c
+@@ -37,11 +37,7 @@
+ 
+ #include "ALACBitUtilities.h"
+ #include "EndianPortable.h"
+-
+-typedef enum
+-{	false = 0,
+-	true = 1
+-} bool ;
++#include <stdbool.h>
+ 
+ // constants/data
+ const uint32_t kMaxBitDepth = 32 ;			// max allowed bit depth is 32
+diff --git a/src/ALAC/alac_encoder.c b/src/ALAC/alac_encoder.c
+index 599399a..0e3b856 100644
+--- a/src/ALAC/alac_encoder.c
++++ b/src/ALAC/alac_encoder.c
+@@ -43,12 +43,7 @@
+ #include "ALACBitUtilities.h"
+ #include "ALACAudioTypes.h"
+ #include "EndianPortable.h"
+-
+-typedef enum
+-{
+-	false = 0,
+-	true = 1
+-} bool ;
++#include <stdbool.h>
+ 
+ static void	GetConfig (ALAC_ENCODER *p, ALACSpecificConfig * config) ;
+ 
+-- 
+2.25.1
+
