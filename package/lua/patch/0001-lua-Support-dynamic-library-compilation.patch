@@ -1,6 +1,6 @@
-From a64b723ac2249df545487e14ccbb259b57a06fce Mon Sep 17 00:00:00 2001
+From 38894df8ee9cff81e6b07625a4c3b797f6537f6f Mon Sep 17 00:00:00 2001
 From: Jing Leng <3090101217@zju.edu.cn>
-Date: Wed, 12 Feb 2025 11:10:40 +0800
+Date: Sat, 19 Jul 2025 21:13:57 +0800
 Subject: [PATCH] lua: Support dynamic library compilation
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH] lua: Support dynamic library compilation
  2 files changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 72ca8ff..c383421 100644
+index 6e21588..648b5b3 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -42,11 +42,14 @@ PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw p
@@ -22,7 +22,7 @@ index 72ca8ff..c383421 100644
  # Lua version and release.
 +M= 5
  V= 5.4
- R= $V.7
+ R= $V.8
 +export M V R
  
  # Targets start here.

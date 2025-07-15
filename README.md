@@ -40,8 +40,10 @@ The biggest difference between CBuild-ng and [CBuild](https://github.com/lengjin
 5️⃣ **Homegrown Innovation, Global Impact**
 * Proven in Mainline Linux: Authored kernel patches merged upstream, validating technical excellence.
 * Future-Proof: Designed for RISC-V, LoongArch, and other domestic architectures, empowering China’s tech ecosystem.
-* Highly Acclaimed by Users: A company at CES2024 hailed its development platform as a disruptive innovation (Cooper Core is CBuild).
+* Highly Acclaimed by Users: A company at CES2024 hailed its development platform as a disruptive innovation.
+    * Cooper Core is CBuild, while CBuild-ng is more standards-compliant and powerful than CBuild.
     * [WeChat Official Account Article](https://mp.weixin.qq.com/s?__biz=MzUxNjUyNjAwNg==&mid=2247485681&idx=1&sn=a40da02663c6d27ea63eb28451095bbf&chksm=f875874e9d244c5cd4e3fec1d0a26469cba18277642af5dd5eb86eda58c3871d3f783f9d78a7&mpshare=1&scene=1&srcid=0112YvuxcOvCqTb2WhEqJGOn&sharer_shareinfo=2ff8614102cab4059235848ebb37a645&sharer_shareinfo_first=c944849c1a53d51b268847a57c945069&exportkey=n_ChQIAhIQC0jysnU80ORUSwbcNGn9TxKfAgIE97dBBAEAAAAAAEWNId2KaLMAAAAOpnltbLcz9gKNyK89dVj0crs1w3S3dkK0YOtHZXXYm26U4Sn7iQnEsI9BaHTDNQJi0z%2F3MgYqf9czIPlkBs%2FnUKwf5Rj5nPqJU5x1WN%2B2%2FBv5oh2YQMBtYk09W3LmEszADTCfJtU78xe6uXnTAXXIPlfXKwOfTGs46tmLVZkffDzww66N%2BaXQm1aikAxWfTw0JilDxvQba4fpYk8nMxuDRUC4GlGYEyNcHYL1Hi518R3T1DK4T2jj1vr%2Fr%2Bkyo2qpp2VpxLOEtsl8Vx1RfTQEnbWflkTB8ImlJKJwN78BHIgbvM4Sra%2BbYrLXWb%2FrhcaoBni5HqyE49AGuDSCULcL1GR%2FfOayftvl&acctmode=0&pass_ticket=ZutZ1C5h7DFNHhjqPfFzxvsZn7AwriXI3P8gmInU67TJ6fAnWGvdPrMDg0epCVbv&wx_header=0#rd)
+    * [Official Website](https://www.ambarella.com/cooper/)
 
 
 ## Functional Composition
@@ -1060,6 +1062,7 @@ Note: The reason for providing the above functions is that multiple libraries or
             * AUTOTOOLS_FLAGS   : Users can set extra flags for `configure` compilation
             * AUTOTOOLS_CROSS   : Read-only, cross-compilation flags for `configure` command
         * cmake     : `cmake` command will run before `MAKES` command
+            * CMAKE_NINJA       : When the value is set to `y`, 'cmake' generates a `Ninja` compiled script instead of Makefile
             * CMAKE_FLAGS       : Users can set extra flags for `cmake` command, related variables:
             * CMAKE_CROSS       : Read-only, cross-compilation flags for `cmake` command
         * meson     : `meson` command will run before `MAKES` command, related variables:

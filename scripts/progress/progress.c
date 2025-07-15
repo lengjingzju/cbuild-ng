@@ -457,6 +457,7 @@ int main(int argc, char *argv[])
             close(pfderr[0]);
             dup2(pfdout[1], STDOUT_FILENO);
             dup2(pfderr[1], STDERR_FILENO);
+            setenv("MAKE", argv[index], 1);
             usleep(10000);
             ret = execvp(argv[index], argv + index + 1);
             close(pfdout[1]);

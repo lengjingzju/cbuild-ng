@@ -44,6 +44,8 @@ AUTOTOOLS_FLAGS += --disable-bootstrap \
                    gl_cv_c_multiarch=yes \
                    --enable-lto
 
+CFLAGS          += -std=c17
+
 ifeq ($(CROSS_COMPILE), )
 
 CUSTOM_TARGETS   = build

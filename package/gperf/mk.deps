@@ -20,11 +20,11 @@ DESCRIPTION      = GNU gperf is a perfect hash function generator. For a given l
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.1
+VERSION          = 3.3
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://ftp.gnu.org/pub/gnu/gperf/$(SRC_NAME)
-SRC_MD5          = 9e251c0a618ad0824b51117d5d9db87e
+SRC_MD5          = 31753b021ea78a21f154bf9eecb8b079
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

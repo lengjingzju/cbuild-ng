@@ -6,6 +6,8 @@
 
 #DEPS(mk.deps) valgrind(native psysroot): unselect
 
+# Fix "fatal error: asm/types.h": sudo apt install gcc-multilib libc6-dev-i386
+
 PACKAGE_NAME     = valgrind
 
 LICENSE          = GPL-2.0-only
@@ -18,11 +20,11 @@ DESCRIPTION      = Valgrind is a GPL'd system for debugging and profiling Linux 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.24.0
+VERSION          = 3.25.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://sourceware.org/pub/valgrind/$(SRC_NAME)
-SRC_MD5          = 7ae7ffc6b3cff48fe35076266c128226
+SRC_MD5          = 2b424c9a43aa9bf2840d4989b01ea6e7
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

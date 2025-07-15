@@ -106,6 +106,10 @@ ifneq ($(LDFLAGS), )
 REL_CONFIG      += -DCMAKE_SHARED_LINKER_FLAGS="$(LDFLAGS)" -DCMAKE_EXE_LINKER_FLAGS="$(LDFLAGS)"
 endif
 
+ifeq ($(CMAKE_NINJA),y)
+REL_CONFIG      += -G 'Ninja'
+endif
+
 else ifeq ($(COMPILE_TOOL),meson)
 MESON_WRAP_MODE ?= --wrap-mode=nodownload
 ifeq ($(INS_FULLER),y)
@@ -222,7 +226,11 @@ else
 ifeq ($(COMPILE_TOOL),autotools)
 	$(PREAT)cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 else ifeq ($(COMPILE_TOOL),cmake)
+ifneq ($(CMAKE_NINJA),y)
 	$(PREAT)cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+else
+	$(PREAT)cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(TOLOG) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(TOLOG)
+endif
 else ifeq ($(COMPILE_TOOL),meson)
 	$(PREAT)cd $(OBJ_PREFIX) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) $(TOLOG) && ninja $(BUILD_JOBS) $(MAKE_FLAGS) install $(TOLOG)
 else

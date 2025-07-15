@@ -15,7 +15,7 @@ DESCRIPTION      = x264, the best and fastest H.264 encoder
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 373697b467f7cd0af88f1e9e32d4f10540df4687
+VERSION          = b35605ace3ddf7c1a5d67a2eb553f034aef41d55
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
 SRC_URL          = https://code.videolan.org/videolan/$(PACKAGE_NAME).git

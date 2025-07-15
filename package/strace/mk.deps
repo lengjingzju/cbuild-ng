@@ -18,11 +18,11 @@ DESCRIPTION      = This is strace -- a diagnostic, debugging and instructional u
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 6.13
+VERSION          = 6.15
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://github.com/strace/strace/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = d6045bc205c1257a9f561670028cd63f
+SRC_MD5          = 0725a40e0c738bb0f91c44cf103571af
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

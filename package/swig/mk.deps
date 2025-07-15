@@ -25,11 +25,11 @@ DESCRIPTION      = The GNU Multiple Precision Arithmetic Library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 4.3.0
+VERSION          = 4.3.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://versaweb.dl.sourceforge.net/project/swig/swig/$(SRC_DIR)/$(SRC_NAME)
-SRC_MD5          = 6a0555a2063c78447c5912136f013c43
+SRC_MD5          = 4929864e1b040a51370160d17669d6f1
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

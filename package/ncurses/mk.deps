@@ -28,5 +28,7 @@ CACHE_BUILD      = y
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = --disable-stripping --with-shared --with-static --enable-widec
+CFLAGS          += -std=c17
+CXXFLAGS        += -std=c++17
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

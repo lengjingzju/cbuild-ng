@@ -1228,10 +1228,12 @@ class Deps:
                 real_targets = [t for t in item['targets'] if t not in ignore_targets]
                 ideps = [re.split(r'@+', dep)[0] for dep in item['ideps']]
 
-                MAKEA = '$(PREAT)make $(MFLAG)'
+                MAKEI = 'make $(MFLAG)'
+                MAKEA = '$(PREAT)$(MAKE) $(MFLAG)'
                 if 'singletask' not in item['targets']:
+                    MAKEI += ' $(ENV_BUILD_JOBS)'
                     MAKEA += ' $(ENV_BUILD_JOBS)'
-                MAKEB = '$(PREAT)make $(MFLAG)'
+                MAKEB = '$(PREAT)$(MAKE) $(MFLAG)'
 
                 makes = ''
                 makes += ' -C $(%s-path)' % (item['target'])
@@ -1281,7 +1283,7 @@ class Deps:
                 if package_name.endswith('-native'):
                     package_name = package_name[:-len('-native')]
                 psys_make = '$(PREAT)%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
-                            % ('make', package_name, package_name)
+                            % ('$(MAKE)', package_name, package_name)
 
                 gsys_dir = ''
                 isys_dir = ''
@@ -1296,7 +1298,7 @@ class Deps:
                     isys_cmd = '$(PREAT)$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(CROSS_DESTDIR)' % (isys_dir)
 
                 gsys_make = '$(PREAT)flock %s -c "%s%s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/sysroot %s%s"' \
-                            % (gsys_dir, MAKEA[8:], makes, unionstr, 'install')
+                            % (gsys_dir, MAKEI, makes, unionstr, 'install')
                 gsys_cmd = '$(PREAT)flock %s -c "bash $(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s %s"' % (gsys_dir, isys_dir, gsys_dir)
 
                 cache_str = ''

@@ -18,11 +18,11 @@ DESCRIPTION      = A lightweight SSH and SCP implementation. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2024.86
+VERSION          = 2025.88
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://matt.ucc.asn.au/dropbear/releases/$(SRC_NAME)
-SRC_MD5          = 05804acca74dbeca26cad85daa96be06
+SRC_MD5          = 510165167b102589d64144cab4477b6c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

@@ -15,11 +15,11 @@ DESCRIPTION      = Khronos-reference front end for GLSL/ESSL, partial front end 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 15.1.0
+VERSION          = 15.4.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/KhronosGroup/glslang/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = 2bf049666f223732fc18d6c8b16b98cf
+SRC_MD5          = a400ed377dc9de8b87a8179a90cef3b8
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

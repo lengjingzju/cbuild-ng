@@ -1,18 +1,53 @@
-From d83e9d2a788cb7cf933c1c81df8cc5224f55f5a5 Mon Sep 17 00:00:00 2001
-From: Jing Leng <lengjingzju@163.com>
-Date: Fri, 16 Aug 2024 12:34:08 +0800
+From bc7f09d6d22189769242565d27a5975a6646c296 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Sat, 19 Jul 2025 22:16:17 +0800
 Subject: [PATCH] Compatible with Python below 3.9
 
 ---
- src/nouveau/headers/class_parser.py | 26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+ bin/nir-test-runner.py               | 14 +++++++++++++-
+ src/nouveau/headers/class_parser.py  | 28 ++++++++++++++++++++--------
+ src/nouveau/headers/lib_rs_gen.py    | 14 +++++++++++++-
+ src/nouveau/headers/struct_parser.py | 14 +++++++++++++-
+ 4 files changed, 59 insertions(+), 11 deletions(-)
 
+diff --git a/bin/nir-test-runner.py b/bin/nir-test-runner.py
+index 750115e..f8b4d5f 100755
+--- a/bin/nir-test-runner.py
++++ b/bin/nir-test-runner.py
+@@ -13,6 +13,18 @@ import tempfile
+ import textwrap
+ from pathlib import Path
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ def trim_blank_lines(string, trailing):
+     lines = string.split('\n')
+     string = ''
+@@ -101,7 +113,7 @@ if __name__ == '__main__':
+ 
+         if output_line.startswith('BEGIN EXPECTED'):
+             match = expected_pattern.match(output_line)
+-            current_file = match.group(1).removeprefix('../')
++            current_file = str_removeprefix(match.group(1), '../')
+             inside_expected = True
+             current_expected = ''
+             continue
 diff --git a/src/nouveau/headers/class_parser.py b/src/nouveau/headers/class_parser.py
-index 296a765..cdf38d0 100644
+index 3fac809..baab15f 100644
 --- a/src/nouveau/headers/class_parser.py
 +++ b/src/nouveau/headers/class_parser.py
-@@ -230,6 +230,18 @@ pub const ${version[0]}: u16 = ${version[1]};
- % endif
+@@ -326,6 +326,18 @@ impl ArrayMthd for ${to_camel(mthd.name)} {
+ %endfor
  """)
  
 +def str_removeprefix(s, x):
@@ -27,28 +62,28 @@ index 296a765..cdf38d0 100644
 +    else:
 +        return s
 +
- def glob_match(glob, name):
-     if glob.endswith('*'):
-         return name.startswith(glob[:-1])
-@@ -293,7 +305,7 @@ def parse_header(nvcl, f):
+ ## A mere convenience to convert snake_case to CamelCase. Numbers are prefixed
+ ## with "_".
+ def to_camel(snake_str):
+@@ -467,7 +479,7 @@ def parse_header(nvcl, f):
                  if ":" in list[2]:
                      state = 1
                  elif teststr in list[1]:
--                    curmthd.field_defs[curfield][list[1].removeprefix(teststr)] = list[2]
-+                    curmthd.field_defs[curfield][str_removeprefix(list[1], teststr)] = list[2]
+-                    curfield.defs[list[1].removeprefix(teststr)] = list[2]
++                    curfield.defs[str_removeprefix(list[1], teststr)] = list[2]
                  else:
                      state = 1
  
-@@ -303,7 +315,7 @@ def parse_header(nvcl, f):
+@@ -477,7 +489,7 @@ def parse_header(nvcl, f):
                      if ("0x" in list[2]):
                          state = 1
                      else:
 -                        field = list[1].removeprefix(teststr)
 +                        field = str_removeprefix(list[1], teststr)
                          bitfield = list[2].split(":")
-                         curmthd.field_name_start[field] = bitfield[1]
-                         curmthd.field_name_end[field] = bitfield[0]
-@@ -324,13 +336,13 @@ def parse_header(nvcl, f):
+                         f = Field(field, bitfield[1], bitfield[0])
+                         curmthd.fields.append(f)
+@@ -497,13 +509,13 @@ def parse_header(nvcl, f):
                  is_array = 0
                  if (':' in list[2]):
                      continue
@@ -62,20 +97,93 @@ index 296a765..cdf38d0 100644
                      is_array = 1
 -                    name = name.removesuffix("(j)")
 +                    name = str_removesuffix(name, "(j)")
-                 x = method()
-                 x.name = name
-                 x.addr = list[2]
-@@ -357,8 +369,8 @@ def main():
  
-     clheader = os.path.basename(args.in_h)
-     nvcl = clheader
--    nvcl = nvcl.removeprefix("cl")
--    nvcl = nvcl.removesuffix(".h")
-+    nvcl = str_removeprefix(nvcl, "cl")
-+    nvcl = str_removesuffix(nvcl, ".h")
-     nvcl = nvcl.upper()
-     nvcl = "NV" + nvcl
+                 curmthd = Method(name, list[2], is_array)
+                 methods[name] = curmthd
+@@ -512,8 +524,8 @@ def parse_header(nvcl, f):
+     return (version, methods)
  
+ def nvcl_for_filename(name):
+-    name = name.removeprefix("cl")
+-    name = name.removesuffix(".h")
++    name = str_removeprefix(name, "cl")
++    name = str_removesuffix(name, ".h")
+     return "NV" + name.upper()
+ 
+ def main():
+@@ -542,7 +554,7 @@ def main():
+     if args.prev_in_h is not None:
+         prev_clheader = os.path.basename(args.prev_in_h)
+         prev_nvcl = nvcl_for_filename(prev_clheader)
+-        prev_mod = prev_clheader.removesuffix(".h")
++        prev_mod = str_removesuffix(prev_clheader, ".h")
+         with open(args.prev_in_h, 'r', encoding='utf-8') as f:
+             (prev_version, prev_methods) = parse_header(prev_nvcl, f)
+ 
+diff --git a/src/nouveau/headers/lib_rs_gen.py b/src/nouveau/headers/lib_rs_gen.py
+index f622815..760be48 100644
+--- a/src/nouveau/headers/lib_rs_gen.py
++++ b/src/nouveau/headers/lib_rs_gen.py
+@@ -72,6 +72,18 @@ pub trait ArrayMthd {
+ ${decl_mod(root, [])}
+ """)
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ class Mod(object):
+     def __init__(self):
+         self.present = False;
+@@ -100,7 +112,7 @@ def main():
+     for f in args.class_files[0]:
+         f = os.path.basename(f)
+         assert f.endswith('.rs')
+-        f = f.removesuffix('.rs')
++        f = str_removesuffix(f, '.rs')
+ 
+         mod_path = f.split('_')
+         assert mod_path[0] == 'nvh'
+diff --git a/src/nouveau/headers/struct_parser.py b/src/nouveau/headers/struct_parser.py
+index e4964cf..9d1da83 100644
+--- a/src/nouveau/headers/struct_parser.py
++++ b/src/nouveau/headers/struct_parser.py
+@@ -62,6 +62,18 @@ STRUCTS = [
+ 
+ Enum = namedtuple('Enum', ['name', 'value'])
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ class Field(object):
+     def __init__(self, name, lo, hi, stride=0):
+         self.name = name
+@@ -133,7 +145,7 @@ def parse_header(nvcl, file):
+             hi = int(mw_arr.group('hi'))
+             stride = int(mw_arr.group('stride'))
+             assert name.endswith('(i)')
+-            struct.add_field(name.removesuffix('(i)'), lo, hi, stride)
++            struct.add_field(str_removesuffix(name, '(i)'), lo, hi, stride)
+         else:
+             for f in struct.fields:
+                 if name.startswith(f.name + '_'):
 -- 
 2.25.1
 

@@ -33,11 +33,11 @@ DESCRIPTION      = Simple DirectMedia Layer is a cross-platform development libr
 include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.32.0
+VERSION          = 2.32.8
 SRC_DIR          = SDL2-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/libsdl-org/SDL/releases/download/release-$(VERSION)/$(SRC_NAME)
-SRC_MD5          = e63ebd16bd874785a3859a5265280672
+SRC_MD5          = 7df28be966308a4a51aac87f4e0cf16a
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
