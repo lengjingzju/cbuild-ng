@@ -103,9 +103,9 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 
 ## 笔记
 
-* 如果对 Shell 语法不了解，可以查看 [Shell 笔记](./notes/shell.md)
-* 如果对 Makefile 语法不了解，可以查看 [Makefile 笔记](./notes/makefile.md)
-* 如果对 Kconfig 语法不了解，可以查看 [Kconfig 笔记](./notes/kconfig.md)
+* 如果对 Shell 语法不了解，可以查看 [Shell 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/programming_shell.md)
+* 如果对 Makefile 语法不了解，可以查看 [Makefile 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/programming_makefile.md)
+* 如果对 Kconfig 语法不了解，可以查看 [Kconfig 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/programming_kconfig.md)
 
 
 ## 开源贡献

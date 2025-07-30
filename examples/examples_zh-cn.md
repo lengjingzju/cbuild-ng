@@ -736,4 +736,4 @@
     lengjing@lengjing:~/data/cbuild-ng/build$ bitbake test-app3-native  # 编译本地应用
     ```
 
-注: 常见 Yocto 问题可以查看 [Yocto 笔记](../notes/yoctoqa.md)
+注: 常见 Yocto 问题可以查看 [Yocto 笔记](./meta-example/yoctoqa.md)
