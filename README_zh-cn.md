@@ -1183,7 +1183,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 编译环境可选主机环境或 docker 环境，以 `Ubuntu 20.04` 为例。
 
 
-### 使用主机环境
+### 使用主机环境(Ubuntu)
 
 * 主机安装以下软件包即可
 
@@ -1194,6 +1194,36 @@ $ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev auto
 $ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+### 使用主机环境(RedHat)
+
+* RedHat系上包名可能不同，例如Fedora42的安装包如下：
+    * `autotools-dev` 、 `libncurses-dev` 、 `libssl-dev` 命名有变化
+    * `glibc-static` 和 `libstdc++-static` 需额外安装
+
+```sh
+$ sudo dnf install glibc-static libstdc++-static gcc binutils gdb clang llvm cmake automake autoconf automake libtool \
+    pkg-config bison flex yasm ncurses-devel libtool graphviz python3-pip \
+    git subversion curl wget rsync vim gawk texinfo gettext openssl openssl-devel autopoint
+$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+* RedHat系上kconfig无法静态编译(原因：ncurses-devel的静态库中使用了 `dlopen` 类的动态库操作接口，是有问题的)，需要如下修改：
+
+```sh
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index d0d5f87..9d40741 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -19,7 +19,7 @@ DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_O
+
+ CONF_CC        ?= gcc
+ CONF_CFLAGS     = -I. -I./include -I./parser -I./lxdialog
+-CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
++CONF_LDFLAGS    = $(EXTRA_LDFLAGS)
 ```
 
 

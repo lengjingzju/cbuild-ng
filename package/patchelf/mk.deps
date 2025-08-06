@@ -18,6 +18,15 @@ DESCRIPTION      = PatchELF is a simple utility for modifying existing ELF execu
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
+LATEST_PATCHELF ?= y
+ifeq ($(LATEST_PATCHELF),y)
+FETCH_METHOD     = git
+VERSION          = 0.18.x
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(PACKAGE_NAME)
+SRC_URL          = https://github.com/NixOS/patchelf.git
+SRC_REV          = 523f401584d9584e76c9c77004e7abeb9e6c4551
+else
 # The latest patchelf (0.18.0) has some problems.
 VERSION          = 0.12
 SRC_DIR          = patchelf-0.12.20200827.8d3a16e
@@ -25,14 +34,16 @@ SRC_DIR          = patchelf-0.12.20200827.8d3a16e
 SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.bz2
 SRC_URL          = https://github.com/NixOS/patchelf/releases/download/$(VERSION)/$(SRC_NAME)
 SRC_MD5          = 4fed3f12040da79f59ecf337d5e99fbc
+endif
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = autotools
+CFLAGS          += -std=c99
 LDFLAGS         += -static
 
-#CUSTOM_TARGETS   = prepend
+CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 # Downloading from git should do it.

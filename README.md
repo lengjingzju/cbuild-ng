@@ -1199,7 +1199,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 The compilation environment can be a host environment or a docker environment, taking `Ubuntu 20.04` as an example.
 
 
-### Use Host Environment
+### Use Host Environment(Ubuntu)
 
 * Just install the following software packages on the host:
 
@@ -1212,6 +1212,35 @@ $ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+### Use Host Environment(RedHat)
+
+* The package names on the RedHat system may be different, for example, the installation packages for Fedora42 are as follows:
+    * The names of `autotools-dev` `libncurses-dev` `libssl-dev` are changed
+    * The packages of `glibc-static` and `libstdc++-static` need to be additionally installed
+
+```sh
+$ sudo dnf install glibc-static libstdc++-static gcc binutils gdb clang llvm cmake automake autoconf automake libtool \
+    pkg-config bison flex yasm ncurses-devel libtool graphviz python3-pip \
+    git subversion curl wget rsync vim gawk texinfo gettext openssl openssl-devel autopoint
+$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+* Kconfig on RedHat system can not be statically compiled (reason: ncurses develop's static library uses the dynamic library operation interface of the `dlopen` class, which is problematic). The following modifications are needed:
+
+```sh
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index d0d5f87..9d40741 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -19,7 +19,7 @@ DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_O
+
+ CONF_CC        ?= gcc
+ CONF_CFLAGS     = -I. -I./include -I./parser -I./lxdialog
+-CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
++CONF_LDFLAGS    = $(EXTRA_LDFLAGS)
+```
 
 ### Use Docker Environment
 
