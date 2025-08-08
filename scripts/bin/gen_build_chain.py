@@ -1230,10 +1230,12 @@ class Deps:
 
                 MAKEI = 'make $(MFLAG)'
                 MAKEA = '$(PREAT)$(MAKE) $(MFLAG)'
+                MAKEB = '$(PREAT)make $(MFLAG)'
                 if 'singletask' not in item['targets']:
                     MAKEI += ' $(ENV_BUILD_JOBS)'
                     MAKEA += ' $(ENV_BUILD_JOBS)'
-                MAKEB = '$(PREAT)$(MAKE) $(MFLAG)'
+                    MAKEB += ' $(ENV_BUILD_JOBS)'
+                MAKEC = '$(PREAT)$(MAKE) $(MFLAG)'
 
                 makes = ''
                 makes += ' -C $(%s-path)' % (item['target'])
@@ -1361,7 +1363,7 @@ class Deps:
                 compile_str = '\t$(PREAT)$(if $(PGCMD),$(PGCMD) begin=$@)\n'
                 if 'prepare' in item['targets']:
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'prepare')
-                compile_str += '\t%s%s%s\n' % (MAKEA.replace('@', '@$(PRECMD)', 1), makes, ' %s%s' % (unionstr, 'all') if unionstr else '')
+                compile_str += '\t%s%s%s\n' % (MAKEB.replace('$(PREAT)', '$(PREAT)$(PRECMD)', 1), makes, ' %s%s' % (unionstr, 'all') if unionstr else '')
                 if pkg_flags['isysroot']:
                     compile_str += '\t$(PREAT)install -d %s\n' % (isys_dir)
                     compile_str += '\t%s%s %s%s\n' % (MAKEA, makes, unionstr, 'install')
@@ -1425,7 +1427,7 @@ class Deps:
                     if pkg_flags['isysroot']:
                         fp.write('\t%s\n\n' % (isys_cmd))
                     else:
-                        fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'install'))
+                        fp.write('\t%s%s %s%s\n\n' % (MAKEC, makes, unionstr, 'install'))
 
                 # release
                 if pkg_flags['release']:
@@ -1450,11 +1452,11 @@ class Deps:
                 if pkg_flags['empty']:
                     fp.write('\t@\n\n')
                 else:
-                    fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'clean'))
+                    fp.write('\t%s%s %s%s\n\n' % (MAKEC, makes, unionstr, 'clean'))
                 if 'distclean' in item['targets']:
                     phony.append(item['target'] + '_distclean')
                     fp.write('%s_distclean:\n' % (item['target']))
-                    fp.write('\t%s%s %s%s\n\n' % (MAKEB, makes, unionstr, 'distclean'))
+                    fp.write('\t%s%s %s%s\n\n' % (MAKEC, makes, unionstr, 'distclean'))
 
                 # cache
                 if 'cache' in item['targets']:
@@ -1463,7 +1465,7 @@ class Deps:
                     phony.append(item['target'] + '_unsetforce')
                     fp.write('%s_setforce %s_set1force %s_unsetforce:\n' % \
                             (item['target'], item['target'], item['target']))
-                    fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEB, makes, item['target']))
+                    fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEC, makes, item['target']))
 
                 if 'url' in item['targets']:
                     phony.append(item['target'] + '_dofetch')
@@ -1472,7 +1474,7 @@ class Deps:
                     phony.append(item['target'] + '_unsetdev')
                     fp.write('%s_dofetch %s_status %s_setdev %s_unsetdev:\n' % \
                             (item['target'], item['target'], item['target'], item['target']))
-                    fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEB, makes, item['target']))
+                    fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEC, makes, item['target']))
 
 
                 #### process other targets #####
