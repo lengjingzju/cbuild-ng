@@ -88,7 +88,7 @@ define pkg_lic_dst
 $(ENV_CROSS_ROOT)/packages/$(patsubst %-pkg,%,$1)/usr/share/license
 endef
 PKG_BUILD      ?= y
-PKG_STRIP      ?= y
+PKG_STRIP      ?= n
 ifneq ($(ENV_BUILD_TOOL), )
 PKG_EOS        ?= y
 endif

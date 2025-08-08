@@ -309,7 +309,11 @@ $(eval $(call add-liba-build,$(LIBA_NAME),$(SRCS)))
 endif
 
 ifneq ($(LIBSO_NAME), )
+ifneq ($(and $(VERSION_FILE),$(VERSION_NAME)), )
+$(eval $(call add-libso-build,$(LIBSO_NAME) $(call get_version,$(VERSION_FILE),$(VERSION_NAME), ),$(SRCS)))
+else
 $(eval $(call add-libso-build,$(LIBSO_NAME),$(SRCS)))
+endif
 endif
 
 ifneq ($(BIN_NAME), )

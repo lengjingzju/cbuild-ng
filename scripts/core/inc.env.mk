@@ -97,6 +97,13 @@ ifneq ($(DEPDIR), )
 DEP_PREFIX     := $(DEPDIR)
 endif
 
+# convert `#define XXXXX 0xabcdef` to `ab cd ed`, and remove the prefix 0 of `mn`
+define get_version
+$(shell cat $1 | grep '^#define.*$2' | \
+	sed 's/.*0x\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\1$3\2$3\3/g' | \
+	sed 's/^0//g' | sed 's/$30/$3/g')
+endef
+
 define link_hdrs
 $(addprefix -I,$(addprefix $(DEP_PREFIX),/include /usr/include) \
 	$(if $(SEARCH_HDRS),$(wildcard \

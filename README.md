@@ -575,6 +575,10 @@ Note: bitbake cann't directly use the environment variables of the current shell
 
 #### Functions of Environment Template
 
+* `$(call get_version, version_file, version_macro, delimiter)` : Extracts the version defined in a file
+    * The file must define the version in the following format: `#define version_macro 0xabcdef` 
+    * The function splits the hex value into two-character groups (removing leading zero from each group) and joins them with the specified delimiter
+    * Example: If `json.h` contains `#define JSON_VERSION 0x030305` , calling `$(call get_version,json.h,JSON_VERSION, )` will output `3 3 5`
 * `$(call link_hdrs)`   : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
 * `$(call link_libs)`   : Automatically sets CFLAGS that looks for libraries
 * `$(call install_lics)`: Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
@@ -748,6 +752,8 @@ Note: bitbake cann't directly use the environment variables of the current shell
         * `LIBSO_NAME = libtest.so 1 2`   : the compilation-generated library is `libtest.so.1.2`  , and the symbolic links are `libtest.so` and `libtest.so.1`
         * `LIBSO_NAME = libtest.so 1`     : the compilation-generated library is `libtest.so.1`    , and the symbolic link is `libtest.so`
         * `LIBSO_NAME = libtest.so`       : the compilation-generated library is `libtest.so`      , and there is no symbolic link
+    * VERSION_FILE and VERSION_NAME       : If these variables are defined, LIBSO_NAME does not need these manual version numbers. The template will automatically invoke `get_versionto` extract the version from the file.
+        * It effectively executes: `$(eval $(call add-libso-build,$(LIBSO_NAME) $(call get_version,$(VERSION_FILE),$(VERSION_NAME), ),$(SRCS)))`
     * If the `LIBSO_NAME` contains the version numbers, the default soname is `<library name>.<major version>`
         * The soname can be overridden by LDFLAGS, for example: `LDFLAGS += -Wl,-soname=libxxxx.so`
     * The compilation-generated library will be added to the variable `LIB_TARGETS`

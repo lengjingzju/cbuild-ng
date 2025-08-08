@@ -556,6 +556,9 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 
 #### 环境模板的函数说明
 
+* `$(call get_version,版本所在的文件,版本宏变量名,分隔符)` : 提取文件中定义的版本
+    * 文件中定义版本需要遵循如下格式 `#define 版本宏变量名 0xabcdef` ，提取出每两个字符为一组(第1个字符为0会去掉)，指定分隔符隔开
+    * 例如：`json.h` 中定义了 `#define JSON_VERSION 0x030305` ， `$(call get_version,json.h,JSON_VERSION, )` 提取出 `3 3 5`
 * `$(call link_hdrs)`   : 根据 SEARCH_HDRS 变量的值自动生成查找头文件的 CFLAGS
 * `$(call link_libs)`   : 自动生成查找库文件的 LDFLAGS
 * `$(call install_lics)`: 安装 license 文件到 `/usr/local/license/$(PACKAGE_NAME)`
@@ -728,6 +731,8 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
         * `LIBSO_NAME = libtest.so 1 2`   编译生成动态库 libtest.so.1.2  ，并创建符号链接 libtest.so 和 libtest.so.1
         * `LIBSO_NAME = libtest.so 1`     编译生成动态库 libtest.so.1    ，并创建符号链接 libtest.so
         * `LIBSO_NAME = libtest.so`       编译生成动态库 libtest.so
+    * VERSION_FILE 和 VERSION_NAME：如果定义了这两个变量，LIBSO_NAME不用设置版本号，模板内部会自动调用 `get_version` 提取文件中版本号
+        * 即实际执行了 `$(eval $(call add-libso-build,$(LIBSO_NAME) $(call get_version,$(VERSION_FILE),$(VERSION_NAME), ),$(SRCS)))`
     * 如果 LIBSO_NAME 带版本号，默认指定的 soname 是 `libxxxx.so.x`，可以通过 LDFLAGS 覆盖默认值
         * 例如 `LDFLAGS += -Wl,-soname=libxxxx.so`
     * 编译生成的动态库文件路径和符号链接路径会加入到 `LIB_TARGETS` 变量
