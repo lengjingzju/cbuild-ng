@@ -19,7 +19,8 @@ DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_O
 
 CONF_CC        ?= gcc
 CONF_CFLAGS     = -I. -I./include -I./parser -I./lxdialog
-CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
+CONF_LDFLAGS    = $(shell command -v apt > /dev/null && echo '-static')
+CONF_LDFLAGS   += $(EXTRA_LDFLAGS)
 
 CONF_CFLAGS    += $(shell sh mconf-cfg.sh | grep "cflags=" | sed 's/cflags="\(.*\)"/\1/')
 CONF_LDFLAGS   += $(shell sh mconf-cfg.sh | grep "libs=" | sed 's/libs="\(.*\)"/\1/')

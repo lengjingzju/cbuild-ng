@@ -533,8 +533,11 @@ Note: Users need to fill in the SOC-related parameters in the `process_machine.s
 * ENV_TOOL_DIR      : The script tools directory
 * ENV_DOWN_DIR      : The path where the download package is saved
 * ENV_CACHE_DIR     : The path where the compilation cache is saved
-* ENV_MIRROR_URL    : The mirror URL for source code and build cache
+* ENV_MIRROR_URL    : The internal HTTP mirror URL for source code and build cache
     * Users can use the command `python -m http.server <port>` to quickly create an HTTP server
+* ENV_MIRROR_CFG    : The external HTTP mirror configuration file path for source code
+    * The content is JSON format, referring to the `DEF_MIRROR_DICT` in `scripts/bin/process_mirror.py`
+
 <br>
 
 * ENV_TOP_OUT       : The root output directory
@@ -576,7 +579,7 @@ Note: bitbake cann't directly use the environment variables of the current shell
 #### Functions of Environment Template
 
 * `$(call get_version, version_file, version_macro, delimiter)` : Extracts the version defined in a file
-    * The file must define the version in the following format: `#define version_macro 0xabcdef` 
+    * The file must define the version in the following format: `#define version_macro 0xabcdef`
     * The function splits the hex value into two-character groups (removing leading zero from each group) and joins them with the specified delimiter
     * Example: If `json.h` contains `#define JSON_VERSION 0x030305` , calling `$(call get_version,json.h,JSON_VERSION, )` will output `3 3 5`
 * `$(call link_hdrs)`   : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
@@ -1202,51 +1205,72 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 
 ## Configure CBuild-ng Environment
 
-The compilation environment can be a host environment or a docker environment, taking `Ubuntu 20.04` as an example.
+The compilation environment can be a host environment or a docker environment, taking `Ubuntu 20.04` / `Ubuntu 24.04` / `Debian 13.0` / `Fedora 42` / `AlmaLinux 10` / `RockyLinux 10` / `Manjaro 25.0.6` as examples.
 
 
-### Use Host Environment(Ubuntu)
+Note1: Kconfig on `RedHat` / `Arch` series Linuxs can not be statically compiled (reason: ncurses develop's static library uses the dynamic library operation interface of the `dlopen` class, which is problematic). The following modifications are needed: `CONF_LDFLAGS    = $(shell command -v apt > /dev/null && echo '-static')` in `scripts/kconfig/Makefile` .
+
+Note2: Ubuntu 24.04 / Debian 13 / Manjaro 25.0.6 and others (Python >= 3.11) using `sudo pip3 install` require the option `--break-system-packages` .
+
+
+### Use Host Environment(Ubuntu/Debian)
 
 * Just install the following software packages on the host:
 
 ```sh
 $ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
     pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
-    git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
-$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
-$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
-$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+    time git subversion curl wget rsync vim gawk texinfo gettext autopoint openssl libssl-dev
+$ sudo apt install gcc-multilib g++-multilib libc6-dev-i386 # for compiling sdl/valgrind/util-linux...
+$ sudo pip3 install meson
+$ sudo pip3 install ninja
+$ sudo pip3 install requests
 ```
 
-### Use Host Environment(RedHat)
+### Use Host Environment(Fedora/AlmaLinux/RockyLinux)
 
-* The package names on the RedHat system may be different, for example, the installation packages for Fedora42 are as follows:
+* AlmaLinux/RockyLinux and others require the activation of additional repositories (Fedora does not require this operation)
+
+```sh
+$ sudo dnf config-manager --set-enabled crb
+$ sudo dnf install epel-release
+$ sudo dnf config-manager --set-enabled epel
+$ sudo dnf clean all && sudo dnf makecache
+```
+
+* The package names on the RedHat system may be different, for example:
     * The names of `autotools-dev` `libncurses-dev` `libssl-dev` are changed
     * The packages of `glibc-static` and `libstdc++-static` need to be additionally installed
 
 ```sh
-$ sudo dnf install glibc-static libstdc++-static gcc binutils gdb clang llvm cmake automake autoconf automake libtool \
+$ sudo dnf install glibc-static libstdc++-static \
+    gcc gcc-c++ binutils gdb clang llvm cmake autoconf automake \
     pkg-config bison flex yasm ncurses-devel libtool graphviz python3-pip \
-    git subversion curl wget rsync vim gawk texinfo gettext openssl openssl-devel autopoint
-$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
-$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
-$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
+    time git subversion curl wget rsync vim gawk texinfo gettext gettext-devel openssl openssl-devel
+$ sudo dnf install glibc-devel.i686 libstdc++-devel.i686 # for compiling sdl/valgrind/util-linux...
+$ sudo pip3 install meson
+$ sudo pip3 install ninja
+$ sudo pip3 install requests
 ```
 
-* Kconfig on RedHat system can not be statically compiled (reason: ncurses develop's static library uses the dynamic library operation interface of the `dlopen` class, which is problematic). The following modifications are needed:
+
+### Use Host Environment(Manjaro)
+
+* Just install the following software packages on the host:
 
 ```sh
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index d0d5f87..9d40741 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -19,7 +19,7 @@ DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_O
-
- CONF_CC        ?= gcc
- CONF_CFLAGS     = -I. -I./include -I./parser -I./lxdialog
--CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
-+CONF_LDFLAGS    = $(EXTRA_LDFLAGS)
+$ sudo pacman -Syu
+$ sudo pacman -S --needed base-devel gcc binutils gdb clang llvm cmake automake autoconf \
+    pkgconf bison flex yasm ncurses libtool graphviz python-pip \
+    time git subversion curl wget rsync vim gawk texinfo gettext openssl  \
+    lib32-gcc-libs lib32-glibc
+$ sudo pip3 install meson
+$ sudo pip3 install ninja
+$ sudo pip3 install requests
 ```
+
+Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. Not only does it need to change the default shell in `/etc/passwd` , but it may also need to change the default shell in the terminal `konsole` settings.
+
 
 ### Use Docker Environment
 

@@ -517,7 +517,8 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 * ENV_TOOL_DIR      : 工程的脚本工具目录
 * ENV_DOWN_DIR      : 下载包的保存路径
 * ENV_CACHE_DIR     : 包的编译缓存保存路径
-* ENV_MIRROR_URL    : 下载包的 http 镜像，可用命令 `python -m http.server 端口号` 快速创建 http 服务器
+* ENV_MIRROR_URL    : 下载源码包和编译缓冲的内部HTTP镜像URL，可用命令 `python -m http.server 端口号` 快速创建 http 服务器
+* ENV_MIRROR_CFG    : 下载源码包的外部HTTP镜像配置文件路径，内容格式是JSON，参考 `scripts/bin/process_mirror.py` 的 `DEF_MIRROR_DICT`
 <br>
 
 * ENV_TOP_OUT       : 工程的输出根目录
@@ -1185,51 +1186,87 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 
 ## 配置 CBuild-ng 的编译环境
 
-编译环境可选主机环境或 docker 环境，以 `Ubuntu 20.04` 为例。
+编译环境可选主机环境或 docker 环境，以 `Ubuntu 20.04` / `Ubuntu 24.04` / `Debian 13.0` / `Fedora 42` / `AlmaLinux 10` / `RockyLinux 10` / `Manjaro 25.0.6` 为例。
+
+注1：RedHat/Arch系的Linux上kconfig无法静态编译(原因：ncurses-devel的静态库中使用了 `dlopen` 类的动态库操作接口，是有问题的)，需要如下修改： `CONF_LDFLAGS    = $(shell command -v apt > /dev/null && echo '-static')` 实现在 `scripts/kconfig/Makefile` 。
+
+注2：Ubuntu 24.04 / Debian 13 / Manjaro 25.0.6 等(Python >= 3.11)使用 `sudo pip3 install` 需要加上选项 `--break-system-packages` 。
 
 
-### 使用主机环境(Ubuntu)
+### 使用主机环境(Ubuntu/Debian)
 
 * 主机安装以下软件包即可
 
 ```sh
 $ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
     pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
-    git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
+    time git subversion curl wget rsync vim gawk texinfo gettext autopoint openssl libssl-dev
+$ sudo apt install gcc-multilib g++-multilib libc6-dev-i386 # 编译 sdl/valgrind/util-linux 等需要
 $ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### 使用主机环境(RedHat)
+### 使用主机环境(Fedora/AlmaLinux/RockyLinux)
 
-* RedHat系上包名可能不同，例如Fedora42的安装包如下：
+* AlmaLinux/RockyLinux等需要启用额外的仓库(Fedora无需此操作)
+
+```sh
+# 启用开发和附加仓库
+$ sudo dnf config-manager --set-enabled crb
+$ sudo dnf install epel-release
+$ sudo dnf config-manager --set-enabled epel
+
+# 替换基础源(AlmaLinux)
+$ sudo sed -i -e 's|^mirrorlist=|#mirrorlist=|g' \
+    -e 's|^# *baseurl=https://repo.almalinux.org|baseurl=https://mirrors.aliyun.com|g' \
+    /etc/yum.repos.d/almalinux*.repo
+
+# 替换基础源(RockyLinux)
+$ sudo sed -i -e 's|^mirrorlist=|#mirrorlist=|g' \
+    -e 's|^# *baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.aliyun.com/rockylinux|g' \
+    /etc/yum.repos.d/[Rr]ocky*.repo
+
+# 替换EPEL源(AlmaLinux/RockyLinux)
+$ sudo sed -i -e 's|^metalink=|#metalink=|g' \
+    -e 's|^# *baseurl=https://download.example/pub|baseurl=https://mirrors.aliyun.com|g' \
+    /etc/yum.repos.d/epel*.repo
+
+# 刷新缓存
+sudo dnf clean all && sudo dnf makecache
+```
+
+* RedHat系上包名可能不同，例如：
     * `autotools-dev` 、 `libncurses-dev` 、 `libssl-dev` 命名有变化
     * `glibc-static` 和 `libstdc++-static` 需额外安装
 
 ```sh
-$ sudo dnf install glibc-static libstdc++-static gcc binutils gdb clang llvm cmake automake autoconf automake libtool \
+$ sudo dnf install glibc-static libstdc++-static \
+    gcc gcc-c++ binutils gdb clang llvm cmake autoconf automake \
     pkg-config bison flex yasm ncurses-devel libtool graphviz python3-pip \
-    git subversion curl wget rsync vim gawk texinfo gettext openssl openssl-devel autopoint
+    time git subversion curl wget rsync vim gawk texinfo gettext gettext-devel openssl openssl-devel
+$ sudo dnf install glibc-devel.i686 libstdc++-devel.i686 # 编译 sdl/valgrind/util-linux 等需要
 $ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-* RedHat系上kconfig无法静态编译(原因：ncurses-devel的静态库中使用了 `dlopen` 类的动态库操作接口，是有问题的)，需要如下修改：
+
+### 使用主机环境(Manjaro)
+
+* 主机安装以下软件包即可
 
 ```sh
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index d0d5f87..9d40741 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -19,7 +19,7 @@ DEPEND_OBJS     = $(patsubst %.o,%.d,$(AUTOGEN_OBJS) $(PARSER_OBJS) $(LXDIALOG_O
-
- CONF_CC        ?= gcc
- CONF_CFLAGS     = -I. -I./include -I./parser -I./lxdialog
--CONF_LDFLAGS    = -static $(EXTRA_LDFLAGS)
-+CONF_LDFLAGS    = $(EXTRA_LDFLAGS)
+$ sudo pacman -Syu
+$ sudo pacman -S --needed base-devel gcc binutils gdb clang llvm cmake automake autoconf \
+    pkgconf bison flex yasm ncurses libtool graphviz python-pip \
+    time git subversion curl wget rsync vim gawk texinfo gettext openssl  \
+$ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install ninja -i https://pypi.tuna.tsinghua.edu.cn/simple
+$ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
+
+注：Manjaro默认终端是 `zsh` ，需要改为 `bash` ，不仅要改 `/etc/passwd` 中的默认shell，还可能需要改终端 `konsole` 设置中的默认shell。
 
 
 ### 使用 Docker 环境

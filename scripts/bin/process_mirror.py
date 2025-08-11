@@ -11,22 +11,26 @@ DEF_MIRROR_DICT = {
         "https://mirrors.ustc.edu.cn/gnu/",
         "https://mirrors.aliyun.com/gnu/"
     ],
+    "https://ftp.gnu.org/pub/gnu/": [
+        "https://mirrors.ustc.edu.cn/gnu/",
+        "https://mirrors.aliyun.com/gnu/"
+    ],
     "https://www.kernel.org/pub/": [
         "https://mirrors.ustc.edu.cn/kernel.org/"
     ]
 }
 
-def get_mirror_urls(url, cfg = ""):
+def get_mirror_urls(url):
     ulist = []
     udict = {}
 
-    if cfg:
-        if os.path.exists(cfg):
-            with open(cfg, "r") as fp:
-                try:
-                    udict = eval(fp.read())
-                except:
-                    pass
+    cfg = os.getenv('ENV_MIRROR_CFG')
+    if cfg and os.path.exists(cfg):
+        with open(cfg, "r") as fp:
+            try:
+                udict = eval(fp.read())
+            except:
+                udict = DEF_MIRROR_DICT
     else:
         udict = DEF_MIRROR_DICT
 
@@ -43,8 +47,6 @@ def get_mirror_urls(url, cfg = ""):
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         get_mirror_urls(sys.argv[1])
-    elif len(sys.argv) == 3:
-        get_mirror_urls(sys.argv[1], cfg = sys.argv[2])
     else:
-        print("Usage: %s <url> [cfg_file]" % (sys.argv[0]))
+        print("Usage: %s <url>" % (sys.argv[0]))
 
