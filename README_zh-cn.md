@@ -2,6 +2,12 @@
 
 [English Edition](./README.md)
 
+[CBuild-ng：构建系统的范式转移与价值重构](./notes/cbuild_zh-cn.md)
+
+[IMake：让构建回归Makefile本质，前所未有的简单体验](./notes/imake_zh-cn.md)
+
+[CPK：一场回归软件本真的打包分发哲学实践](./notes/cpk_zh-cn.md)
+
 ## 概述
 
 CBuild-ng是一款由中国开发者打造的高性能编译系统，专为嵌入式Linux及复杂软件栈构建而设计。它以轻量级核心（仅4000行代码）、极简设计和灵活兼容为核心理念，融合传统编译与Yocto模式的优势，提供比Buildroot更强大的功能，同时规避Yocto的复杂性。
