@@ -25,12 +25,12 @@ GMP_VER        ?= 6.3.0
 MPFR_VER       ?= 4.2.2
 MPC_VER        ?= 1.3.1
 ISL_VER        ?= 0.27
-BINUTILS_VER   ?= 2.44
+BINUTILS_VER   ?= 2.45
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
 GDB_VER        ?= 16.3
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
-GLIBC_VER      ?= 2.41
+GLIBC_VER      ?= 2.42
 USE_LIBXCRYPT  := $(shell echo "$(GLIBC_VER) > 2.38" | bc)
 ifeq ($(USE_LIBXCRYPT),1)
 LIBXCRYPT_VER  ?= 4.4.38

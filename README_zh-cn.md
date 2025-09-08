@@ -47,7 +47,7 @@ CBuild-ng 对比 [CBuild](https://github.com/lengjingzju/cbuild) 最大的区别
 * 内核社区认可：项目贡献的Kconfig补丁已合并至Linux 5.19+主线，技术实力获国际认可。
 * 全中文技术栈：从文档到社区讨论全面支持中文，降低本土开发者参与门槛。
 * 使用方高度评价：某公司在CES2024上称其开发平台为颠覆性创新(Cooper Core即是CBuild，Cbuild-ng比Cbuild更遵循标准，功能更强大)。
-    * [微信公众号文章](https://mp.weixin.qq.com/s?__biz=MzUxNjUyNjAwNg==&mid=2247485681&idx=1&sn=a40da02663c6d27ea63eb28451095bbf&chksm=f875874e9d244c5cd4e3fec1d0a26469cba18277642af5dd5eb86eda58c3871d3f783f9d78a7&mpshare=1&scene=1&srcid=0112YvuxcOvCqTb2WhEqJGOn&sharer_shareinfo=2ff8614102cab4059235848ebb37a645&sharer_shareinfo_first=c944849c1a53d51b268847a57c945069&exportkey=n_ChQIAhIQC0jysnU80ORUSwbcNGn9TxKfAgIE97dBBAEAAAAAAEWNId2KaLMAAAAOpnltbLcz9gKNyK89dVj0crs1w3S3dkK0YOtHZXXYm26U4Sn7iQnEsI9BaHTDNQJi0z%2F3MgYqf9czIPlkBs%2FnUKwf5Rj5nPqJU5x1WN%2B2%2FBv5oh2YQMBtYk09W3LmEszADTCfJtU78xe6uXnTAXXIPlfXKwOfTGs46tmLVZkffDzww66N%2BaXQm1aikAxWfTw0JilDxvQba4fpYk8nMxuDRUC4GlGYEyNcHYL1Hi518R3T1DK4T2jj1vr%2Fr%2Bkyo2qpp2VpxLOEtsl8Vx1RfTQEnbWflkTB8ImlJKJwN78BHIgbvM4Sra%2BbYrLXWb%2FrhcaoBni5HqyE49AGuDSCULcL1GR%2FfOayftvl&acctmode=0&pass_ticket=ZutZ1C5h7DFNHhjqPfFzxvsZn7AwriXI3P8gmInU67TJ6fAnWGvdPrMDg0epCVbv&wx_header=0#rd)
+    * [微信公众号文章](https://mp.weixin.qq.com/s?__biz=MzUxNjUyNjAwNg==&mid=2247485681&idx=1&sn=a40da02663c6d27ea63eb28451095bbf)
     * [官网链接](https://www.ambarella.com/cooper/)
 
 

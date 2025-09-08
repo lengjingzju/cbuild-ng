@@ -26,9 +26,9 @@ gcc_arch_option=
 linux_arch=
 linux_src=
 linux_out=
-linux_version=6.12.38
+linux_version=6.12.45
 
-gcc_version=15.1.0
+gcc_version=15.2.0
 
 if [ ! -z $soc ]; then
     case $soc in
@@ -53,6 +53,25 @@ if [ ! -z $soc ]; then
             gcc_arch_option="--with-arch=$arch --with-tune=$cpu --with-fpu=neon --with-float=hard"
             ;;
 
+        'riscv64')
+            machine=qemuriscv64
+            cpu=$soc
+            arch=rv64gc
+            gcc_arch_option="--with-arch=$arch --with-abi=lp64d"
+            ;;
+        'riscv32')
+            machine=qemuriscv32
+            cpu=$soc
+            arch=rv32gc
+            gcc_arch_option="--with-arch=$arch --with-abi=ilp32d"
+            ;;
+
+        'loongarch64')
+            machine=qemuloongarch64
+            cpu=$soc
+            arch=loongarch64
+            gcc_arch_option="--with-arch=$arch --with-abi=lp64d"
+            ;;
         *)
             echo "ERROR: $0: Invalid soc ($soc)"
             exit 1;
@@ -74,7 +93,27 @@ if [ ! -z $soc ]; then
             linux_arch=arm
             cross_target=arm-linux-gnueabihf
             ;;
-        *)
+
+        'rv64gc')
+            cpu_family=riscv64
+            endian=little
+            linux_arch=riscv
+            cross_target=riscv64-linux-gnu
+            ;;
+        'rv32gc')
+            cpu_family=riscv32
+            endian=little
+            linux_arch=riscv
+            cross_target=riscv32-linux-gnu
+            ;;
+
+        'loongarch64')
+            cpu_family=loongarch64
+            endian=little
+            linux_arch=loongarch
+            cross_target=loongarch64-linux-gnu
+            ;;
+       *)
             echo "ERROR: $0: Invalid arch ($arch) for soc ($soc)"
             exit 1;
             ;;

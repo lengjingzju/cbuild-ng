@@ -42,11 +42,11 @@ DESCRIPTION      = FFmpeg is the leading multimedia framework, able to decode, e
 -include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 7.1.1
+VERSION          = 8.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ffmpeg.org/releases/$(SRC_NAME)
-SRC_MD5          = 26f2bd7d20c6c616f31d7130c88d7250
+SRC_MD5          = 2c91c725fb1b393618554ff429e4ae43
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -64,7 +64,7 @@ $(eval $(call ft-config,CONFIG_FFMPEG_EN_AVCODEC,--enable-avcodec,--disable-avco
 $(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFORMAT,--enable-avformat,--disable-avformat))
 $(eval $(call ft-config,CONFIG_FFMPEG_EN_SWRESAMPLE,--enable-swresample,--disable-swresample))
 $(eval $(call ft-config,CONFIG_FFMPEG_EN_SWSCALE,--enable-swscale,--disable-swscale))
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_POSTPROC,--enable-postproc,--disable-postproc))
+#$(eval $(call ft-config,CONFIG_FFMPEG_EN_POSTPROC,--enable-postproc,--disable-postproc))
 
 # features to support
 $(eval $(call ft-config,CONFIG_FFMPEG_FT_ALSA,--enable-alsa,--disable-alsa))
