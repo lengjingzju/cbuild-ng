@@ -151,6 +151,54 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
     ```
 
 
+## Overall Structure
+
+```
+├─Makefile                 // Top-level Makefile entry driving the overall build process
+│
+└─scripts                  // Core scripts directory containing environment setup, build, and packaging utilities
+  │  build.env             // Environment variables for classic build
+  │  clean.env             // Environment variables for clean operations
+  │  yocto.env             // Environment variables for Yocto build
+  │
+  ├─bin                    // Core executable scripts
+  │  convert_recipe.py     // Converts Yocto recipes into Makefile scripts that include inc.rule.mk
+  │  exec_patch.sh         // Automated patch application script
+  │  fetch_package.sh      // Fetches source code via git, svn, http, and mirror sources
+  │  gen_build_chain.py    // Core dependency analysis; generates top-level Makefile and Kconfig based on dependencies
+  │  gen_cpk_binary.sh     // CPK packaging: creates compressed archives with self-extracting headers
+  │  gen_cpk_package.py    // Processes standalone CPK packages, bundles runtime libraries, and modifies RPATH for cross-distro compatibility
+  │  gen_depends_image.sh  // Generates dependency graphs
+  │  gen_package_infos.py  // Generates license information files (HTML/TXT)
+  │  meson_cross.sh        // Handles cross-compilation for the Meson build system
+  │  process_cache.sh      // Manages build cache (local and LAN)
+  │  process_machine.sh    // Defines chip-specific environment variables (user-configurable)
+  │  process_mirror.py     // Manages and processes domestic source code mirrors
+  │  process_sysroot.sh    // Handles file installation and sysroot setup
+  │  regex_deps.svg        // Illustration of regex for hard dependencies
+  │  regex_incdeps.svg     // Illustration of regex for recursive subdirectory dependencies (optimized search)
+  │  regex_vdeps.svg       // Illustration of regex for virtual dependencies
+  │
+  ├─core                   // Core Makefile template directory
+  │  inc.app.mk            // Application build template
+  │  inc.conf.mk           // Kconfig configuration template
+  │  inc.env.mk            // Environment setup template
+  │  inc.ins.mk            // Installation process template
+  │  inc.makes             // Aggregated templates for using core features outside CBuild-ng
+  │  inc.mod.mk            // Kernel driver build template (supports output-source separation)
+  │  inc.rule.mk           // Main build template supporting Autotools, CMake, Meson, and traditional Makefile
+  │
+  ├─kconfig                // Kconfig system from Linux 6.12 (requires no modification)
+  │
+  ├─meta-cbuild            // Meta-layer for using CBuild-ng with Yocto
+  │
+  ├─progress               // Progress bar display module (non-core auxiliary component)
+  │
+  └─toolchain              // Scripts for building the latest GCC cross-compilation toolchain
+      └─ Makefile
+```
+
+
 ## Task Analysis Processing gen_build_chain.py
 
 ### System Framework

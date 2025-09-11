@@ -10,7 +10,7 @@
 
 ## 概述
 
-CBuild-ng是一款由中国开发者打造的高性能编译系统，专为嵌入式Linux及复杂软件栈构建而设计。它以轻量级核心（仅4000行代码）、极简设计和灵活兼容为核心理念，融合传统编译与Yocto模式的优势，提供比Buildroot更强大的功能，同时规避Yocto的复杂性。
+CBuild-ng是一款由中国开发者打造的高性能编译系统，专为嵌入式Linux及复杂软件栈构建而设计。它以轻量级核心（仅7000行代码）、极简设计和灵活兼容为核心理念，融合传统编译与Yocto模式的优势，提供比Buildroot更强大的功能，同时规避Yocto的复杂性。
 
 * 零门槛上手：无需学习新语言，基于Python/Shell/Makefile脚本实现，配置直观（支持类Linux的`menuconfig`），比Buildroot/Yocto更易理解。
 * 双模式驱动：
@@ -154,6 +154,55 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 
         So the kernel should change the included path to avoid the copy operation.
     ```
+
+
+## 总体结构
+
+```
+├─Makefile                  // 顶层 Makefile 入口，驱动整体构建流程
+│
+└─scripts                   // 核心脚本目录，包含环境设置、编译及打包等功能
+  │  build.env              // 经典构建（classic build）环境变量配置
+  │  clean.env              // 清理操作环境变量配置
+  │  yocto.env              // Yocto 构建环境变量配置
+  │
+  ├─bin                     // 核心可执行脚本目录
+  │  convert_recipe.py      // 将 Yocto recipe 初步转换为调用 inc.rule.mk 的 Makefile 脚本
+  │  exec_patch.sh          // 自动化补丁应用脚本
+  │  fetch_package.sh       // 源码获取脚本，支持 git、svn、http 及镜像下载
+  │  gen_build_chain.py     // 核心依赖分析脚本，根据依赖关系生成顶层 Makefile 与 Kconfig
+  │  gen_cpk_binary.sh      // CPK 打包脚本，生成带自解压头的压缩包
+  │  gen_cpk_package.py     // CPK 包处理脚本，收集运行时依赖并修改 RPATH，实现跨发行版运行
+  │  gen_depends_image.sh   // 生成项目依赖图
+  │  gen_package_infos.py   // 生成软件许可信息文件（HTML/TXT 格式）
+  │  meson_cross.sh         // 处理 Meson 构建系统的交叉编译配置
+  │  process_cache.sh       // 编译缓存管理，支持本地与局域网缓存
+  │  process_machine.sh     // 芯片相关环境变量配置（用户可自定义）
+  │  process_mirror.py      // 国内源码镜像管理与处理
+  │  process_sysroot.sh     // 处理安装文件的复制与系统根目录设置
+  │  regex_deps.svg         // 实依赖规则正则表达式示意图
+  │  regex_incdeps.svg      // 子目录递归依赖规则正则表达式示意图（优化搜索性能）
+  │  regex_vdeps.svg        // 虚依赖规则正则表达式示意图
+  │
+  ├─core                    // 构建系统核心 Makefile 模板目录
+  │  inc.app.mk             // 应用程序编译模板
+  │  inc.conf.mk            // Kconfig 配置模板
+  │  inc.env.mk             // 环境设置模板
+  │  inc.ins.mk             // 安装过程模板
+  │  inc.makes              // 聚合模板，便于在非 CBuild-ng 工程中使用核心功能
+  │  inc.mod.mk             // 内核驱动编译模板（支持编译输出与源码分离）
+  │  inc.rule.mk            // 主控构建模板，支持 Autotools/CMake/Meson/Makefile 等多种构建系统
+  │
+  ├─kconfig                 // 源自 Linux 6.12 的 Kconfig 系统，无需修改
+  │
+  ├─meta-cbuild             // 供 Yocto 使用 CBuild-ng 的元层（meta-layer）
+  │
+  ├─progress                // 进度条显示模块，属辅助功能非核心代码
+  │
+  └─toolchain               // 用于构建最新 GCC 交叉编译工具链的脚本
+      └─ Makefile
+```
+
 
 ## 任务分析处理
 

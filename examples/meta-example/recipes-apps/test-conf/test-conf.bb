@@ -4,7 +4,6 @@ SRC_URI = ""
 
 inherit cbuild
 inherit kconfig
-inherit sanity
 
 do_configure () {
 	:

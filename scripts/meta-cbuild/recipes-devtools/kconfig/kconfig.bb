@@ -15,7 +15,7 @@ DEP_PREFIX:class-target = "${WORKDIR}/recipe-sysroot"
 DEP_PREFIX:class-native = "${WORKDIR}/recipe-sysroot-native"
 
 do_compile () {
-	oe_runmake O=${WORKDIR}/build CONF_CC="${CC}" EXTRA_LDFLAGS="-L${DEP_PREFIX}/usr/lib"
+	oe_runmake O=${WORKDIR}/build CONF_CC="${CC}" EXTRA_LDFLAGS="-L${DEP_PREFIX}/usr/lib -static"
 }
 
 do_install () {
@@ -24,3 +24,4 @@ do_install () {
 
 BBCLASSEXTEND = "native"
 INSANE_SKIP += "native-last"
+INSANE_SKIP:${PN} += "ldflags"

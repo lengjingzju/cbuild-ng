@@ -6,7 +6,6 @@ DEPENDS += "test-app1"
 RDEPENDS:${PN} += "test-app1"
 
 inherit cbuild
-inherit sanity
 
 do_configure () {
 	:

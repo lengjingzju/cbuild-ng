@@ -73,7 +73,7 @@
             * 需要设置 `KCONFIG_CONFIG_COMMAND = "-f wrapper.mk menuconfig"`
             * 需要设置 `KCONFIG_DEFCONFIG_COMMAND = "-f wrapper.mk defconfig"`
         * 如果 .config 输出目录是编译输出目录，需要设置 `KCONFIG_CONFIG_PATH = "${WORKDIR}/build/.config"`
-    * 使用 Makefile 编译应用继承 `inherit sanity`，使用 cmake 编译应用继承 `inherit cmake`
+    * 使用 cmake 编译应用继承 `inherit cmake`
     * 编译外部内核模块继承 `inherit module`
     * 编译主机本地工具继承 `inherit native`
     * 一个配方同时支持交叉编译和本地编译需要声明 `BBCLASSEXTEND = "native"`，无需继承 `inherit native`
@@ -92,8 +92,8 @@
         FILES:${PN}-dev = "${includedir}"
         FILES:${PN} = "${base_libdir} ${libdir} ${bindir} ${datadir}"
         ```
-    * 继承 `inherit sanity` 或 `inherit cmake` 时需要按实际情况指定打包的目录，否则 do_package 任务出错
-    * 继承 `inherit module` 不需要指定头文件和模块文件的打包的目录，但如果安装其它文件时，需要指定这个文件的打包目录
+    * 编译应用时需要按实际情况指定打包的目录，否则 do_package 任务出错
+    * 编译驱动时不需要指定头文件和模块文件的打包的目录，但如果安装其它文件时，需要指定这个文件的打包目录
     * 忽略某些警告和错误
         * `ALLOW_EMPTY:${PN} = "1"` 忽略包安装的文件只有头文件或为空，生成镜像时 do_rootfs 错误
         * `INSANE_SKIP:${PN} += "dev-so"` 忽略安装的文件是符号链接的错误
@@ -117,7 +117,6 @@
     #KCONFIG_CONFIG_PATH = "${WORKDIR}/build/.config"
     #inherit kconfig
 
-    inherit sanity
     #inherit cmake
     #inherit module
     #inherit native

@@ -3,7 +3,6 @@ LIC_FILES_CHKSUM = ""
 SRC_URI = ""
 
 inherit cbuild
-inherit sanity
 
 do_configure () {
 	:
