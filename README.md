@@ -8,6 +8,8 @@
 
 [CPK: A Philosophical Practice of Returning to the Essence of Software Packaging and Distribution](./notes/cpk.md)
 
+[Ten Design Principles for Software Frameworks](./notes/framework.md)
+
 ## Overview
 
 CBuild-ng is a high-performance compilation system developed by Chinese engineers, designed for building embedded Linux systems and complex software stacks. With a lightweight core (only 4,000 lines of code), minimalist design, and flexible compatibility, it combines the strengths of traditional compilation and Yocto patterns, delivering more powerful features than Buildroot while avoiding Yocto's complexity.

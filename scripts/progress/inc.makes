@@ -5,7 +5,7 @@
 # https://github.com/lengjingzju/cbuild-ng #
 ############################################
 
-############# Date: 2023-11-16 #############
+############# Date: 2025-08-08 #############
 
 # The default behavior only includes inc.env.mk and inc.ins.mk.
 # INC_MAKES can be set to a combination of `disenv` `conf` `app` `mod` `disins`.
@@ -21,6 +21,7 @@ ifeq ($(filter disenv,$(INC_MAKES)), )
 
 COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 TOLOG          ?= $(if $(filter -s,$(MFLAG)),1>/dev/null)
+PREAT          ?= @
 
 INSTALL_HDR    ?= $(PACKAGE_NAME)
 SEARCH_HDRS    ?= $(PACKAGE_DEPS)
@@ -30,11 +31,13 @@ else
 PACKAGE_ID     := $(PACKAGE_NAME)-native
 endif
 
-ENV_OPTIMIZER  ?= release
-ifeq ($(ENV_OPTIMIZER),debug)
+ENV_BUILD_TYPE ?= optimized
+ifeq ($(ENV_BUILD_TYPE),debug)
 OPTIMIZER_FLAG ?= -O0 -g -ggdb
-else ifeq ($(ENV_OPTIMIZER),speed)
+else ifeq ($(ENV_BUILD_TYPE),release)
 OPTIMIZER_FLAG ?= -O3
+else ifeq ($(ENV_BUILD_TYPE),minsize)
+OPTIMIZER_FLAG ?= -Os
 else
 OPTIMIZER_FLAG ?= -O2
 endif
@@ -108,6 +111,13 @@ ifneq ($(DEPDIR), )
 DEP_PREFIX     := $(DEPDIR)
 endif
 
+# convert `#define XXXXX 0xabcdef` to `ab cd ed`, and remove the prefix 0 of `mn`
+define get_version
+$(shell cat $1 | grep '^#define.*$2' | \
+	sed 's/.*0x\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\1$3\2$3\3/g' | \
+	sed 's/^0//g' | sed 's/$30/$3/g')
+endef
+
 define link_hdrs
 $(addprefix -I,$(addprefix $(DEP_PREFIX),/include /usr/include) \
 	$(if $(SEARCH_HDRS),$(wildcard \
@@ -151,6 +161,21 @@ endif
 
 ifneq ($(ENV_BUILD_MODE),yocto)
 
+define ft-config
+ifneq ($(NATIVE_BUILD),y)
+FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
+$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
+else
+FT_CONFIG       += $$(if $$(filter y,$$($1_NATIVE)),$2,$3)
+$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1_NATIVE=$$($1_NATIVE))
+endif
+endef
+
+define FT-CONFIG
+FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
+$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
+endef
+
 PREPARE_SYSROOT := -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
                   NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
 
@@ -178,15 +203,15 @@ export CROSS_COMPILE
 endif
 
 ifeq ($(CC_TOOL),clang)
-CC             := $(CROSS_COMPILE)clang
-CPP            := $(CROSS_COMPILE)clang -E
-CXX            := $(CROSS_COMPILE)clang++
-AS             := $(CROSS_COMPILE)llvm-as
-LD             := $(CROSS_COMPILE)lld
-AR             := $(CROSS_COMPILE)llvm-ar
-RANLIB         := $(CROSS_COMPILE)llvm-ranlib
-OBJCOPY        := $(CROSS_COMPILE)llvm-objcopy
-STRIP          := $(CROSS_COMPILE)llvm-strip
+CC             := clang
+CPP            := clang -E
+CXX            := clang++
+AS             := llvm-as
+LD             := lld
+AR             := llvm-ar
+RANLIB         := llvm-ranlib
+OBJCOPY        := llvm-objcopy
+STRIP          := llvm-strip
 else
 CC             := $(CROSS_COMPILE)gcc
 CPP            := $(CROSS_COMPILE)gcc -E
@@ -229,6 +254,20 @@ endif
 export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
 
 endif # NATIVE_BUILD
+
+ifeq ($(CC_TOOL),clang)
+ifeq ($(CROSS_COMPILE), )
+clang_ldflags  := -fuse-ld=lld
+else  # CROSS_COMPILE
+CROSS_SYSROOT  := $(shell PATH=$(PATH) $(CROSS_COMPILE)gcc -print-sysroot)
+ifeq ($(CROSS_SYSROOT),/)
+CROSS_SYSROOT  := /usr/$(patsubst %-,%,$(CROSS_COMPILE))
+endif
+clang_cpflags  := --target=$(patsubst %-,%,$(CROSS_COMPILE)) --sysroot=$(CROSS_SYSROOT)
+clang_ldflags  := $(clang_cpflags) -fuse-ld=lld
+endif # CROSS_COMPILE
+endif # clang
+
 endif # ENV_BUILD_MODE
 
 # Defines the GNU standard installation directories
@@ -267,6 +306,7 @@ endif
 ifneq ($(filter conf,$(INC_MAKES)), )
 ifeq ($(KERNELRELEASE), )
 
+PREAT            ?= @
 CONF_WORKDIR     ?= $(ENV_NATIVE_ROOT)/objects/kconfig
 CONF_SRC         ?= $(ENV_MAKE_DIR)/../kconfig
 CONF_PATH        ?= $(CONF_WORKDIR)/image/usr/bin
@@ -278,11 +318,13 @@ CONF_HEADER      ?= $(shell echo __$(PACKAGE_NAME)_CONFIG_H__ | tr '[:lower:]' '
 CONF_APPEND_CMD  ?=
 
 CONFIG_PATH      := $(CONF_OUT)/.config
-AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
 AUTOHEADER_PATH  := $(CONF_OUT)/config.h
+AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
+RUSTCCFG_PATH    := $(CONF_OUT)/autoconfig/rustc.conf
 CONF_OPTIONS     := $(KCONFIG) --configpath $(CONFIG_PATH) \
+					--autoheaderpath $(AUTOHEADER_PATH) \
 					--autoconfigpath $(AUTOCONFIG_PATH) \
-					--autoheaderpath $(AUTOHEADER_PATH)
+					--rustccfgpath $(RUSTCCFG_PATH)
 
 define gen_config_header
 	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --syncconfig && \
@@ -334,11 +376,11 @@ endif
 
 buildkconfig:
 ifeq ($(wildcard $(CONF_PATH)/mconf), )
-	@unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
+	$(PREAT)unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
 endif
 
 cleankconfig:
-	@-$(MAKE) $(CONF_MAKES) clean
+	$(PREAT)-$(MAKE) $(CONF_MAKES) clean
 
 else
 
@@ -347,8 +389,8 @@ buildkconfig cleankconfig:
 endif
 
 menuconfig: buildkconfig
-	@mkdir -p $(CONF_OUT)
-	@mtime="$(if $(wildcard $(CONFIG_PATH)),$(if $(wildcard $(AUTOHEADER_PATH)),$$(stat -c %Y $(CONFIG_PATH)),0),0)"; \
+	$(PREAT)mkdir -p $(CONF_OUT)
+	$(PREAT)mtime="$(if $(wildcard $(CONFIG_PATH)),$(if $(wildcard $(AUTOHEADER_PATH)),$$(stat -c %Y $(CONFIG_PATH)),0),0)"; \
 		$(CONF_PREFIX) $(CONF_PATH)/mconf $(CONF_OPTIONS); \
 		if [ "$${mtime}" != "$$(stat -c %Y $(CONFIG_PATH))" ]; then \
 			$(call gen_config_header); \
@@ -360,32 +402,32 @@ ifneq ($(DEF_CONFIG), )
 menuconfig: loadconfig
 
 loadconfig: buildkconfig
-	@if [ ! -e $(CONFIG_PATH) ] || [ ! -e $(config_hash_file) ]; then \
+	$(PREAT)if [ ! -e $(CONFIG_PATH) ] || [ ! -e $(config_hash_file) ]; then \
 		$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG)); \
 	else \
 		$(call sync_config_header); \
 	fi
 
 defconfig: buildkconfig
-	@$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG))
+	$(PREAT)$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG))
 endif
 
 %_config: $(CONF_SAVE_PATH)/%_config buildkconfig
-	@$(call load_specific_config,$<)
+	$(PREAT)$(call load_specific_config,$<)
 
 %_defconfig: $(CONF_SAVE_PATH)/%_defconfig buildkconfig
-	@$(call load_specific_config,$<)
+	$(PREAT)$(call load_specific_config,$<)
 
 %_saveconfig: $(CONFIG_PATH) buildkconfig
-	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
-	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+	$(PREAT)$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
+	$(PREAT)echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
 
 %_savedefconfig: $(CONFIG_PATH) buildkconfig
-	@$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
-	@echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+	$(PREAT)$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
+	$(PREAT)echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
 
 cleanconfig: cleankconfig
-	@rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(dir $(AUTOCONFIG_PATH)) $(AUTOHEADER_PATH)
+	$(PREAT)rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(AUTOHEADER_PATH) $(dir $(AUTOCONFIG_PATH))
 
 endif
 endif
@@ -397,33 +439,41 @@ ifeq ($(KERNELRELEASE), )
 
 COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 SRC_PATH       ?= .
-IGNORE_PATH    ?= .git .pc scripts output
-REG_SUFFIX     ?= c cpp S
+IGNORE_PATH    ?= .git .pc scripts output obj objects
+REG_SUFFIX     ?= c cc cxx cpp S
 ifeq ($(USING_CXX_BUILD_C),y)
 CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
+CCC            := $(CXX)
 else
 CXX_SUFFIX     ?= cc cp cxx cpp CPP c++ C
+CCC            := $(CC)
 endif
 ASM_SUFFIX     ?= S s asm
 
 ifeq ($(SRCS), )
 SRCS           := $(shell find $(SRC_PATH) $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
                       $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
-                  | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs)
+                  | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs) $(ASRCS)
 endif
 
 imake_cpflags  := -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
 imake_ldflags  := -L$(OBJ_PREFIX) -Wl,-rpath-link=$(OBJ_PREFIX)
 prior_ldflags  :=
 
+ifeq ($(CC_TOOL),clang)
+imake_cpflags  += $(clang_cpflags)
+imake_ldflags  += $(clang_ldflags)
+endif
+
 imake_cpflags  += $(call link_hdrs)
 imake_ldflags  += $(call link_libs)
 
 imake_cpflags  += $(OPTIMIZER_FLAG)
-imake_ldflags  += -Wl,-O1
-ifeq ($(ENV_OPTIMIZER),release)
+ifneq ($(ENV_BUILD_TYPE),debug)
 imake_cpflags  += -ffunction-sections -fdata-sections
 imake_ldflags  += -Wl,--gc-sections
+else
+imake_ldflags  += -Wl,-O1
 endif
 #imake_ldflags += -static
 
@@ -432,6 +482,22 @@ imake_cpflags  += -Wextra # This enables some extra warning flags that are not e
 imake_cpflags  += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),1024) # Warn whenever an object is defined whose size exceeds object_byte_size.
 imake_cpflags  += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
 #imake_cpflags += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
+
+# Set SIMD acceleration for ARM and X86/AMD64 for cross build
+ifneq ($(NATIVE_BUILD),y)
+ifeq ($(ENV_SIMD_TYPE),neon)
+imake_cpflags  += -DUSING_NEON
+else ifeq ($(ENV_SIMD_TYPE),sse4)
+imake_cpflags  += -DUSING_SSE128 -msse4
+imake_ldflags  += -msse4
+else ifeq ($(ENV_SIMD_TYPE),avx2)
+imake_cpflags  += -DUSING_AVX256 -mavx2
+imake_ldflags  += -mavx2
+else ifeq ($(ENV_SIMD_TYPE),avx512)
+imake_cpflags  += -DUSING_AVX512 -mavx512bw
+imake_ldflags  += -mavx512bw
+endif
+endif
 
 # Use https://github.com/slimm609/checksec.sh/ to check the secure
 ifeq ($(ENV_SECURITY),y)
@@ -489,14 +555,25 @@ imake_ldflags  += --analyze
 endif
 endif
 
+ifeq ($(ENV_GPROF),y)
+ifneq ($(filter %gcc,$(CC)), )
+# Run the binary, it will generate the file of gmon.out, then run `gprof <bin> gmon.out > analysis.txt`
+# For more description, refer to https://sourceware.org/binutils/docs-2.42/gprof.html
+imake_cpflags  += -pg
+imake_ldflags  += -pg
+endif
+endif
+# Users also can use another performance and analyze tool, like: perf, valgrind
+
 imake_cpflags  += $(IMAKE_CPFLAGS)
 imake_ldflags  += $(IMAKE_LDFLAGS)
 prior_ldflags  += $(PRIOR_LDFLAGS)
 
-CHECK_INFO     += ENV_OPTIMIZER=$(ENV_OPTIMIZER)        \
+CHECK_INFO     += ENV_BUILD_TYPE=$(ENV_BUILD_TYPE)      \
                   ENV_SECURITY=$(ENV_SECURITY)          \
                   ENV_SANITIZER=$(ENV_SANITIZER)        \
                   ENV_ANALYZER=$(ENV_ANALYZER)          \
+                  ENV_GPROF=$(ENV_GPROF)                \
                   USING_CXX_BUILD_C=$(USING_CXX_BUILD_C)\
                   CC=$(CC)                              \
                   CFLAGS=$(CFLAGS)                      \
@@ -537,30 +614,40 @@ define compile_tool
 $(if $(filter $(patsubst %,\%.%,$(CXX_SUFFIX)),$(1)),$(CXX),$(CC))
 endef
 
+define compile_cmd
+	$(PREAT)mkdir -p $$(dir $$@)
+ifeq ($(filter $(1),$(ASM_SUFFIX)), )
+	$(PREAT)$(2) $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
+	$(PREAT)cat $$(patsubst %.o,%.d,$$@) | sed -e 's/#.*//' -e 's/^[^:]*:\s*//' -e 's/\s*\\$$$$//' -e 's/[ \t\v][ \t\v]*/\n/g' | sed -e '/^$$$$/ d' -e 's/$$$$/:/g' >> $$(patsubst %.o,%.d,$$@)
+endif
+	$(PREAT)$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
+ifneq ($(2),$(AS))
+	$(PREAT)$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -o $$@ $$<
+else
+	$(PREAT)$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
+endif
+endef
+
 define compile_obj
 ifeq ($(filter $(1),$(REG_SUFFIX)),$(1))
 ifneq ($(filter %.$(1),$(SRCS)), )
 $$(patsubst %.$(1),$$(OBJ_PREFIX)/%.o,$$(filter %.$(1),$$(SRCS))): $$(OBJ_PREFIX)/%.o: %.$(1)
-	@mkdir -p $$(dir $$@)
-ifeq ($(filter $(1),$(ASM_SUFFIX)), )
-	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) $$(PRIVATE_CPFLAGS) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
-	@cat $$(patsubst %.o,%.d,$$@) | sed -e 's/#.*//' -e 's/^[^:]*:\s*//' -e 's/\s*\\$$$$//' -e 's/[ \t\v][ \t\v]*/\n/g' | sed -e '/^$$$$/ d' -e 's/$$$$/:/g' >> $$(patsubst %.o,%.d,$$@)
-endif
-	@$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
-ifneq ($(2),$(AS))
-	@$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst %.$(1),%.o,$$<)) $$(PRIVATE_CPFLAGS) -o $$@ $$<
-else
-	@$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
-endif
+$(call compile_cmd,$(1),$(2))
 endif
 endif
 endef
 
-ifeq ($(USING_CXX_BUILD_C),y)
-$(eval $(call compile_obj,c,$$(CXX)))
-else
-$(eval $(call compile_obj,c,$$(CC)))
-endif
+define compile_vobj
+$(call translate_obj,$(3)): $(4)
+$(call compile_cmd,$(1),$(2))
+endef
+
+define compile_oobj
+$$(call translate_obj,$(3)): %.o: %.$(1)
+$(call compile_cmd,$(1),$(2))
+endef
+
+$(eval $(call compile_obj,c,$$(CCC)))
 $(eval $(call compile_obj,cc,$$(CXX)))
 $(eval $(call compile_obj,cp,$$(CXX)))
 $(eval $(call compile_obj,cxx,$$(CXX)))
@@ -572,7 +659,7 @@ $(eval $(call compile_obj,S,$$(CC)))
 $(eval $(call compile_obj,s,$$(AS)))
 $(eval $(call compile_obj,asm,$$(AS)))
 
-OBJS           := $(call translate_obj,$(SRCS))
+OBJS           := $(call translate_obj,$(SRCS)$(if $(VSRCS), $(VSRCS)))
 DEPS           := $(patsubst %.o,%.d,$(OBJS))
 CHECK_FILE     := $(OBJ_PREFIX)/checkinfo
 
@@ -580,35 +667,35 @@ $(OBJS): $(MAKEFILE_LIST) $(CHECK_FILE)
 -include $(DEPS)
 
 $(CHECK_FILE): $(CHECK_FILE).tmp
-	@if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
+	$(PREAT)if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
 		rm -f $<; \
 	else \
 		mv -f $< $@; \
 	fi
 
 $(CHECK_FILE).tmp:
-	@mkdir -p $(OBJ_PREFIX)
-	@echo "$(CHECK_INFO)" > $@
+	$(PREAT)mkdir -p $(OBJ_PREFIX)
+	$(PREAT)echo "$(CHECK_INFO)" > $@
 
 .PHONY: clean_objs
 
 clean_objs:
-	@rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)
+	$(PREAT)rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)
 
 define add-liba-build
 LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := -fPIC $(4)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3) $(5)
-	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
-	@rm -f $$@
-	@$$(AR) rc $$@ $$(call translate_obj,$(2))
+	$(PREAT)$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	$(PREAT)rm -f $$@
+	$(PREAT)$$(AR) rc $$@ $$(call translate_obj,$(2))
 ifneq ($(3), )
-	@echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
-	@echo ADDLIB $(lib) >> $$@.mri)
-	@echo SAVE >> $$@.mri
-	@echo END >> $$@.mri
-	@$$(AR) -M < $$@.mri
-	@rm -f $$@.mri
+	$(PREAT)echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
+	$(PREAT)echo ADDLIB $(lib) >> $$@.mri)
+	$(PREAT)echo SAVE >> $$@.mri
+	$(PREAT)echo END >> $$@.mri
+	$(PREAT)$$(AR) -M < $$@.mri
+	$(PREAT)rm -f $$@.mri
 endif
 endef
 
@@ -618,23 +705,23 @@ LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
 
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): PRIVATE_CPFLAGS := -fPIC $(4)
 $$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2)) $(5)
-	@$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
-	@$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
+	$(PREAT)$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	$(PREAT)$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
 		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
 
 ifneq ($$(word 2,$$(libso_names)), )
 $$(OBJ_PREFIX)/$$(word 2,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 1,$$(libso_names))
-	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
 endif
 
 ifneq ($$(word 3,$$(libso_names)), )
 $$(OBJ_PREFIX)/$$(word 3,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 2,$$(libso_names))
-	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
 endif
 
 ifneq ($$(word 4,$$(libso_names)), )
 $$(OBJ_PREFIX)/$$(word 4,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 3,$$(libso_names))
-	@cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
+	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
 endif
 
 endef
@@ -643,8 +730,8 @@ define add-bin-build
 BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
 $$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := $(if $(filter y,$(ENV_SECURITY)),-fPIE) $(4)
 $$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(5)
-	@$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
-	@$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
+	$(PREAT)$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
+	$(PREAT)$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
 endef
 
 ifneq ($(LIBA_NAME), )
@@ -652,7 +739,11 @@ $(eval $(call add-liba-build,$(LIBA_NAME),$(SRCS)))
 endif
 
 ifneq ($(LIBSO_NAME), )
+ifneq ($(and $(VERSION_FILE),$(VERSION_NAME)), )
+$(eval $(call add-libso-build,$(LIBSO_NAME) $(call get_version,$(VERSION_FILE),$(VERSION_NAME), ),$(SRCS)))
+else
 $(eval $(call add-libso-build,$(LIBSO_NAME),$(SRCS)))
+endif
 endif
 
 ifneq ($(BIN_NAME), )
@@ -712,10 +803,29 @@ else
 
 endif
 
+#
+# Starting from kernel version 6.10, the compilation dependency rule has been changed
+# from "$(obj)/%.o: $(src)/%.c" to "$(obj)/%.o: $(obj)/%.c", the original method of separating
+# compilation output from source code has failed, so the following rules has been added.
+#
+ifneq ($(obj), $(src))
+$(obj)/%.c : $(src)/%.c
+	$(PREAT)mkdir -p $(shell dirname $@)
+	$(PREAT)ln -sfT $< $@
+
+$(obj)/%.rs : $(src)/%.rs
+	$(PREAT)mkdir -p $(shell dirname $@)
+	$(PREAT)ln -sfT $< $@
+
+$(obj)/%.S : $(src)/%.S
+	$(PREAT)mkdir -p $(shell dirname $@)
+	$(PREAT)ln -sfT $< $@
+endif
+
 else # KERNELRELEASE
 
 KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
-MOD_PATH       ?= $(shell pwd)
+MOD_PATH       ?= $(shell realpath $(shell pwd))
 
 ifeq ($(MOD_MAKES), )
 MOD_MAKES      := -C $(KERNEL_SRC)
@@ -728,17 +838,11 @@ MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
 endif
 
 ifneq ($(filter $(OBJ_PREFIX),. $(MOD_PATH)), )
+MOD_OPATH      ?= $(MOD_PATH)
 MOD_MAKES      += M=$(MOD_PATH)
 else
-
-MOD_MAKES      += M=$(OBJ_PREFIX) src=$(MOD_PATH)
-KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
-
-modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
-
-$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
-	@-mkdir -p $(dir $@)
-	@-cp -f $< $@
+MOD_OPATH      ?= $(shell realpath -m $(OBJ_PREFIX))
+MOD_MAKES      += M=$(MOD_OPATH) src=$(MOD_PATH)
 
 #
 # Note:
@@ -749,6 +853,11 @@ $(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
 #   -             $(KBUILD_EXTMOD)/Kbuild, $(KBUILD_EXTMOD)/Makefile)
 #   +include $(if $(wildcard $(src)/Kbuild), $(src)/Kbuild, $(src)/Makefile)
 #
+KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
+modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
+$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
+	$(PREAT)-mkdir -p $(dir $@)
+	$(PREAT)-cp -f $< $@
 
 endif
 
@@ -757,17 +866,20 @@ export SEARCH_HDRS PACKAGE_NAME
 .PHONY: modules modules_clean modules_install symvers_install
 
 modules:
-	@$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
+	$(PREAT)$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
 
 modules_clean:
-	@$(MAKE) $(MOD_MAKES) clean
+	$(PREAT)$(MAKE) $(MOD_MAKES) clean
+ifeq ($(filter $(MOD_OPATH)/% $(MOD_OPATH),$(MOD_PATH)), )
+	$(PREAT)rm -rf $(MOD_OPATH)
+endif
 
 modules_install:
-	@$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
+	$(PREAT)$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
 
 symvers_install:
-	@install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
-	@cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+	$(PREAT)install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
+	$(PREAT)cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
 
 install_hdrs: symvers_install
 
@@ -794,13 +906,13 @@ INSTALL_HDRS           ?= $(INSTALL_HEADERS)
 define install_obj
 .PHONY: install_$(1)s
 install_$(1)s:
-	@install -d $$(INS_PREFIX)$$($(1)dir)
-	@cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
+	$(PREAT)install -d $$(INS_PREFIX)$$($(1)dir)
+	$(PREAT)cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
 endef
 
 define install_ext
 install_$(1)s_%:
-	@ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
+	$(PREAT)ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
 	isrc="$$$$(echo $$$${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$$$//g')"; \
 	idst="$$(INS_PREFIX)$$($(1)dir)$$$$(echo $$$${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$$$/\1/g')"; \
 	install -d $$$${idst} && cp -drf --preserve=mode,timestamps $$$${isrc} $$$${idst}
@@ -831,13 +943,13 @@ $(eval $(call install_ext,data))
 $(eval $(call install_ext,sysconf))
 
 install_todir_%:
-	@ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
+	$(PREAT)ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
 	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
 	install -d $${idst} && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
 
 install_tofile_%:
-	@ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
+	$(PREAT)ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
 	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
 	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
 	install -d $$(dirname $${idst}) && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
@@ -850,7 +962,7 @@ SRC_PATH        ?= .
 
 install release: license
 license:
-	@$(call install_lics)
+	$(PREAT)$(call install_lics)
 endif
 endif
 
