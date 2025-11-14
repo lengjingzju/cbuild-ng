@@ -33,7 +33,7 @@ LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
 GLIBC_VER      ?= 2.42
 USE_LIBXCRYPT  := $(shell echo "$(GLIBC_VER) > 2.38" | bc)
 ifeq ($(USE_LIBXCRYPT),1)
-LIBXCRYPT_VER  ?= 4.4.38
+LIBXCRYPT_VER  ?= 4.5.2
 endif
 endif
 

@@ -1115,7 +1115,6 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
             * MESON_FLAGS       : 可设置额外的 `meson` 命令参数
             * do_meson_cfg      : meson 使用 ini 文件配置交叉编译，用户可以定义 do_meson_cfg 函数追加或修改默认的配置
             * MESON_WRAP_MODE   : 设置了默认值 `--wrap-mode=nodownload`，表示禁止 meson 下载依赖包编译
-    * INS_CHOICE        : `autotools` `cmake` `meson` 的安装目录的配置
     * INS_FULLER        : 表示是否详细设置 `autotools` `cmake` `meson` 的安装目录，安装的文件有 `/etc` 等时需要设置为 `y`
     * INS_HASRUN        : 表示是否设置 run 的安装目录，安装的文件有 `/run` 时需要设置为 `y`
 <br>
@@ -1255,7 +1254,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 * 主机安装以下软件包即可
 
 ```sh
-$ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+$ sudo apt install gcc binutils gdb clang llvm lld cmake automake autotools-dev autoconf \
     pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
     time git subversion curl wget rsync vim gawk texinfo gettext autopoint openssl libssl-dev
 $ sudo apt install gcc-multilib g++-multilib libc6-dev-i386 # 编译 sdl/valgrind/util-linux 等需要
@@ -1299,7 +1298,7 @@ sudo dnf clean all && sudo dnf makecache
 
 ```sh
 $ sudo dnf install glibc-static libstdc++-static \
-    gcc gcc-c++ binutils gdb clang llvm cmake autoconf automake \
+    gcc gcc-c++ binutils gdb clang llvm lld cmake autoconf automake \
     pkg-config bison flex yasm ncurses-devel libtool graphviz python3-pip \
     time git subversion curl wget rsync vim gawk texinfo gettext gettext-devel openssl openssl-devel
 $ sudo dnf install glibc-devel.i686 libstdc++-devel.i686 # 编译 sdl/valgrind/util-linux 等需要
@@ -1315,7 +1314,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```sh
 $ sudo pacman -Syu
-$ sudo pacman -S --needed base-devel gcc binutils gdb clang llvm cmake automake autoconf \
+$ sudo pacman -S --needed base-devel gcc binutils gdb clang llvm lld cmake automake autoconf \
     pkgconf bison flex yasm ncurses libtool graphviz python-pip \
     time git subversion curl wget rsync vim gawk texinfo gettext openssl  \
 $ sudo pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -1333,19 +1332,32 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     * 测试版：https://test.docker.com
 
     ```sh
-    $ curl -fsSL https://test.docker.com -o docker.sh
-    $ sudo sh docker.sh
+    $ curl -fsSL https://get.docker.com -o get-docker.sh
+    $ sudo sh get-docker.sh
     $ sudo usermod -aG docker $USER
     ```
 
-* 拉取并测试 Ubuntu 20.04 的 docker(宿主机)
-    * 也可以使用命令 `sudo docker pull ubuntu:20.04` 只拉取
+* 设置国内镜像(宿主机)
 
     ```sh
-    $ sudo docker run ubuntu:20.04 /bin/echo "Hello world"
+    $ cat /etc/docker/daemon.json  # 镜像设置内容如下
+    {
+      "registry-mirrors": [
+        "https://docker.1ms.run"
+      ]
+    }
+    $ sudo systemctl daemon-reload
+    $ sudo systemctl restart docker
     ```
 
-* 进入交互式 Ubuntu 20.04 的 docker(宿主机)
+* 拉取并测试 Ubuntu 24.04 的 docker(宿主机)
+    * 也可以使用命令 `sudo docker pull ubuntu:24.04` 只拉取
+
+    ```sh
+    $ sudo docker run ubuntu:24.04 /bin/echo "Hello world"
+    ```
+
+* 进入交互式 Ubuntu 24.04 的 docker(宿主机)
     * -i：允许和容器进行命令交互
     * -t：指定一个伪终端或终端
     * -v <主机目录>:<容器目录>：映射主机目录
@@ -1353,11 +1365,11 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
     * --add-host=host.docker.internal:host-gateway：映射主机网络（需要 Docker v20.10 及更高版本）
         * 此时 docker 系统的 `/etc/hosts` 可以看到 `172.17.0.1      host.docker.internal`
     * --name "xxx"：指定 docker 中容器的名字
-    * ubuntu:20.04：docker 镜像的 `REPOSITORY` 名和 `TAG`，也可以使用`IMAGE ID`
+    * ubuntu:24.04：docker 镜像的 `REPOSITORY` 名和 `TAG`，也可以使用`IMAGE ID`
 
     ```sh
     $ MAPDIR=`pwd` # cbuild编译系统根目录
-    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:20.04 bash
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:24.04 bash
     ```
 
 * 配置docker机一些便利的操作(docker机)
@@ -1368,9 +1380,18 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
         $ useradd -r -m -g 1000 -u 1000 cbuild
         ```
 
+        如果组和用户已经建立，可以使用下面命令修改组名和用户名
+
+        ```sh
+        $ groupmod -n cbuild $(getent group 1000 | cut -d ':' -f 1)
+        $ usermod -l cbuild $(getent passwd 1000 | cut -d ':' -f 1)
+        $ usermod -d /home/cbuild -m cbuild
+        ```
+
     * tab命令补全，还需要在 `/etc/bash.bashrc` 中搜索bash-completion，去掉注释
 
         ```sh
+        $ apt update
         $ apt install bash-completion
         ```
 
@@ -1386,7 +1407,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 * 安装 CBuild-ng 编译环境(docker机)
 
     ```sh
-    $ apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+    $ apt install gcc binutils gdb clang llvm lld cmake automake autotools-dev autoconf \
         pkg-config bison flex yasm libncurses-dev libtool graphviz time python3-pip \
         git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
     $ pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -1397,19 +1418,19 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
 * 提交保存 docker 镜像(宿主机)
     * -a 名字：指定提交者的名字
     * -m 信息：填写本次提交的描述信息
-    * ca69951b2455：运行 `docker ps` 列出的容器ID
+    * 9b77aa1b620c：运行 `docker ps` 列出的容器ID
     * cbuild:0.0.1：保存的 `REPOSITORY` 和 `TAG`
     * 注：保存时 docker 机不要退出
 
     ```sh
     $ sudo docker ps
-    CONTAINER ID   IMAGE          COMMAND   CREATED       STATUS       PORTS     NAMES
-    ca69951b2455   ubuntu:20.04   "bash"    3 hours ago   Up 3 hours             hopeful_mayer
-    $ sudo docker commit -a "lengjing" -m "cbuild based on Ubuntu 20.04" ca69951b2455 cbuild:0.0.1
+    CONTAINER ID   IMAGE          COMMAND   CREATED          STATUS          PORTS     NAMES
+    9b77aa1b620c   ubuntu:24.04   "bash"    25 minutes ago   Up 25 minutes             vigorous_engelbart
+    $ sudo docker commit -a "lengjing" -m "cbuild based on Ubuntu 24.04" 9b77aa1b620c cbuild:0.0.1
     $ sudo docker images
-    REPOSITORY   TAG       IMAGE ID       CREATED             SIZE
-    cbuild       0.0.1     664510d1047d   4 hours ago         1.21GB
-    ubuntu       20.04     83a4bf3bb050   2 weeks ago         72.8MB
+    IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
+    cbuild:0.0.1   ade60a43f6bf       2.37GB          569MB
+    ubuntu:24.04   66460d557b25        117MB         29.7MB    U
     ```
 
 * 退出 docker 机再次进入(宿主机)

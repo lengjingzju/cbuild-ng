@@ -18,11 +18,11 @@ DESCRIPTION      = JCore is a core library dedicated to C language development, 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 1.0.1
+VERSION          = 1.1.0
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/jcore.git
-SRC_REV          = 67fdb04e5c31c07b420e5292b4fd2517c65e46a8
+SRC_REV          = 7d0595f963dddd0b07da02609fb077120527aec9
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

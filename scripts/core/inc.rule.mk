@@ -32,7 +32,8 @@ else
 SRC_PATH        ?= $(shell pwd)
 endif
 
-BUILD_DEVF      ?= $(WORKDIR)/$(PACKAGE_NAME)-dev
+FETCH_LOCK      ?= $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
+BUILD_DEVF      ?= $(ENV_DOWN_DIR)/devf/$(PACKAGE_NAME)-dev
 BUILD_MARK      ?= $(PACKAGE_NAME)-$(VERSION)-mark
 BUILD_JOBS      ?= $(shell echo $(MAKEFLAGS) | grep -E '\-j[0-9]+' | sed -E 's/.*(-j[0-9]+).*/\1/g')
 MAKE_FNAME      ?= mk.deps
@@ -168,8 +169,8 @@ define do_fetch
 		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
 	fi; \
 	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(WORKDIR)/$(SRC_DIR) ]; then \
-		mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock && \
-		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"; \
+		mkdir -p $(shell dirname $(FETCH_LOCK)) && echo > $(FETCH_LOCK) && \
+		flock $(FETCH_LOCK) -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"; \
 	fi
 endef
 else
@@ -178,8 +179,8 @@ define do_fetch
 		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
 	fi; \
 	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(ENV_DOWN_DIR)/$(SRC_DIR) ]; then \
-		mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock && \
-		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"; \
+		mkdir -p $(shell dirname $(FETCH_LOCK)) && echo > $(FETCH_LOCK) && \
+		flock $(FETCH_LOCK) -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"; \
 	fi
 endef
 endif
@@ -367,8 +368,8 @@ endif
 
 dofetch:
 ifneq ($(SRC_URLS), )
-	$(PREAT)mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
-	$(PREAT)flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
+	$(PREAT)mkdir -p $(shell dirname $(FETCH_LOCK)) && echo > $(FETCH_LOCK)
+	$(PREAT)flock $(FETCH_LOCK) -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
 else
 	@
 endif

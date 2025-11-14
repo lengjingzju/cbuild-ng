@@ -40,6 +40,7 @@ CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
+	@sed -i 's/main() {}/int main(void) { return 0; }/g' $(SRC_PATH)/scripts/kconfig/lxdialog/check-lxdialog.sh
 	@if [ ! -f $(OBJ_PREFIX)/.config ]; then \
 		cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME); \
 		mkdir -p $(OBJ_PREFIX); \
@@ -60,7 +61,7 @@ defconfig:
 
 menuconfig:
 	@$(call do_fetch)
-	@$(call do_prepend)
+	@$(PREAT)$(MAKE) -f $(MAKE_FNAME) prepend
 	@mkdir -p $(OBJ_PREFIX)
 	@$(MAKE) $(MAKE_FLAGS) menuconfig
 	@$(call do_setforce)

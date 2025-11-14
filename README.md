@@ -1134,10 +1134,9 @@ Note: The reason for providing the above functions is that multiple libraries or
             * MESON_FLAGS       : Users can set extra flags for `meson` command
             * do_meson_cfg      : Meson uses a ini file to configure cross-compilation, this function will modify the default configuration
             * MESON_WRAP_MODE   : Sets the wrap mode, its default value is `--wrap-mode=nodownload` (prevents meson downloads dependency packages)
-    * INS_CHOICE    : The configuration of installation directory for `autotools` `cmake` `meson`
     * INS_FULLER    : Indicates whether to set the installation directory in detail for `autotools` `cmake` `meson`
         * When the installation files have `/etc` and so on, it needs to be set to "y".
-    * INS_FULLER    : Indicates whether to set the run installation directory
+    * INS_HASRUN    : Indicates whether to set the `run` installation directory
 <br>
 
 * Targets in in `inc.rule.mk`
@@ -1274,7 +1273,7 @@ Note2: Ubuntu 24.04 / Debian 13 / Manjaro 25.0.6 and others (Python >= 3.11) usi
 * Just install the following software packages on the host:
 
 ```sh
-$ sudo apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+$ sudo apt install gcc binutils gdb clang llvm lld cmake automake autotools-dev autoconf \
     pkg-config bison flex yasm libncurses-dev libtool graphviz python3-pip \
     time git subversion curl wget rsync vim gawk texinfo gettext autopoint openssl libssl-dev
 $ sudo apt install gcc-multilib g++-multilib libc6-dev-i386 # for compiling sdl/valgrind/util-linux...
@@ -1300,7 +1299,7 @@ $ sudo dnf clean all && sudo dnf makecache
 
 ```sh
 $ sudo dnf install glibc-static libstdc++-static \
-    gcc gcc-c++ binutils gdb clang llvm cmake autoconf automake \
+    gcc gcc-c++ binutils gdb clang llvm lld cmake autoconf automake \
     pkg-config bison flex yasm ncurses-devel libtool graphviz python3-pip \
     time git subversion curl wget rsync vim gawk texinfo gettext gettext-devel openssl openssl-devel
 $ sudo dnf install glibc-devel.i686 libstdc++-devel.i686 # for compiling sdl/valgrind/util-linux...
@@ -1316,7 +1315,7 @@ $ sudo pip3 install requests
 
 ```sh
 $ sudo pacman -Syu
-$ sudo pacman -S --needed base-devel gcc binutils gdb clang llvm cmake automake autoconf \
+$ sudo pacman -S --needed base-devel gcc binutils gdb clang llvm lld cmake automake autoconf \
     pkgconf bison flex yasm ncurses libtool graphviz python-pip \
     time git subversion curl wget rsync vim gawk texinfo gettext openssl  \
     lib32-gcc-libs lib32-glibc
@@ -1335,19 +1334,19 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
     * The test version：https://test.docker.com
 
     ```sh
-    $ curl -fsSL https://test.docker.com -o docker.sh
-    $ sudo sh docker.sh
+    $ curl -fsSL https://get.docker.com -o get-docker.sh
+    $ sudo sh get-docker.sh
     $ sudo usermod -aG docker $USER
     ```
 
-* Pull and test the Ubuntu 20.04 docker container(host side)
-    * You can also use the command `sudo docker pull ubuntu:20.04` to only pull
+* Pull and test the Ubuntu 24.04 docker container(host side)
+    * You can also use the command `sudo docker pull ubuntu:24.04` to only pull
 
     ```sh
-    $ sudo docker run ubuntu:20.04 /bin/echo "Hello world"
+    $ sudo docker run ubuntu:24.04 /bin/echo "Hello world"
     ```
 
-* Enter docker(host side) of interactive Ubuntu 20.04
+* Enter docker(host side) of interactive Ubuntu 24.04
     * -i: Allow command interaction with the container
     * -t: Specify a pseudo terminal or terminal
     * -v <host directory>:<container directory>: Map host directory
@@ -1355,11 +1354,11 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
     * --add-host=host.docker.internal:host-gateway: Map host network (Requires docker v20.10 and higher)
         * At this time, `172.17.0.1 host.docker.internal` can be seen in `/etc/hosts` of the docker system
     * --name "xxx": Specify the name of the container in docker
-    * ubuntu:20.04: `REPOSITORY` and `TAG` of docker container, users can also use `IMAGE ID`
+    * ubuntu:24.04: `REPOSITORY` and `TAG` of docker container, users can also use `IMAGE ID`
 
     ```sh
     $ MAPDIR=`pwd` # The root directory of CBuild-ng
-    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:20.04 bash
+    $ sudo docker run -i -t -v $MAPDIR:$MAPDIR --add-host=host.docker.internal:host-gateway ubuntu:24.04 bash
     ```
 
 * Configure some convenient operations on the docker machine (docker machine)
@@ -1370,9 +1369,18 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
          $ useradd -r -m -g 1000 -u 1000 cbuild
          ```
 
+         If the group and user is already existed, we should run the following commands instead of the upper commands:
+
+         ```sh
+         $ groupmod -n cbuild $(getent group 1000 | cut -d ':' -f 1)
+         $ usermod -l cbuild $(getent passwd 1000 | cut -d ':' -f 1)
+         $ usermod -d /home/cbuild -m cbuild
+         ```
+
      * Tab command completion, users also need to search for bash-completion in `/etc/bash.bashrc` and remove the comments
 
          ```sh
+         $ apt update
          $ apt install bash-completion
          ```
 
@@ -1388,7 +1396,7 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
 * Install CBuild-ng compilation environment(docker side)
 
     ```sh
-    $ apt install gcc binutils gdb clang llvm cmake automake autotools-dev autoconf \
+    $ apt install gcc binutils gdb clang llvm lld cmake automake autotools-dev autoconf \
         pkg-config bison flex yasm libncurses-dev libtool graphviz time python3-pip \
         git subversion curl wget rsync vim gawk texinfo gettext openssl libssl-dev autopoint
     $ pip3 install meson -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -1399,19 +1407,19 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
 * Submit and save the docker image (host side)
     * -a <name>: Specify the name of the submitter
     * -m <information>: fill in the description information of this submission
-    * ca69951b2455: Run `docker ps` will list container ID
+    * 9b77aa1b620c: Run `docker ps` will list container ID
     * cbuild:0.0.1: The saved `REPOSITORY` and `TAG`
     * Note: Do not exit the docker machine when saving
 
     ```sh
     $ sudo docker ps
-    CONTAINER ID   IMAGE          COMMAND   CREATED       STATUS       PORTS     NAMES
-    ca69951b2455   ubuntu:20.04   "bash"    3 hours ago   Up 3 hours             hopeful_mayer
-    $ sudo docker commit -a "lengjing" -m "cbuild based on Ubuntu 20.04" ca69951b2455 cbuild:0.0.1
+    CONTAINER ID   IMAGE          COMMAND   CREATED          STATUS          PORTS     NAMES
+    9b77aa1b620c   ubuntu:24.04   "bash"    25 minutes ago   Up 25 minutes             vigorous_engelbart
+    $ sudo docker commit -a "lengjing" -m "cbuild based on Ubuntu 24.04" 9b77aa1b620c cbuild:0.0.1
     $ sudo docker images
-    REPOSITORY   TAG       IMAGE ID       CREATED             SIZE
-    cbuild       0.0.1     664510d1047d   4 hours ago         1.21GB
-    ubuntu       20.04     83a4bf3bb050   2 weeks ago         72.8MB
+    IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
+    cbuild:0.0.1   ade60a43f6bf       2.37GB          569MB
+    ubuntu:24.04   66460d557b25        117MB         29.7MB    U
     ```
 
 * Exit the docker machine and enter again(host side)
@@ -1439,7 +1447,6 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
     $ sudo docker save cbuild:0.0.1 -o cbuild_0.0.1.img
     $ sudo docker load -i cbuild_0.0.1.img
     ```
-
 
 ## Classic Build Compile OSS Layer
 
