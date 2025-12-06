@@ -27,4 +27,6 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = meson
 MESON_FLAGS     += -Dicu=enabled -Dglib=enabled -Dfreetype=enabled
 
+LDFLAGS         += $(call link_libs)
+
 include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -36,6 +36,8 @@ MESON_FLAGS      = -Dgnome_proxy=disabled \
                    -Dlibproxy=disabled \
                    -Dinstalled_tests=false
 
+LDFLAGS         += $(call link_libs)
+
 ifneq ($(NATIVE_BUILD),y)
 CUSTOM_TARGETS   = prepend
 endif

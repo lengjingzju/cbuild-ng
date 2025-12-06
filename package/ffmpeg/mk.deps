@@ -42,11 +42,11 @@ DESCRIPTION      = FFmpeg is the leading multimedia framework, able to decode, e
 -include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 8.0
+VERSION          = 8.0.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ffmpeg.org/releases/$(SRC_NAME)
-SRC_MD5          = 2c91c725fb1b393618554ff429e4ae43
+SRC_MD5          = b4e86cef7b3333034977ae9df391896d
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

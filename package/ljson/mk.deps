@@ -25,7 +25,7 @@ VERSION          = 5.0.2
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/json.git
-SRC_REV          = 431493c1a4c55096d8881a7ef679b5331d8264f4
+SRC_REV          = 83d1a01604ca7a27f8b26cd150babe8bd2b5638c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

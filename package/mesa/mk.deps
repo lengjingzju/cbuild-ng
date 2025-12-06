@@ -7,6 +7,8 @@
 #DEPS(mk.deps) mesa(native psysroot): unselect expat zlib eudev libx11 libdrm libxcb \
     libxext libxfixes libxshmfence libxxf86vm glslang-native
 
+# sudo pip3 install mako --break-system-packages
+
 PACKAGE_NAME     = mesa
 
 LICENSE          = MIT

@@ -351,6 +351,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
     * 可以 `make 包名_psysroot_single` 仅仅准备这个包的依赖到私有sysroot目录(需要在 Other_Target_Names 中定义特定目标 psysroot)
     * 可以 `make 包名_目标名` 先编译某个包的依赖包(有依赖时)再编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
     * 可以 `make 包名_目标名_single` 有依赖时才有这类目标，仅仅编译这个包的特定目标(特定目标需要在 Other_Target_Names 中定义)
+    * 可以 `make 包名-dev` 编译并发布开发包(包含依赖，头文件，静态库)
     * 可以 `make 包名-pkg` 编译并发布包(包含依赖)
     * 可以 `make 包名-cpk` 编译并发布包(包含依赖)，然后打包成独立包(包含系统运行库，例如C库，修改 `rpath` 和 `link interpreter`)
 

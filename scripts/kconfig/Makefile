@@ -1,6 +1,6 @@
 ############################################
 # SPDX-License-Identifier: GPL-2.0         #
-# Copyright (C) 2021-.... Jing Leng        #
+# Copyright (C) 2025-.... Jing Leng        #
 # Contact: Jing Leng <lengjingzju@163.com> #
 # kconfig from linux-6.12.28               #
 ############################################

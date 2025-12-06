@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -967,6 +968,8 @@ int main(int ac, char **av)
 	int res;
 
 	signal(SIGINT, sig_handler);
+
+	setlocale(LC_ALL, "");
 
 	while ((opt = getopt_long(ac, av, "hs", long_opts, NULL)) != -1) {
 		switch (opt) {

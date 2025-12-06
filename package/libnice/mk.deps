@@ -28,4 +28,6 @@ CACHE_DEPENDS    =
 
 COMPILE_TOOL     = meson
 
+LDFLAGS         += $(call link_libs)
+
 include $(ENV_MAKE_DIR)/inc.rule.mk

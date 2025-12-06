@@ -360,6 +360,7 @@ Note: The IDs (Target_Name / Depend_Names) only can consist of lowercase letters
     * `make <package>_psysroot_single`: Only prepare the dependencies of the given package to the private sysroot directory (the target `psysroot` should be defined in the `Other_Target_Names`)
     * `make <package>_<target>`: Compiles the target of the given package with dependency packages compiled first
     * `make <package>_<target>_single`: Only compiles the target of the given package without dependency packages compiled
+    * `make <package>-dev`: Compile and release development packages (including dependencies, headers, static libraries)
     * `make <package>-pkg`: Compile and release packages (including dependencies)
     * `make <package>-cpk`: Compile and release packages (including dependencies), then pack them into independent package (including system runtime libraries, such as C libraries, modify `rpath` and `link interpreter`)
 

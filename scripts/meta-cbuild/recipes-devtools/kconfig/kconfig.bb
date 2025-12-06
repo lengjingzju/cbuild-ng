@@ -1,5 +1,5 @@
 LICENSE = "GPL-2.0-only"
-LIC_FILES_CHKSUM = "file://conf.c;md5=ea793329c506a2b13d09d6dafb0467c1;beginline=1;endline=4"
+LIC_FILES_CHKSUM = "file://conf.c;md5=0e51fb4689a61fc599a9dd6fca4d0f7c;beginline=1;endline=4"
 
 SRC_URI = ""
 

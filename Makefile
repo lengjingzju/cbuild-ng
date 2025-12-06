@@ -82,16 +82,39 @@ all-deps:
 
 LICS_DIR       := $(ENV_TOP_DIR)/system/rootfs/licenses
 define pkg_dst
-$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkg,%,$1)
+$(ENV_CROSS_ROOT)/packages/$(patsubst %-$1,%,$2)$3
 endef
 define pkg_lic_dst
-$(ENV_CROSS_ROOT)/packages/$(patsubst %-pkg,%,$1)/usr/share/license
+$(ENV_CROSS_ROOT)/packages/$(patsubst %-$1,%,$2)$3/usr/share/license
 endef
 PKG_BUILD      ?= y
 PKG_STRIP      ?= n
 ifneq ($(ENV_BUILD_TOOL), )
 PKG_EOS        ?= y
 endif
+
+%-dev: export MFLAG ?= -s
+%-dev: progress
+ifeq ($(PKG_BUILD),y)
+	@$(PGPATH)/progress $(PGTOUT)$(WORKDIR)/log make $(MFLAG) $(ENV_BUILD_JOBS) \
+		pg_total_pkgs=$(shell make -n $(patsubst %-dev,%,$@) | grep -c '^echo "Build .* Done\."$$') \
+		MAKEFLAGS= PGCMD="$(PGPATH)/progress \$$(PGPORT)" $(patsubst %-dev,%,$@)
+	@$(PGPATH)/progress $$(cat $(WORKDIR)/log/port) stop
+endif
+	@rm -rf $(call pkg_dst,dev,$@)
+	@mkdir -p $(call pkg_dst,dev,$@,/sysroot)
+	@mkdir -p $(call pkg_dst,dev,$@,/sysroot-native)
+	@$(MAKE) -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(call pkg_dst,dev,$@,/sysroot) NATIVE_DESTDIR=$(call pkg_dst,dev,$@,/sysroot-native) INSTALL_OPTION=link $(patsubst %-dev,%,$@)_isysroot
+	@if [ -z "$$(ls $(call pkg_dst,dev,$@,/sysroot-native))" ]; then \
+		rm -rf $(call pkg_dst,dev,$@,/sysroot-native); \
+	fi
+	@echo "----------------------------------------"
+	@mkdir -p $(call pkg_lic_dst,dev,$@,/sysroot)
+	@cp -drf $(LICS_DIR)/* $(call pkg_lic_dst,dev,$@,/sysroot)
+	@python3 $(ENV_TOOL_DIR)/gen_package_infos.py -c $(WORKDIR)/.config -i $(WORKDIR)/info.txt \
+		-t $(WORKDIR)/Target -p $(patsubst %-dev,%,$@) -s $(LICS_DIR)/spdx-licenses.html \
+		-o $(call pkg_lic_dst,dev,$@,/sysroot)/index.txt -w $(call pkg_lic_dst,dev,$@,/sysroot)/index.html -f 0:0
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-dev,%,$@) $(call pkg_lic_dst,dev,$@,/sysroot) $(WORKDIR)/Target $(WORKDIR)/.config $(CORE_PKGS)
 
 %-pkg: export MFLAG ?= -s
 %-pkg: progress
@@ -101,29 +124,28 @@ ifeq ($(PKG_BUILD),y)
 		MAKEFLAGS= PGCMD="$(PGPATH)/progress \$$(PGPORT)" $(patsubst %-pkg,%,$@)
 	@$(PGPATH)/progress $$(cat $(WORKDIR)/log/port) stop
 endif
-	@rm -rf $(call pkg_dst,$@)
-	@mkdir -p $(call pkg_dst,$@)
+	@rm -rf $(call pkg_dst,pkg,$@)
+	@mkdir -p $(call pkg_dst,pkg,$@)
 	@echo "----------------------------------------"
-	@$(MAKE) -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(call pkg_dst,$@) INSTALL_OPTION=release $(patsubst %-pkg,%,$@)_release
+	@$(MAKE) -s --no-print-directory -C $(ENV_TOP_DIR) CROSS_DESTDIR=$(call pkg_dst,pkg,$@) INSTALL_OPTION=release $(patsubst %-pkg,%,$@)_release
 	@echo "----------------------------------------"
-	@rm -rf $(addprefix $(call pkg_dst,$@),/include/* /usr/include/* /usr/local/include/*)
-	@libs=$$(find $(call pkg_dst,$@) -name "*.a" -o -name "*.la" | xargs); \
+	@rm -rf $(addprefix $(call pkg_dst,pkg,$@),/include/* /usr/include/* /usr/local/include/*)
+	@libs=$$(find $(call pkg_dst,pkg,$@) -name "*.a" -o -name "*.la" | xargs); \
 	if [ ! -z "$${libs}" ]; then \
 		rm -rf $${libs}; \
 	fi
 ifeq ($(PKG_STRIP),y)
-	@elfs=$$(find $(call pkg_dst,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
+	@elfs=$$(find $(call pkg_dst,pkg,$@) -type f -exec sh -c "file '{}' | grep -q -e 'not stripped'" \; -print | grep -v gdb | xargs); \
 	if [ ! -z "$${elfs}" ]; then \
 		$(if $(ENV_BUILD_TOOL),$(ENV_BUILD_TOOL)strip,$(if $(CROSS_COMPILE),$(CROSS_COMPILE)strip,strip)) -s $${elfs}; \
 	fi
 endif
-	@mkdir -p $(call pkg_lic_dst,$@)
-	@cp -drf $(LICS_DIR)/* $(call pkg_lic_dst,$@)
+	@mkdir -p $(call pkg_lic_dst,pkg,$@)
+	@cp -drf $(LICS_DIR)/* $(call pkg_lic_dst,pkg,$@)
 	@python3 $(ENV_TOOL_DIR)/gen_package_infos.py -c $(WORKDIR)/.config -i $(WORKDIR)/info.txt \
 		-t $(WORKDIR)/Target -p $(patsubst %-pkg,%,$@) -s $(LICS_DIR)/spdx-licenses.html \
-		-o $(call pkg_lic_dst,$@)/index.txt -w $(call pkg_lic_dst,$@)/index.html -f 0:0
-	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkg,%,$@) $(call pkg_lic_dst,$@) $(WORKDIR)/Target $(WORKDIR)/.config $(CORE_PKGS)
-
+		-o $(call pkg_lic_dst,pkg,$@)/index.txt -w $(call pkg_lic_dst,pkg,$@)/index.html -f 0:0
+	@$(ENV_TOOL_DIR)/gen_depends_image.sh $(patsubst %-pkg,%,$@) $(call pkg_lic_dst,pkg,$@) $(WORKDIR)/Target $(WORKDIR)/.config $(CORE_PKGS)
 
 %-cpk: export MFLAG ?= -s
 %-cpk:
@@ -131,19 +153,19 @@ endif
 	@$(MAKE) $(MFLAG) CONFIG_PATCHELF=y patchelf
 	@$(MAKE) $(MFLAG) $(patsubst %-cpk,%-pkg,$@)
 	@PATH=$(ENV_NATIVE_ROOT)/objects/patchelf/image/usr/bin:$(PATH) \
-		python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@) \
+		python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(call pkg_dst,cpk,$@) \
 		-i include:share:etc:srv:com:var:run $(if $(PKG_EOS),-o $(PKG_EOS)) \
 		-c $(ENV_BUILD_TOOL)gcc -t $(ENV_BUILD_TOOL)readelf $(if $(CPK_EXTRA_PATH),-e $(CPK_EXTRA_PATH))
-	@cp -fp $(ENV_CROSS_ROOT)/objects/patchelf/image/usr/bin/patchelf $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
+	@cp -fp $(ENV_CROSS_ROOT)/objects/patchelf/image/usr/bin/patchelf $(call pkg_dst,cpk,$@)
 ifneq ($(PKG_EOS),y)
-	@cp -fp $(ENV_TOOL_DIR)/gen_cpk_package.py $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
-	@ush=$(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)/update.sh && \
+	@cp -fp $(ENV_TOOL_DIR)/gen_cpk_package.py $(call pkg_dst,cpk,$@)
+	@ush=$(call pkg_dst,cpk,$@)/update.sh && \
 		echo '#!/bin/sh' > $${ush} && \
 		echo 'curdir=$$(dirname $$(realpath $$0))' >> $${ush} && \
 		echo 'PATH=$$curdir:$$PATH python3 $$curdir/gen_cpk_package.py -r $$curdir -i include:share:etc:srv:com:var:run' >> $${ush} && \
 		chmod +x $${ush}
 endif
-	@bash $(ENV_TOOL_DIR)/gen_cpk_binary.sh pack $(ENV_CROSS_ROOT)/packages/$(patsubst %-cpk,%,$@)
+	@bash $(ENV_TOOL_DIR)/gen_cpk_binary.sh pack $(call pkg_dst,cpk,$@)
 
 
 ifneq ($(PGCMD), )

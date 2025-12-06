@@ -31,6 +31,8 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = meson
 MESON_FLAGS     += -Dtests=false
 
+LDFLAGS         += $(call link_libs)
+
 CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
