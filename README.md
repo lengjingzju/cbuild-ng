@@ -642,10 +642,16 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * `$(call link_hdrs)`   : Automatically sets CFLAGS that looks for header files based on variable `SEARCH_HDRS`
 * `$(call link_libs)`   : Automatically sets CFLAGS that looks for libraries
 * `$(call install_lics)`: Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
+
 * `$(eval $(call ft-config,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>))`: Dynamic feature configuration
     * Set the value of variable `FT_CONFIG` based on the configuration name specified in the `.config`
 * `$(eval $(call FT-CONFIG,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>))`: Dynamic feature configuration
-    * The function is the same as above, except that the `ft-config` function will change the `CONFIG_NAME` to `CONFIG_NAME_NATIVE` when `NATIVE-BUILD=y`; The `FT-CONFIG` function does not.
+    * The function is the same as above, except that the `ft-config` function will change the `CONFIG_NAME` to `CONFIG_NAME_NATIVE` when `NATIVE_BUILD=y`; The `FT-CONFIG` function does not.
+
+* `$(eval $(call imake-config,<CONFIG_NAME>,<CPFLAGS when CONFIG value is y>,<LDFLAGS when CONFIG value is y>))`: Dynamic feature configuration
+    * Set the value of variable `CPFLAGS` and `LDFLAGS` based on the configuration name specified in the `.config`
+* `$(eval $(call IMAKE-CONFIG,<CONFIG_NAME>,<CPFLAGS when CONFIG value is y>,<LDFLAGS when CONFIG value is y>))`: Dynamic feature configuration
+    * The function is the same as above, except that the `imake-config` function will change the `CONFIG_NAME` to `CONFIG_NAME_NATIVE` when `NATIVE_BUILD=y`; The `IMAKE-CONFIG` function does not.
 
 
 #### Variables of Environment Template
@@ -689,7 +695,17 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * GLOBAL_SYSROOT    : When set to y, indicates using dependency sysroot in global sysroot `SYS_PREFIX` instead of the directory under WORKDIR
 * PREPARE_SYSROOT   : Prepares dependency sysroot in the `WORKDIR` directory, only for Classic Build (command is `$(MAKE) $(PREPARE_SYSROOT)`)
 * DIS_PC_EXPORT     : Whether to disable exporting the environment of the [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html)
-* CC_TOOL           : If it is set to clang, it uses clang/llvm to compile (preliminary support), otherwise it uses gcc by default
+<br>
+
+* CC_TOOL              : If it is set to clang, it uses clang/llvm to compile (preliminary support), otherwise it uses gcc by default
+* USING_CLANG_CXX_BUILD: If using clang for cross-compiling C++, this variable should be set to `y`.  It does not need to be set for cross-compiling C.
+    * Note: CMake has difficulty with clang cross-compilation because it doesn't use the specified LDFLAGS during the   `try_compile` stage. This project's IMake does not have this problem.
+    * Using Clang for cross-compiling C++ requires LLVM's C++ standard library. The installation command on Debian 13 is as follows:
+
+```sh
+$ sudo dpkg --add-architecture arm64
+$ sudo apt update && sudo apt install libc++-dev:arm64 libc++abi-dev:arm64
+```
 
 
 ### Installation Template inc.ins.mk

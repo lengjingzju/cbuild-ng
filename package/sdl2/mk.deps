@@ -30,7 +30,7 @@ DESCRIPTION      = Simple DirectMedia Layer is a cross-platform development libr
                    playback software, emulators, and popular games including Valve's award winning catalog and many Humble \
                    Bundle games.
 
-include $(ENV_CFG_ROOT)/.config
+-include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 2.32.8

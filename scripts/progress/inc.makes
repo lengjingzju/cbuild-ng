@@ -5,7 +5,7 @@
 # https://github.com/lengjingzju/cbuild-ng #
 ############################################
 
-############# Date: 2025-08-08 #############
+############# Date: 2025-12-22 #############
 
 # The default behavior only includes inc.env.mk and inc.ins.mk.
 # INC_MAKES can be set to a combination of `disenv` `conf` `app` `mod` `disins`.
@@ -176,6 +176,30 @@ FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
 $(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
 endef
 
+define imake-config
+ifneq ($(NATIVE_BUILD),y)
+ifeq ($$($1),y)
+CPFLAGS        += $2
+LDFLAGS        += $3
+endif
+CHECK_INFO     += $1=$$($1)
+else
+ifeq ($$($1_NATIVE),y)
+CPFLAGS        += $2
+LDFLAGS        += $3
+endif
+CHECK_INFO     += $1_NATIVE=$$($1_NATIVE)
+endif
+endef
+
+define IMAKE-CONFIG
+ifeq ($$($1),y)
+CPFLAGS        += $2
+LDFLAGS        += $3
+endif
+CHECK_INFO     += $1=$$($1)
+endef
+
 PREPARE_SYSROOT := -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
                   NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
 
@@ -265,6 +289,20 @@ CROSS_SYSROOT  := /usr/$(patsubst %-,%,$(CROSS_COMPILE))
 endif
 clang_cpflags  := --target=$(patsubst %-,%,$(CROSS_COMPILE)) --sysroot=$(CROSS_SYSROOT)
 clang_ldflags  := $(clang_cpflags) -fuse-ld=lld
+clang_gccdir   := $(shell LANG=en_US PATH=$(PATH) $(CROSS_COMPILE)gcc -print-search-dirs | grep "^libraries:" | cut -d '=' -f 2 | cut -d ':' -f 1)
+clang_ldflags  += -L$(clang_gccdir) -Wl,-rpath-link=$(clang_gccdir) -B$(clang_gccdir)
+ifeq ($(USING_CLANG_CXX_BUILD),y)
+# Cross-compiling C++ requires providing C++ headers and libraries of LLVM.
+# For example, cross compile aarch64 on Debian, the following packages need to be installed:
+# sudo dpkg --add-architecture arm64
+# sudo apt update && sudo apt install libc++-dev:arm64 libc++abi-dev:arm64
+# Note: CMake failed to cross compile with clang because it did not use the set ldflags
+#       during the try_compile phase. While IMake does not have this issue.
+clang_incdir   ?= /usr/include/c++/v1
+clang_libdir   ?= /usr/lib/$(shell echo $(CROSS_COMPILE) | sed 's/-$$//')
+clang_cpflags  += -I$(clang_incdir)
+clang_ldflags  += -L$(clang_libdir) -Wl,-rpath-link=$(clang_libdir) -stdlib=libc++
+endif # USING_CLANG_CXX_BUILD
 endif # CROSS_COMPILE
 endif # clang
 

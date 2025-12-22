@@ -618,13 +618,20 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 * `$(call get_version,版本所在的文件,版本宏变量名,分隔符)` : 提取文件中定义的版本
     * 文件中定义版本需要遵循如下格式 `#define 版本宏变量名 0xabcdef` ，提取出每两个字符为一组(第1个字符为0会去掉)，指定分隔符隔开
     * 例如：`json.h` 中定义了 `#define JSON_VERSION 0x030305` ， `$(call get_version,json.h,JSON_VERSION, )` 提取出 `3 3 5`
+
 * `$(call link_hdrs)`   : 根据 SEARCH_HDRS 变量的值自动生成查找头文件的 CFLAGS
 * `$(call link_libs)`   : 自动生成查找库文件的 LDFLAGS
 * `$(call install_lics)`: 安装 license 文件到 `/usr/local/license/$(PACKAGE_NAME)`
+
 * `$(eval $(call ft-config,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置))`: 动态特性配置
     * 根据 `.config` 中指定配置名的值设置变量 `FT_CONFIG` 的值
 * `$(eval $(call FT-CONFIG,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置))`: 动态特性配置
     * 作用同上，只是 `ft-config` 函数在 `NATIVE_BUILD=y` 时会将 `CONFIG配置名` 改为 `CONFIG配置名_NATIVE`；而 `FT-CONFIG` 函数不会
+
+* `$(eval $(call imake-config,CONFIG配置名,CONFIG配置值y时的CPFLAGS,CONFIG配置值为y时的LDFLAGS))`: 动态特性配置
+    * 根据 `.config` 中指定配置名的值设置变量CPFLAGS和LDFLAGS，并将配置附加到check_info
+* `$(eval $(call IMAKE-CONFIG,CONFIG配置名,CONFIG配置值y时的CPFLAGS,CONFIG配置值为y时的LDFLAGS))`: 动态特性配置
+    * 作用同上，只是 `imake-config` 函数在 `NATIVE_BUILD=y` 时会将 `CONFIG配置名` 改为 `CONFIG配置名_NATIVE`；而 `IMAKE-CONFIG` 函数不会
 
 
 #### 环境模板的变量说明
@@ -667,7 +674,17 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 * GLOBAL_SYSROOT    : 仅用于 Classic Build，设置为 y 时表示使用全局依赖目录，DEP_PREFIX / PATH_PREFIX 会设置为 SYS_PREFIX 的值，由 `gen_build_chain.by` 自动设置
 * PREPARE_SYSROOT   : Classic Build 时在 WORKDIR 目录准备 sysroot, 命令是 `$(MAKE) $(PREPARE_SYSROOT)`
 * DIS_PC_EXPORT     : 是否禁止导出 [pkg-config](https://manpages.debian.org/testing/pkg-config/pkg-config.1.en.html) 的环境变量
-* CC_TOOL           : 如果设置为 clang，将使用 clang 编译链编译(初步支持)，否则默认使用 gcc 编译
+<br>
+
+* CC_TOOL               : 如果设置为 clang，将使用 clang 编译链编译(初步支持)，否则默认使用 gcc 编译
+* USING_CLANG_CXX_BUILD : 如果使用 clang 交叉编译 C++ ，本变量要设置为 y，交叉编译 C 不需要设置
+    * 注：CMake 很难使用 clang 交叉编译，原因是 CMake 在 try_compile 阶段没有使用设置的 LDFLAGS，本工程的 IMake 无此问题
+    * 使用 clang 交叉编译 C++ 需要使用 LLVM 的 C++ 标准库，在 Debian13 上的安装命令如下：
+
+```sh
+$ sudo dpkg --add-architecture arm64
+$ sudo apt update && sudo apt install libc++-dev:arm64 libc++abi-dev:arm64
+```
 
 
 ### 安装模板 inc.ins.mk
