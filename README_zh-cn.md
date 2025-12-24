@@ -1,3 +1,5 @@
+![封面](./notes/cover.png)
+
 # CBuild-ng 编译系统
 
 [English Edition](./README.md)
@@ -5,6 +7,8 @@
 [CBuild-ng：构建系统的范式转移与价值重构](./notes/cbuild_zh-cn.md)
 
 [IMake：让构建回归Makefile本质，前所未有的简单体验](./notes/imake_zh-cn.md)
+
+[IMake：为Linux原生开发重塑构建系统的清晰与效率](./notes/cmp_cmake_zh-cn.md)
 
 [CPK：一场回归软件本真的打包分发哲学实践](./notes/cpk_zh-cn.md)
 
@@ -112,6 +116,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 ## 笔记
 
 * 如果对 Shell 语法不了解，可以查看 [Shell 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/programming_shell.md)
+* 如果对 GCC 编译选项不了解，可以查看 [GCC 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/gcc_options.md)
 * 如果对 Makefile 语法不了解，可以查看 [Makefile 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/programming_makefile.md)
 * 如果对 Kconfig 语法不了解，可以查看 [Kconfig 笔记](https://github.com/lengjingzju/notes/blob/master/src/md/programming_kconfig.md)
 

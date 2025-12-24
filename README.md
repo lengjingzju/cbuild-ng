@@ -1,3 +1,5 @@
+![Cover](./notes/cover.png)
+
 # CBuild-ng Compilation System
 
 [中文版](./README_zh-cn.md)
@@ -5,6 +7,8 @@
 [CBuild-ng: Paradigm Shift in Build Systems and Value Reconstruction](./notes/cbuild.md)
 
 [IMake: Bringing Builds Back to Makefile’s Essence — An Unprecedentedly Simple Experience](./notes/imake.md)
+
+[IMake: Reinventing Build Systems with Clarity and Efficiency for Native Linux Development](./notes/cmp_cmake.md)
 
 [CPK: A Philosophical Practice of Returning to the Essence of Software Packaging and Distribution](./notes/cpk.md)
 
