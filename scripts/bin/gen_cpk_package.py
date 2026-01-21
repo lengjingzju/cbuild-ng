@@ -247,7 +247,7 @@ done
             else:
                 interpreter = ldpath
                 for item in self.process_ldso:
-                    #interpreter = '\$ORIGIN/' + os.path.relpath(ldpath, item[0])
+                    #interpreter = '\\$ORIGIN/' + os.path.relpath(ldpath, item[0])
                     for var in item[1]:
                         varpath = os.path.join(item[0], var)
                         cmd = 'patchelf --set-interpreter %s %s' % (interpreter, varpath)
@@ -259,7 +259,7 @@ done
 
         #rpath = ':'.join(self.pathes)
         for item in self.process_rpath:
-            rpath = ':'.join(['\$ORIGIN/%s' % (os.path.relpath(path, item[0])) for path in self.pathes])
+            rpath = ':'.join(['\\$ORIGIN/%s' % (os.path.relpath(path, item[0])) for path in self.pathes])
             for var in item[1]:
                 varpath = os.path.join(item[0], var)
                 cmd = 'patchelf --set-rpath %s %s' % (rpath, varpath)

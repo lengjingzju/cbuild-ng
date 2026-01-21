@@ -127,6 +127,8 @@ class Deps:
                     item['conf'] = ''
                 elif dep == 'unselect':
                     item['default'] = False
+                elif dep == 'selected':
+                    item['default'] = True
                 elif dep[0] == '!':
                     item['cdeps'].append(dep[1:])
                 elif '@' in dep:

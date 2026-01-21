@@ -9,7 +9,7 @@ ifeq ($(KERNELRELEASE), )
 
 COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
 SRC_PATH       ?= .
-IGNORE_PATH    ?= .git .pc scripts output obj objects
+IGNORE_PATH    ?= .git .pc scripts out output obj objects
 REG_SUFFIX     ?= c cc cxx cpp S
 ifeq ($(USING_CXX_BUILD_C),y)
 CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
@@ -38,20 +38,40 @@ endif
 imake_cpflags  += $(call link_hdrs)
 imake_ldflags  += $(call link_libs)
 
+# Optimization flags
 imake_cpflags  += $(OPTIMIZER_FLAG)
 ifneq ($(ENV_BUILD_TYPE),debug)
+imake_ldflags  += -Wl,-O1
+ENV_LINK_SECTION ?= y
+endif
+ifeq ($(ENV_BUILD_TYPE),release)
+ENV_LINK_LTO   ?= y
+endif
+
+# Independent segments that can remove unused functions and variables when linking
+ifeq ($(ENV_LINK_SECTION),y)
 imake_cpflags  += -ffunction-sections -fdata-sections
 imake_ldflags  += -Wl,--gc-sections
-else
-imake_ldflags  += -Wl,-O1
 endif
+
+# Link Time Optimization: Global cross-file optimization can be performed when linking
+ifeq ($(ENV_LINK_LTO),y)
+imake_cpflags  += -flto
+imake_ldflags  += -flto
+endif
+
 #imake_ldflags += -static
 
 imake_cpflags  += -Wall # This enables all the warnings about constructions that some users consider questionable.
 imake_cpflags  += -Wextra # This enables some extra warning flags that are not enabled by -Wall (This option used to be called -W).
-imake_cpflags  += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),1024) # Warn whenever an object is defined whose size exceeds object_byte_size.
-imake_cpflags  += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),8192) # Warn if the size of a function frame exceeds frame_byte_size.
+imake_cpflags  += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),8192) # Warn whenever an object is defined whose size exceeds object_byte_size.
+imake_cpflags  += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),65536) # Warn if the size of a function frame exceeds frame_byte_size.
 #imake_cpflags += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
+
+ifeq ($(ENV_STRICT_WARN),y)
+imake_cpflags  += -Wconversion # Warn for implicit conversions that may alter a value
+#imake_cpflags  += -Wshadow # Warn when a local variable shadows another
+endif
 
 # Set SIMD acceleration for ARM and X86/AMD64 for cross build
 ifneq ($(NATIVE_BUILD),y)
@@ -187,8 +207,7 @@ endef
 define compile_cmd
 	$(PREAT)mkdir -p $$(dir $$@)
 ifeq ($(filter $(1),$(ASM_SUFFIX)), )
-	$(PREAT)$(2) $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -MM -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
-	$(PREAT)cat $$(patsubst %.o,%.d,$$@) | sed -e 's/#.*//' -e 's/^[^:]*:\s*//' -e 's/\s*\\$$$$//' -e 's/[ \t\v][ \t\v]*/\n/g' | sed -e '/^$$$$/ d' -e 's/$$$$/:/g' >> $$(patsubst %.o,%.d,$$@)
+	$(PREAT)$(2) $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -MM -MP -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
 endif
 	$(PREAT)$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
 ifneq ($(2),$(AS))

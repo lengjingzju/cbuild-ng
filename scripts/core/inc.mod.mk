@@ -27,7 +27,7 @@ endef
 
 ifeq ($(words $(MOD_NAME)),1)
 
-IGNORE_PATH    ?= .git .pc scripts output
+IGNORE_PATH    ?= .git .pc scripts out output obj objects
 REG_SUFFIX     ?= c S
 
 ifeq ($(SRCS), )

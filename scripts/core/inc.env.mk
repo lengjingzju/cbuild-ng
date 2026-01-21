@@ -23,9 +23,9 @@ OPTIMIZER_FLAG ?= -O0 -g -ggdb
 else ifeq ($(ENV_BUILD_TYPE),release)
 OPTIMIZER_FLAG ?= -O3
 else ifeq ($(ENV_BUILD_TYPE),minsize)
-OPTIMIZER_FLAG ?= -Os
+OPTIMIZER_FLAG ?= -Os -g -ggdb
 else
-OPTIMIZER_FLAG ?= -O2
+OPTIMIZER_FLAG ?= -O2 -g -ggdb
 endif
 
 ifneq ($(ENV_BUILD_MODE),yocto)
@@ -228,8 +228,10 @@ CPP            := $(CROSS_COMPILE)gcc -E
 CXX            := $(CROSS_COMPILE)g++
 AS             := $(CROSS_COMPILE)as
 LD             := $(CROSS_COMPILE)ld
-AR             := $(CROSS_COMPILE)ar
-RANLIB         := $(CROSS_COMPILE)ranlib
+# Enabling LTO requires loading a plugin, ar/nm/ranlib do not add it automatically,
+# which is why we switched to using gcc-ar/gcc-nm/gcc-ranlib.
+AR             := $(CROSS_COMPILE)gcc-ar
+RANLIB         := $(CROSS_COMPILE)gcc-ranlib
 OBJCOPY        := $(CROSS_COMPILE)objcopy
 STRIP          := $(CROSS_COMPILE)strip
 endif
