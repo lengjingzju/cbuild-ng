@@ -26,6 +26,7 @@ class Cbuild_Package:
         self.existed_libs = []
         self.unknown_libs = []
         self.wanted_libs = []
+        self.indirect_libs = []
 
 
     def process_needed(self, filepath):
@@ -179,6 +180,7 @@ class Cbuild_Package:
                                 if rlib not in self.existed_libs and rlib not in self.unknown_libs \
                                     and rlib not in libs:
                                     libs.append(rlib)
+                                    self.indirect_libs.append(rlib)
 
                         dstfile = os.path.join(syslib, reallib)
                         shutil.copy(realpath, dstfile)
@@ -218,7 +220,8 @@ class Cbuild_Package:
         print('Interpreter path       : ' + str(ldpath))
         print('ELFs with interpreter  : ' + str(self.process_ldso))
         print('ELFs with rpath        : ' + str(self.process_rpath))
-        print('ELFs copied from system: ' + str(self.wanted_libs))
+        print('ELFs copied from system: ' + str(self.wanted_libs)
+                                  + ' + ' + str(self.indirect_libs))
 
         if self.ldso:
             if oflag:
