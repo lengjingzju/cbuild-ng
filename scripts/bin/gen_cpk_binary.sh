@@ -1,5 +1,11 @@
 #!/bin/sh
 
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
 if [ "$1" = "pack" ]; then
     rm -f $2.cpk $2.tar
     tar -cf $2.tar -C $2 .

@@ -275,6 +275,11 @@ done
 def parse_options():
     parser = ArgumentParser( description="Tool to generate CPK (Cbuild Application Package).")
 
+    parser.add_argument( '-n', '--no-patchelf',
+            dest='no_patchelf',
+            action='store_true',
+            help='Disallow the use of patchelf to modify ELF files (allowed by default).')
+
     parser.add_argument('-r', '--rootfs',
             dest='rootfs',
             help='Specify the input rootfs to process.')
@@ -323,7 +328,8 @@ if __name__ == '__main__':
     cpk.process_rootfs(args.ignore)
     cpk.process_system(args.extra)
     cpk.process_syslib()
-    cpk.process_patchelf(True if args.output == 'y' else False)
+    if not args.no_patchelf:
+        cpk.process_patchelf(True if args.output == 'y' else False)
 
     if cpk.unknown_libs:
         print('\033[31mERROR: These shared libs (%s) can not be found, please set "-e <extra searched pathes>".\033[0m' % (str(cpk.unknown_libs)))

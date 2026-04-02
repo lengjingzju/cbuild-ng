@@ -167,6 +167,15 @@ ifneq ($(PKG_EOS),y)
 endif
 	@bash $(ENV_TOOL_DIR)/gen_cpk_binary.sh pack $(call pkg_dst,cpk,$@)
 
+%-eld: export MFLAG ?= -s
+%-eld:
+	@$(MAKE) $(MFLAG) execld
+	@$(MAKE) $(MFLAG) $(patsubst %-eld,%-pkg,$@)
+	@python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -n -r $(call pkg_dst,eld,$@) \
+		-i include:share:etc:srv:com:var:run \
+		-c $(ENV_BUILD_TOOL)gcc -t $(ENV_BUILD_TOOL)readelf $(if $(CPK_EXTRA_PATH),-e $(CPK_EXTRA_PATH))
+	@cp -fp $(ENV_CROSS_ROOT)/objects/execld/build/execld $(call pkg_dst,eld,$@)
+	@bash $(ENV_TOOL_DIR)/setup_ld_cfg.sh $(call pkg_dst,eld,$@)
 
 ifneq ($(PGCMD), )
 

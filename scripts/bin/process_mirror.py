@@ -17,6 +17,9 @@ DEF_MIRROR_DICT = {
     ],
     "https://www.kernel.org/pub/": [
         "https://mirrors.ustc.edu.cn/kernel.org/"
+    ],
+    "https://www.kernel.org/pub/linux/kernel/": [
+        "https://mirrors.aliyun.com/linux-kernel/"
     ]
 }
 

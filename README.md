@@ -97,6 +97,7 @@ The CBuild compilation system is mainly composed of three parts: task analysis a
     * Provides a rich open source software (OSS) layer, and OSS packages are increasing
     * Provides a tool to generate a HTML file which contains descriptive information for all packages (`gen_package_infos.py`)
     * Provides a tool to generate independent packages (including system dependencies), with functions similar to Snap, AppImage, or Flatpak (`gen_cpk_package.py` and `gen_cpk_binary.sh`)
+    * Provides a tool to generate the `execld` linker configuration, it does not modify the ELF binary, enabling cross-version execution via the command `execld <program> [arguments...]` (`setup_ld_cfg.sh`)
 <br>
 
 * Test cases can be viewed in [examples.md](./examples/examples.md)
@@ -174,6 +175,7 @@ This project has contributed 2 commits to the Linux Kernel Community so far, whi
   │  gen_build_chain.py    // Core dependency analysis; generates top-level Makefile and Kconfig based on dependencies
   │  gen_cpk_binary.sh     // CPK packaging: creates compressed archives with self-extracting headers
   │  gen_cpk_package.py    // Processes standalone CPK packages, bundles runtime libraries, and modifies RPATH for cross-distro compatibility
+  │  setup_ld_cfg.sh       // Generates the execld linker cfg; does not modify the ELF file, cross-distribution execution
   │  gen_depends_image.sh  // Generates dependency graphs
   │  gen_package_infos.py  // Generates license information files (HTML/TXT)
   │  meson_cross.sh        // Handles cross-compilation for the Meson build system
@@ -367,6 +369,7 @@ Note: The IDs (Target_Name / Depend_Names) only can consist of lowercase letters
     * `make <package>-dev`: Compile and release development packages (including dependencies, headers, static libraries)
     * `make <package>-pkg`: Compile and release packages (including dependencies)
     * `make <package>-cpk`: Compile and release packages (including dependencies), then pack them into independent package (including system runtime libraries, such as C libraries, modify `rpath` and `link interpreter`)
+    * `make <package>-eld`: Compile and release packages (including dependencies), and generate the execld link configuration file
 
 Note: The single type commands only exist in the packages with dependencies
 
@@ -1261,6 +1264,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 ```
 
 * Options:
+    * `-n`            : Do not use `patchelf` to process ELF files (optional)
     * `-r <rootfs>`   : Specify the input rootfs to process(required option)
     * `-i <ignore>`   : Specify the ignored directories that are not processed(Directories that do not contain dynamic libraries and executables). Multiple directories can be separated by colons
     * `-c <compiler>` : Specify the compiler, its default value is `gcc`
@@ -1277,6 +1281,83 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
         * Users can modify the script in the header of the self-extracting package to modify the self-extracting behavior
     * Self-extracting package decompression: `<self-extracting package> <installation path> <whether to delete the original package before installing>`
         * "Installation path" and "whether to delete the original package before installing" are optional options. If not given, the user will be asked to enter interactively
+
+
+## execld - Launch programs with bundled linker and libraries
+
+`execld` is a Linux C program that executes a target program while prioritizing the dynamic linker (`ld.so`) and shared libraries located in the program’s own directory. It is designed for self-contained software (e.g., portable apps, locally compiled tools) without modifying the system `LD_LIBRARY_PATH` or relying on global libraries.
+
+### Usage of execld
+
+```bash
+execld <program> [args...]
+```
+
+- `<program>` can be an absolute path, a relative path, or a name (searched in `PATH`).
+- All subsequent arguments are passed directly to the target program.
+
+### How execld Works
+
+1. Resolve real path of the program
+   If `<program>` is a symbolic link, its final target is resolved.
+
+2. Look for optional configuration file, In the program’s directory, `execld` checks (in order):
+   - `<program_name>.ld.cfg` (higher priority)
+   - `ld.cfg`
+
+   Configuration file format (key="value", quotes optional):
+
+   ```
+   linker="../lib/ld.so"      # path to dynamic linker (relative to program dir)
+   rpath=".;./lib;../lib"     # library search paths, semicolon-separated
+   ```
+
+3. Fallback to default `ld.so`
+
+   If no valid configuration exists but the program’s directory contains an executable file named `ld.so`, `execld` uses it with default library paths (only if the directory exists):
+
+   - `.`
+   - `./lib`
+   - `../lib`
+   - `../../lib` (only enabled when the parent directory of the program directory is named `usr`)
+
+4. Set library path and execute
+
+   `execld` builds the `LD_LIBRARY_PATH` environment variable (appending new paths to any existing value) and invokes the linker via `execv` to load the target program.
+
+5. Complete fallback
+
+   If none of the above conditions are met, `execld` runs the original program directly using `execvp` (system linker and default library paths).
+
+### Example of execld
+
+Suppose you have a portable version of `myapp` with the following layout:
+
+```
+/myapp/bin/myapp
+/myapp/lib/ld-linux-x86-64.so.2
+/myapp/lib/libfoo.so
+```
+
+Create `/myapp/bin/myapp.ld.cfg`:
+
+```
+linker="../lib/ld-linux-x86-64.so.2"
+rpath=".;../lib"
+```
+
+Then run:
+
+```bash
+execld /myapp/bin/myapp
+```
+
+`myapp` will use its own linker and libraries from `../lib`.
+
+### Notes of execld
+
+- The linker path must be executable.
+- All relative paths are resolved relative to the real program directory (symbolic links are followed).
 
 
 ## Configure CBuild-ng Environment

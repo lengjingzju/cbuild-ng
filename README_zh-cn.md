@@ -95,6 +95,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
     * 提供丰富的开源软件层，开源包不断增加中
     * 提供生成所有包的描述信息的 HTML 文件的脚本 `gen_package_infos.py`
     * 提供生成独立包(打包包含系统依赖)的脚本 `gen_cpk_package.py` `gen_cpk_binary.sh`，功能类似 Snap、AppImage或Flatpak
+    * 提供生成execld链接配置的脚本 `setup_ld_cfg.sh`，也是独立包，不修改ELF，`execld <program> [参数...]` 跨版本运行
 <br>
 
 * 测试用例可以查看 [examples_zh-cn.md](./examples/examples_zh-cn.md)
@@ -180,6 +181,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
   │  gen_build_chain.py     // 核心依赖分析脚本，根据依赖关系生成顶层 Makefile 与 Kconfig
   │  gen_cpk_binary.sh      // CPK 打包脚本，生成带自解压头的压缩包
   │  gen_cpk_package.py     // CPK 包处理脚本，收集运行时依赖并修改 RPATH，实现跨发行版运行
+  │  setup_ld_cfg.sh        // 生成execld链接配置脚本，不修改ELF文件，实现跨发行版运行
   │  gen_depends_image.sh   // 生成项目依赖图
   │  gen_package_infos.py   // 生成软件许可信息文件（HTML/TXT 格式）
   │  meson_cross.sh         // 处理 Meson 构建系统的交叉编译配置
@@ -359,6 +361,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
     * 可以 `make 包名-dev` 编译并发布开发包(包含依赖，头文件，静态库)
     * 可以 `make 包名-pkg` 编译并发布包(包含依赖)
     * 可以 `make 包名-cpk` 编译并发布包(包含依赖)，然后打包成独立包(包含系统运行库，例如C库，修改 `rpath` 和 `link interpreter`)
+    * 可以 `make 包名-eld` 编译并发布包(包含依赖)，且生成execld的链接配置文件
 
 
 ### Yocto Build 实依赖规则
@@ -1245,6 +1248,7 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
 ```
 
 * 参数
+    * `-n`            : 不要使用patchelf处理ELF文件(可选)
     * `-r <rootfs>`   : 指定要打包成独立包的 rootfs(必须指定的选项)
     * `-i <ignore>`   : 指定rootfs中不需要处理的目录(即不包含动态库和可执行文件的目录)，多个目录使用冒号隔开
     * `-c <compiler>` : 指定编译器的名称，不指定时默认为 `gcc`
@@ -1261,6 +1265,78 @@ python3 $(ENV_TOOL_DIR)/gen_cpk_package.py -r $(ENV_CROSS_ROOT)/packages/$(patsu
         * 用户可以修改自解压包头部的脚本，修改自解压的行为
     * 自解压包解压：  `<自解压包> <安装路径> <是否删除原有包后再安装>`
         * "安装路径"和"是否删除原有包后再安装"是可选选项，不传输时会交互式让用户输入
+
+
+## execld – 优先使用程序自带链接器与动态库的程序启动器
+
+`execld` 是一个 Linux 下的 C 语言程序，用于启动目标程序并优先使用该程序所在目录中的动态链接器（`ld.so`）及动态库。它适用于需要“自包含”运行的软件（如便携版、编译安装到独立目录的应用程序），无需修改系统 `LD_LIBRARY_PATH` 或依赖全局库。
+
+### execld 用法
+
+```bash
+execld <program> [参数...]
+```
+
+- `<program>` 可以是绝对路径、相对路径或仅程序名（将在 `PATH` 中查找）。
+- 后续参数会原样传递给目标程序。
+
+### execld 工作原理
+
+1. 解析程序真实路径
+   如果 `<program>` 是符号链接，会解析其最终目标
+
+2. 查找配置文件（可选）：在程序所在目录依次查找：
+   - `程序名.ld.cfg`（优先）
+   - `ld.cfg`
+
+   配置文件格式（每行 `key="value"`，引号可选）：
+   ```
+   linker="../lib/ld.so"      # 指定动态链接器路径（相对于程序目录）
+   rpath=".;./lib;../lib"     # 动态库搜索路径，分号分隔，支持相对路径
+   ```
+
+3. 回退默认行为
+   若未找到有效配置，但程序目录下存在可执行的 `ld.so`，则自动使用该链接器，并默认搜索以下动态库路径（仅当目录存在）：
+   - `.`
+   - `./lib`
+   - `../lib`
+   - `../../lib`（仅当程序目录的父目录名为 `usr` 时启用）
+
+4. 设置动态库路径
+   根据配置或默认规则生成 `LD_LIBRARY_PATH` 环境变量（保留原有值，附加新路径），然后通过 `execv` 调用链接器加载目标程序。
+
+5. 完全回退
+   若以上条件均不满足，则直接 `execvp` 运行原始程序（使用系统默认链接器和库路径）。
+
+### execld 示例
+
+假设有一个便携版 `myapp`，目录结构如下：
+
+```
+/myapp/bin/myapp
+/myapp/lib/ld-linux-x86-64.so.2
+/myapp/lib/libfoo.so
+```
+
+在 `/myapp/bin/` 下创建 `myapp.ld.cfg`：
+
+```
+linker="../lib/ld-linux-x86-64.so.2"
+rpath=".;../lib"
+```
+
+执行：
+
+```bash
+execld /myapp/bin/myapp
+```
+
+`myapp` 将使用自带的链接器和 `../lib` 中的动态库。
+
+### execld 注意事项
+
+- 链接器路径必须可执行
+- 相对路径均基于程序真实路径所在目录（符号链接会被解析）
 
 
 ## 配置 CBuild-ng 的编译环境

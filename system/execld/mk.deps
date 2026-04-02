@@ -1,0 +1,38 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) execld(native):
+
+PACKAGE_NAME     = execld
+
+LICENSE          = MIT
+LICFILE          = common://MIT-LENGJING
+HOMEPAGE         = https://github.com/lengjingzju/cbuild-ng
+DESCRIPTION      = execld is a Linux utility designed to execute a target program using a custom dynamic linker (ld.so) \
+                   and custom library search paths when available. It behaves similarly to the system dynamic loader, \
+                   but with directory‑local overrides and configuration rules.
+
+BIN_NAME         = $(PACKAGE_NAME)
+LDFLAGS         += -static
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+.PHONY: all clean install
+
+all:
+	@echo "Build $(PACKAGE_NAME) Done."
+
+include $(ENV_MAKE_DIR)/inc.app.mk
+include $(ENV_MAKE_DIR)/inc.ins.mk
+
+all: $(BIN_TARGETS)
+
+clean: clean_objs
+	@rm -f $(BIN_TARGETS)
+	@echo "Clean $(PACKAGE_NAME) Done."
+
+install: install_bins
+	@echo "Install $(PACKAGE_NAME) to $(INS_PREFIX) Done."
