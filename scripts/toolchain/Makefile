@@ -23,14 +23,14 @@ MACHINE_SCRIPT := $(ENV_TOOL_DIR)/process_machine.sh
 
 GMP_VER        ?= 6.3.0
 MPFR_VER       ?= 4.2.2
-MPC_VER        ?= 1.3.1
+MPC_VER        ?= 1.4.1
 ISL_VER        ?= 0.27
-BINUTILS_VER   ?= 2.45
+BINUTILS_VER   ?= 2.46.0
 GCC_VER        ?= $(shell $(MACHINE_SCRIPT) gcc_version)
-GDB_VER        ?= 16.3
+GDB_VER        ?= 17.1
 ifneq ($(HOST_TOOLCHAIN),y)
 LINUX_VER      ?= $(shell $(MACHINE_SCRIPT) linux_version)
-GLIBC_VER      ?= 2.42
+GLIBC_VER      ?= 2.43
 USE_LIBXCRYPT  := $(shell echo "$(GLIBC_VER) > 2.38" | bc)
 ifeq ($(USE_LIBXCRYPT),1)
 LIBXCRYPT_VER  ?= 4.5.2
@@ -39,7 +39,7 @@ endif
 
 GMP_URL        := https://ftp.gnu.org/gnu/gmp/gmp-$(GMP_VER).tar.xz
 MPFR_URL       := https://ftp.gnu.org/gnu/mpfr/mpfr-$(MPFR_VER).tar.xz
-MPC_URL        := https://ftp.gnu.org/gnu/mpc/mpc-$(MPC_VER).tar.gz
+MPC_URL        := https://ftp.gnu.org/gnu/mpc/mpc-$(MPC_VER).tar.xz
 ISL_URL        := https://libisl.sourceforge.io/isl-$(ISL_VER).tar.xz
 BINUTILS_URL   := https://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VER).tar.xz
 GCC_URL        := https://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VER)/gcc-$(GCC_VER).tar.xz
@@ -167,7 +167,7 @@ fetch-mpfr:
 
 fetch-mpc:
 	@$(COLORECHO) "\033[034m++++++++++ $@ ... ++++++++++\033[0m"
-	$(FETCH_SCRIPT) tar "$(MPC_URL)" mpc-$(MPC_VER).tar.gz $(SRCS_PATH) mpc-$(MPC_VER)
+	$(FETCH_SCRIPT) tar "$(MPC_URL)" mpc-$(MPC_VER).tar.xz $(SRCS_PATH) mpc-$(MPC_VER)
 	$(PATCH_SCRIPT) patch patch/mpc $(SRCS_PATH)/mpc-$(MPC_VER)
 	@$(COLORECHO) "\033[032m++++++++++ $@ done. ++++++++++\033[0m"
 
@@ -208,6 +208,8 @@ ifeq ($(USE_LIBXCRYPT),1)
 fetch-libxcrypt:
 	@$(COLORECHO) "\033[034m++++++++++ $@ ... ++++++++++\033[0m"
 	$(FETCH_SCRIPT) tar "$(LIBXCRYPT_URL)" libxcrypt-$(LIBXCRYPT_VER).tar.xz $(SRCS_PATH) libxcrypt-$(LIBXCRYPT_VER)
+	sed -i 's@(const char \*) intbuf@(char *) intbuf@g' \
+		$(addprefix $(SRCS_PATH)/libxcrypt-$(LIBXCRYPT_VER)/,lib/crypt-gost-yescrypt.c lib/crypt-sm3-yescrypt.c)
 	@$(COLORECHO) "\033[032m++++++++++ $@ done. ++++++++++\033[0m"
 endif
 endif

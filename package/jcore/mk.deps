@@ -22,7 +22,7 @@ VERSION          = 1.1.0
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/jcore.git
-SRC_REV          = 7d0595f963dddd0b07da02609fb077120527aec9
+SRC_REV          = 3a1b415760da8c6904c492beba6ea5a425c0d1bd
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

@@ -1,6 +1,6 @@
-From 38894df8ee9cff81e6b07625a4c3b797f6537f6f Mon Sep 17 00:00:00 2001
+From 62654ea6d52084c1b58de6f8f959aa8116899ee9 Mon Sep 17 00:00:00 2001
 From: Jing Leng <3090101217@zju.edu.cn>
-Date: Sat, 19 Jul 2025 21:13:57 +0800
+Date: Wed, 6 May 2026 14:48:45 +0800
 Subject: [PATCH] lua: Support dynamic library compilation
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH] lua: Support dynamic library compilation
  2 files changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 6e21588..648b5b3 100644
+index 388fa17..fbaf3d6 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -42,11 +42,14 @@ PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw p
+@@ -42,11 +42,14 @@ PLATS= guess aix bsd c89 freebsd generic ios linux macosx mingw posix solaris
  TO_BIN= lua luac
  TO_INC= lua.h luaconf.h lualib.h lauxlib.h lua.hpp
  TO_LIB= liblua.a
@@ -21,8 +21,8 @@ index 6e21588..648b5b3 100644
  
  # Lua version and release.
 +M= 5
- V= 5.4
- R= $V.8
+ V= 5.5
+ R= $V.0
 +export M V R
  
  # Targets start here.
@@ -51,20 +51,20 @@ index 6e21588..648b5b3 100644
  	@echo "INSTALL_TOP= $(INSTALL_TOP)"
  	@echo "INSTALL_BIN= $(INSTALL_BIN)"
 diff --git a/src/Makefile b/src/Makefile
-index b771196..3d1b9b0 100644
+index acf33e0..67ee153 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -7,7 +7,7 @@
  PLAT= guess
  
  CC= gcc -std=gnu99
--CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
-+CFLAGS= -O2 -Wall -Wextra -fPIC -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+-CFLAGS= -O2 -Wall -Wextra $(SYSCFLAGS) $(MYCFLAGS)
++CFLAGS= -O2 -Wall -Wextra -fPIC $(SYSCFLAGS) $(MYCFLAGS)
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  
 @@ -33,6 +33,7 @@ CMCFLAGS=
- PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw posix solaris
+ PLATS= guess aix bsd c89 freebsd generic ios linux macosx mingw posix solaris
  
  LUA_A=	liblua.a
 +LUA_SO=	liblua.so.$(R) liblua.so.$(M) liblua.so
@@ -104,7 +104,7 @@ index b771196..3d1b9b0 100644
  $(LUA_T): $(LUA_O) $(LUA_A)
  	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
  
-@@ -144,7 +157,7 @@ SunOS solaris:
+@@ -139,7 +152,7 @@ SunOS solaris:
  	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_POSIX -DLUA_USE_DLOPEN -D_REENTRANT" SYSLIBS="-ldl"
  
  # Targets that do not create files (not all makes understand .PHONY).
@@ -114,5 +114,5 @@ index b771196..3d1b9b0 100644
  # Compiler modules may use special flags.
  llex.o:
 -- 
-2.25.1
+2.47.3
 

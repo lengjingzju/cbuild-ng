@@ -20,11 +20,11 @@ DESCRIPTION      = The G.722 module is a bit exact implementation of the ITU G.7
 ENV_BUILD_TYPE  := release
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.2.1
+VERSION          = 1.2.5
 SRC_DIR          = libg722-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/sippy/libg722/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = ddfb66858e08aac46c8c53c3b9f85b7b
+SRC_MD5          = 90b531cb5ab503a39b0982193799637d
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

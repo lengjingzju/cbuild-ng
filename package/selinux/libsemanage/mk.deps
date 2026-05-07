@@ -18,16 +18,16 @@ DESCRIPTION      = The libsemanage library provides an API for the manipulation 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = tar
-VERSION          = 3.8
+VERSION          = 3.10
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = c4607b1eb806e9fe2d685943e0999b02
+SRC_REV          = fc210165ede52547ebf3d9dfa0d66f50
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
-MAKE_FLAGS       = EXTRA_CFLAGS="$(call link_hdrs)" LDFLAGS="$(call link_libs)" 
+MAKE_FLAGS       = EXTRA_CFLAGS="$(call link_hdrs) -Wno-error=discarded-qualifiers" LDFLAGS="$(call link_libs)"
 MAKE_FLAGS      += PREFIX=$(INS_TOPDIR)$(INS_SUBDIR) SHLIBDIR=$(INS_TOPDIR)/lib -C $(SRC_PATH)
 OBJ_PREFIX       = $(SRC_PATH)
 

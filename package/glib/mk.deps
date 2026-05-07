@@ -19,11 +19,11 @@ DESCRIPTION      = GLib is a general-purpose, portable utility library, which pr
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.85.1
+VERSION          = 2.88.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://download.gnome.org/sources/glib/$(shell echo $(VERSION) | sed -E 's/([0-9]+).([0-9]+).([0-9]+)/\1.\2/g')/$(SRC_NAME)
-SRC_MD5          = 22990fa005dff02ea17a22efbb98ec81
+SRC_MD5          = 384ea5551fc04334d113cb8b52ec9bac
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

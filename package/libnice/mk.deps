@@ -17,11 +17,11 @@ DESCRIPTION      = libnice is a library that implements the Interactive Connecti
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.1.22
+VERSION          = 0.1.23
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://libnice.freedesktop.org/releases/$(SRC_NAME)
-SRC_MD5          = 2bb2171f68638c072a62bf658af9a640
+SRC_MD5          = 5a8dd55fed6b6a2fdb17b6cfd2d0c55b
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

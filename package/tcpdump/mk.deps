@@ -15,11 +15,11 @@ DESCRIPTION      = A tool for network monitoring and data acquisition.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 4.99.5
+VERSION          = 4.99.6
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://www.tcpdump.org/release/$(SRC_NAME)
-SRC_MD5          = 6817b07bab47ff3a8ed08f378771157b
+SRC_MD5          = 50ed9102bb234de05b4386250e3ea098
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

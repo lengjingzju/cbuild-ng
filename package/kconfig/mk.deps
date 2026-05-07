@@ -16,7 +16,7 @@ DESCRIPTION      = This kconfig is from the Linux kernel, retaining only the men
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 6.12.28
+VERSION          = 6.18
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/kconfig.git

@@ -18,11 +18,11 @@ DESCRIPTION      = XFixes: X Fixes extension library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 6.0.1
+VERSION          = 6.0.2
 SRC_DIR          = libXfixes-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.x.org/releases/individual/lib/$(SRC_NAME)
-SRC_MD5          = 65b9ba1e9ff3d16c4fa72915d4bb585a
+SRC_MD5          = baa39ada682dd524491a165bb0dfc708
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

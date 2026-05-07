@@ -20,11 +20,11 @@ DESCRIPTION      = Command line tool and library for transferring data with URLs
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 8.17.0
+VERSION          = 8.20.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://curl.se/download/$(SRC_NAME)
-SRC_MD5          = 7a9d4b772fc56d68479b0416f234105a
+SRC_MD5          = b91d9edf299e693ced85db203206e1d4
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

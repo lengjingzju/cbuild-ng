@@ -15,16 +15,19 @@ DESCRIPTION      = The project includes an assembler, binary module parser, disa
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2024.3
+VERSION          = 2026.1
 SRC_DIR          = SPIRV-Tools-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = ae29eff28446e6619439b94ad9d89247
+SRC_MD5          = 4143cbe9f5394173df13273f1f41d539
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
 
 COMPILE_TOOL     = cmake
 CMAKE_FLAGS     += -DSPIRV-Headers_SOURCE_DIR=$(DEP_PREFIX)/usr
+
+CFLAGS          += -Wno-error=maybe-uninitialized
+CXXFLAGS        += -Wno-error=maybe-uninitialized
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

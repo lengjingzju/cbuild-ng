@@ -38,11 +38,11 @@ DESCRIPTION      = The GNU Binutils are a collection of binary tools. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.45
+VERSION          = 2.46.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ftp.gnu.org/gnu/binutils/$(SRC_NAME)
-SRC_MD5          = dee5b4267e0305a99a3c9d6131f45759
+SRC_MD5          = 81bb6810bcd1119819dc0804956e1c92
 INS_FULLER       = n
 
 CACHE_BUILD      = y
@@ -62,6 +62,9 @@ endif
 
 AUTOTOOLS_FLAGS += --disable-bootstrap \
                    --disable-multilib
+
+CFLAGS          += -Wno-error=discarded-qualifiers
+CXXFLAGS        += -Wno-error=discarded-qualifiers
 
 ifeq ($(CROSS_COMPILE), )
 

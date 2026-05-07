@@ -19,11 +19,11 @@ DESCRIPTION      = The Linux Audit System is designed to make Linux compliant wi
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 4.0.3
+VERSION          = 4.1.4
 SRC_DIR          = $(PACKAGE_NAME)-userspace-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/linux-audit/audit-userspace/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = c135d82f622e9d2c94136cf0aa796e95
+SRC_MD5          = 6575a4383f54ce971352620e6b5f746a
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =
@@ -31,11 +31,11 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS += --without-python --without-python3 --disable-zos-remote
 
-LDFLAGS         += $(call link_libs) -Wl,-rpath-link=$(OBJ_PREFIX)/lib/.libs
+LDFLAGS         += -Wl,-rpath-link=$(OBJ_PREFIX)/lib/.libs -Wl,-rpath-link=$(OBJ_PREFIX)/auparse/.libs -Wl,-rpath-link=$(OBJ_PREFIX)/auplugin/.libs
 
 CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
 	@if [ ! -e $(SRC_PATH)/README ]; then echo > $(SRC_PATH)/README; fi
-	@cd $(SRC_PATH) && ./autogen.sh
+	@cd $(SRC_PATH) && autoreconf -f --install
