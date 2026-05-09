@@ -1,0 +1,75 @@
+From 9c7e88326b6827c492320203badd181a1638d204 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Wed, 20 May 2026 11:42:56 +0800
+Subject: [PATCH] openldap: fix undefined reference to lutil_memcmp
+
+---
+ build/top.mk                      | 9 +++------
+ libraries/liblunicode/Makefile.in | 2 +-
+ libraries/librewrite/Makefile.in  | 3 +--
+ tests/progs/Makefile.in           | 2 +-
+ 4 files changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/build/top.mk b/build/top.mk
+index 2dacf61..6d560fb 100644
+--- a/build/top.mk
++++ b/build/top.mk
+@@ -176,12 +176,9 @@ LDAP_LIBREWRITE_A = $(LDAP_LIBDIR)/librewrite/librewrite.a
+ LDAP_LIBLUNICODE_A = $(LDAP_LIBDIR)/liblunicode/liblunicode.a
+ LDAP_LIBLUTIL_A = $(LDAP_LIBDIR)/liblutil/liblutil.a
+ 
+-LDAP_L = $(LDAP_LIBLUTIL_A) \
+-	$(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA)
+-SLAPD_L = $(LDAP_LIBLUNICODE_A) $(LDAP_LIBREWRITE_A) \
+-	$(LDAP_LIBLUTIL_A) $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA)
+-LLOADD_L = $(LDAP_LIBLUTIL_A) $(LDAP_LIBLDAP_LA) \
+-	$(LDAP_LIBLBER_LA)
++LDAP_L = $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
++SLAPD_L = $(LDAP_LIBLUNICODE_A) $(LDAP_LIBREWRITE_A) $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
++LLOADD_L = $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+ 
+ WRAP_LIBS = @WRAP_LIBS@
+ # AutoConfig generated 
+diff --git a/libraries/liblunicode/Makefile.in b/libraries/liblunicode/Makefile.in
+index ef7e49a..0564341 100644
+--- a/libraries/liblunicode/Makefile.in
++++ b/libraries/liblunicode/Makefile.in
+@@ -23,7 +23,7 @@ SRCS	= ucstr.c
+ OBJS	= ucdata.o ure.o urestubs.o ucstr.o
+ 
+ XLIB = $(LIBRARY)
+-XLIBS = $(LDAP_LIBLUTIL_A) $(LDAP_LIBLBER_LA)
++XLIBS = $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+ #PROGRAMS = ucgendat
+ 
+ LDAP_INCDIR= ../../include       
+diff --git a/libraries/librewrite/Makefile.in b/libraries/librewrite/Makefile.in
+index a146de6..ea024a0 100644
+--- a/libraries/librewrite/Makefile.in
++++ b/libraries/librewrite/Makefile.in
+@@ -28,8 +28,7 @@ LDAP_LIBDIR= ../../libraries
+ 
+ LIBRARY = librewrite.a
+ PROGRAMS	= rewrite
+-XLIBS = $(LIBRARY) $(LDAP_LIBLUTIL_A) \
+-	$(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA)
++XLIBS = $(LIBRARY) $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+ XXLIBS  = $(SECURITY_LIBS) $(LUTIL_LIBS)
+ XXXLIBS = $(LTHREAD_LIBS)
+ 
+diff --git a/tests/progs/Makefile.in b/tests/progs/Makefile.in
+index ac15fac..fbd34b3 100644
+--- a/tests/progs/Makefile.in
++++ b/tests/progs/Makefile.in
+@@ -24,7 +24,7 @@ SRCS     = slapd-common.c \
+ LDAP_INCDIR= ../../include
+ LDAP_LIBDIR= ../../libraries
+ 
+-XLIBS    = $(LDAP_LIBLDAP_LA) $(LDAP_LIBLUTIL_A) $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA)
++XLIBS    = $(LDAP_LIBLDAP_LA) $(LDAP_LIBLDAP_LA) $(LDAP_LIBLBER_LA) $(LDAP_LIBLUTIL_A)
+ XXLIBS	 = $(SECURITY_LIBS) $(LUTIL_LIBS)
+ XXXLIBS  = $(LTHREAD_LIBS)
+ 
+-- 
+2.47.3
+

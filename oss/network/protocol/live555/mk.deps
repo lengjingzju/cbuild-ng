@@ -1,0 +1,41 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) live555(native psysroot): unselect openssl
+
+PACKAGE_NAME     = live555
+
+LICENSE          = GPL-3.0-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = http://www.live555.com/liveMedia/
+DESCRIPTION      = This code forms a set of C++ libraries for multimedia streaming, using open standard protocols \
+                   (RTP/RTCP, RTSP, SIP).
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2026.04.22
+SRC_DIR          = live
+SRC_NAME         = $(SRC_DIR).$(VERSION).tar.gz
+SRC_URL          = https://download.live555.com/$(SRC_NAME)
+SRC_MD5          = 86736114c7b5f1bbcf46dc61246f8e0b
+OBJ_PREFIX       = $(SRC_PATH)
+
+GENMAKE          = $(shell pwd)/genmake
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+CACHE_CHECKSUM  += $(GENMAKE)
+
+MAKE_FLAGS       = -C $(SRC_PATH) PREFIX=$(INS_TOPDIR)$(INS_SUBDIR)
+
+CUSTOM_TARGETS   = compile
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+EXTRA_CPFLAGS    = $(CXXFLAGS) $(call link_hdrs)
+EXTRA_LDFLAGS    = $(LDFLAGS) $(call link_libs)
+
+compile:
+	@cd $(SRC_PATH) && $(GENMAKE) "$(EXTRA_CPFLAGS)" "$(EXTRA_LDFLAGS)"
+	@$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)

@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) rapidjson(native psysroot): unselect
+
+PACKAGE_NAME     = rapidjson
+
+LICENSE          = Tencent
+LICFILE          = file://license.txt
+HOMEPAGE         = https://rapidjson.org/
+DESCRIPTION      = A fast JSON parser/generator for C++ with both SAX/DOM style API.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 24b5e7a8b27f42fa16b96fc70aade9106cf7102f
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/Tencent/rapidjson.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DBUILD_TESTING=OFF -DRAPIDJSON_BUILD_DOC=OFF \
+                   -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_TESTS=OFF
+
+CUSTOM_TARGETS   = append
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+append:
+	@rm -rf $(INS_TOPDIR)$(docdir)

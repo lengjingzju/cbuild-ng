@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) drogon(native psysroot): unselect trantor openssl jsoncpp util-linux zlib
+
+PACKAGE_NAME     = drogon
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/drogonframework/drogon
+DESCRIPTION      = Drogon is a C++17/20 based HTTP application framework. Drogon can be used to easily \
+                   build various types of web application server programs using C++. Drogon is the name \
+                   of a dragon from the American TV series Game of Thrones, which I really enjoy.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.9.13
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/drogonframework/drogon/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = f7f838f5f5e3204a764df0ec8d5b886c
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DBUILD_SHARED_LIBS=ON -DBUILD_EXAMPLES=OFF -DUSE_SUBMODULE=OFF -DBUILD_CTL=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

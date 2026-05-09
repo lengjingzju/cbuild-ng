@@ -1,0 +1,36 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) boost(native psysroot): unselect
+
+PACKAGE_NAME     = boost
+
+LICENSE          = Boost-Software-License
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://www.boost.org/
+DESCRIPTION      = Boost is a collection of high-quality and peer-reviewed libraries that aims to make C++ \
+                   development highly productive.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.91.0
+SRC_DIR          = $(PACKAGE_NAME)_$(subst .,_,$(VERSION))
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://archives.boost.io/release/$(VERSION)/source/$(SRC_NAME)
+SRC_MD5          = 33cab4bc2a24f7cb8bb4120489bf6744
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+CUSTOM_TARGETS   = compile
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+compile:
+	$(PREAT)cd $(SRC_PATH) && ./bootstrap.sh --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
+ifneq ($(CROSS_COMPILE), )
+	$(PREAT)sed -i 's/using gcc ;/using gcc : : $(CXX) ;/g' $(SRC_PATH)/project-config.jam
+endif
+	$(PREAT)cd $(SRC_PATH) && ./b2 --build-dir=$(OBJ_PREFIX) && ./b2 --build-dir=$(OBJ_PREFIX) install

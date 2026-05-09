@@ -1,0 +1,49 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) openldap(native psysroot): unselect berkeleydb openssl
+
+PACKAGE_NAME     = openldap
+
+LICENSE          = OpenLDAP
+LICFILE          = file://LICENSE file://COPYRIGHT
+HOMEPAGE         = https://www.openldap.org/
+DESCRIPTION      = OpenLDAP Software is an open source implementation of the Lightweight Directory Access Protocol. \
+                   The suite includes: \
+                   * lloadd - stand-alone LDAP Load Balancer Daemon (server or slapd module) \
+                   * slapd - stand-alone LDAP daemon (server) \
+                   * libraries implementing the LDAP protocol, and utilities, tools, and sample clients. \
+                   Also available from the OpenLDAP Project: \
+                   * Fortress - Role-based identity access management Java SDK \
+                   * JLDAP - LDAP Class Libraries for Java \
+                   * JDBC-LDAP - Java JDBC - LDAP Bridge Driver \
+                   * LMDB - Lightning Memory-Mapped Database
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.6.13
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tgz
+SRC_URL          = https://www.openldap.org/software/download/OpenLDAP/openldap-release/$(SRC_NAME)
+SRC_MD5          = 761be850c8ff85dbf5031af7c6c6da44
+INS_SUBDIR       =
+INS_FULLER       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-bdb \
+                   --with-tls=openssl \
+                   --with-yielding_select=yes
+
+AUTOTOOLS_FLAGS += --without-systemd
+
+CFLAGS          += $(call link_hdrs)
+CPPFLAGS        += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

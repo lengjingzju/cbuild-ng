@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) glog(native psysroot): unselect libunwind openssl gflags
+
+PACKAGE_NAME     = glog
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://github.com/google/glog
+DESCRIPTION      = Google Logging (glog) was a C++14 library that implements application-level logging. \
+                   The library provided logging APIs based on C++-style streams and various helper macros.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.7.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/google/glog/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 128e2995cc33d794ff24f785a3060346
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DWITH_GTEST=OFF -DWITH_PKGCONFIG=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) fp16(native psysroot): unselect
+
+PACKAGE_NAME     = fp16
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/Maratyszcza/FP16
+DESCRIPTION      = Header-only library for conversion to/from half-precision floating point formats.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 3d2de1816307bac63c16a297e8c4dc501b4076df
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/Maratyszcza/FP16.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DFP16_BUILD_TESTS=OFF -DFP16_BUILD_BENCHMARKS=OFF -DBUILD_GMOCK=OFF -DBENCHMARK_USE_BUNDLED_GTEST=OFF \
+                   -DBENCHMARK_INSTALL_DOCS=OFF -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DBENCHMARK_ENABLE_ASSEMBLY_TESTS=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

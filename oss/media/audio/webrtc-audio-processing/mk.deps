@@ -1,0 +1,39 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) webrtc-audio-processing(native psysroot): unselect
+
+PACKAGE_NAME     = webrtc-audio-processing
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://github.com/shichaog/WebRTC-audio-processing
+DESCRIPTION      = This is meant to be a more Linux packaging friendly copy of the AudioProcessing module from the \
+                   WebRTC project. The ideal case is that we make no changes to the code to make tracking upstream \
+                   code easy.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 2280c388ff4681fab9a1fada2025f2f21456569b
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/shichaog/WebRTC-audio-processing.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = n
+SRC_PATH         = $(WORKDIR)/$(SRC_DIR)/$(PACKAGE_NAME)
+
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && libtoolize && aclocal && automake --add-missing --copy && autoconf

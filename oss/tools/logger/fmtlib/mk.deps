@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) fmt(native psysroot): unselect
+
+PACKAGE_NAME     = fmt
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://fmt.dev/
+DESCRIPTION      = {fmt} is an open-source formatting library providing a fast and safe alternative to C stdio and \
+                   C++ iostreams.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 12.1.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/fmtlib/fmt/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 92eb6f492e4838e5f024ce5207beafc7
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DFMT_DOC=OFF -DFMT_TEST=OFF -DBUILD_SHARED_LIBS=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

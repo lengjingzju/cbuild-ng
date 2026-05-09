@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libsrtp(native psysroot): unselect openssl
+
+PACKAGE_NAME     = libsrtp
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/ithewei/libhv
+DESCRIPTION      = This package provides an implementation of the Secure Real-time Transport Protocol (SRTP), \
+                   the Universal Security Transform (UST), and a supporting cryptographic kernel. The SRTP \
+                   API is documented in include/srtp.h, and the library is in libsrtp2.a (after compilation).
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.8.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/cisco/libsrtp/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = d4ebbad864e0272e9900904e50996d08
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DBUILD_SHARED_LIBS=ON -DENABLE_OPENSSL=ON -DLIBSRTP_TEST_APPS=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

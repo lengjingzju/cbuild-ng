@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libyang(native psysroot): unselect pcre2
+
+PACKAGE_NAME     = libyang
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/CESNET/libyang
+DESCRIPTION      = libyang is a YANG data modelling language parser and toolkit written (and providing API) in C. \
+                   The library is used e.g. in libnetconf2, Netopeer2 or sysrepo projects.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+# FRR is not compatible with 5.4.9 version
+VERSION          = 4.2.2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/CESNET/libyang/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 3dfc13b2d948faa6938ce0c032460dd6
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

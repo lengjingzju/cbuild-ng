@@ -1,0 +1,37 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) jrtplib(native psysroot): unselect openssl
+
+PACKAGE_NAME     = jrtplib
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://codeberg.org/j0r1/JRTPLIB
+DESCRIPTION      = JRTPLIB is an object-oriented C++ library designed to help developers use the Real-time \
+                   Transport Protocol (RTP) as defined in RFC 3550. It simplifies sending and receiving RTP \
+                   data by internally handling details such as SSRC collision management, RTCP scheduling, \
+                   and transmission, so users only need to supply payload data and can easily access incoming \
+                   RTP/RTCP packets. The library provides core classes like RTPSession(and RTPSecureSessionfor \
+                   SRTP), supports UDP over IPv4/IPv6, and is released under a permissive open-source license.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = v3.11.2
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(PACKAGE_NAME)
+SRC_URL          = https://codeberg.org/j0r1/JRTPLIB.git
+SRC_TAG          = $(VERSION)
+SRC_PATH         = $(ENV_DOWN_DIR)/$(SRC_DIR)
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DJRTPLIB_COMPILE_TESTS=OFF -DJRTPLIB_COMPILE_EXAMPLES=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

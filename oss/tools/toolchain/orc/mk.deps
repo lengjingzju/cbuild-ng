@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) orc(native psysroot): unselect
+
+PACKAGE_NAME     = orc
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://gstreamer.freedesktop.org/modules/orc.html
+DESCRIPTION      = Library of Optimized Inner Loops Runtime Compiler. \
+                   Library and set of tools for compiling and executing SIMD assembly language-like programs that \
+                   operate on arrays of data.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.4.42
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://gstreamer.freedesktop.org/data/src/orc/$(SRC_NAME)
+SRC_MD5          = b8b4e43d46a62b32150ed5e9833f1d55
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = meson
+MESON_FLAGS      = -Dorc-test=disabled -Dbenchmarks=disabled -Dexamples=disabled -Dhotdoc=disabled -Dtests=disabled
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

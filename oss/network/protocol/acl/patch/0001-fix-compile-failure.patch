@@ -1,0 +1,370 @@
+From 5e22083bdbbac009c2a22ee718237f9ec9e11a56 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Wed, 20 May 2026 14:22:29 +0800
+Subject: [PATCH] fix compile failure
+
+---
+ android/acl_ndk20b/http/src/main/cpp/CMakeLists.txt         | 4 ++--
+ android/samples/fiber/HttpFiber/src/main/cpp/CMakeLists.txt | 4 ++--
+ android/samples/fiber/http/src/main/cpp/CMakeLists.txt      | 4 ++--
+ android/samples/http/http/src/main/cpp/CMakeLists.txt       | 4 ++--
+ .../samples/websocket/websocket/src/main/cpp/CMakeLists.txt | 4 ++--
+ harmony/api12/acl_one/acl/src/main/cpp/CMakeLists.txt       | 2 +-
+ harmony/api13/acl_one/acl/src/main/cpp/CMakeLists.txt       | 2 +-
+ harmony/api16/acl_one/acl/src/main/cpp/CMakeLists.txt       | 2 +-
+ harmony/api9/acl_one/entry/src/main/cpp/CMakeLists.txt      | 2 +-
+ lib_acl/CMakeLists.txt                                      | 4 ++--
+ lib_acl/src/net/connect/acl_inet_connect.c                  | 2 +-
+ lib_acl/src/private/private_vstream.c                       | 2 +-
+ lib_acl/src/stdlib/acl_getopt.c                             | 2 +-
+ lib_acl/src/stdlib/string/acl_mystring.c                    | 3 ++-
+ lib_acl_cpp/CMakeLists.txt                                  | 4 ++--
+ lib_fiber/c/CMakeLists.txt                                  | 6 +++---
+ lib_fiber/cpp/CMakeLists.txt                                | 6 +++---
+ lib_protocol/CMakeLists.txt                                 | 6 +++---
+ 18 files changed, 32 insertions(+), 31 deletions(-)
+
+diff --git a/android/acl_ndk20b/http/src/main/cpp/CMakeLists.txt b/android/acl_ndk20b/http/src/main/cpp/CMakeLists.txt
+index a055008..1826287 100644
+--- a/android/acl_ndk20b/http/src/main/cpp/CMakeLists.txt
++++ b/android/acl_ndk20b/http/src/main/cpp/CMakeLists.txt
+@@ -56,7 +56,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+ 
+     # xxx: don't set any CMAKE_SHARED_LINKER_FLAGS on NDK with gnustl_shared
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-fvisibility=hidden")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fvisibility=hidden")
+     endif()
+     add_definitions("-fvisibility=hidden")
+     add_definitions("-fvisibility-inlines-hidden")
+@@ -103,7 +103,7 @@ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+     endif()
+ endif()
+ 
+diff --git a/android/samples/fiber/HttpFiber/src/main/cpp/CMakeLists.txt b/android/samples/fiber/HttpFiber/src/main/cpp/CMakeLists.txt
+index fb755ae..f9f398c 100644
+--- a/android/samples/fiber/HttpFiber/src/main/cpp/CMakeLists.txt
++++ b/android/samples/fiber/HttpFiber/src/main/cpp/CMakeLists.txt
+@@ -56,7 +56,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+ 
+     # xxx: don't set any CMAKE_SHARED_LINKER_FLAGS on NDK with gnustl_shared
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-fvisibility=hidden")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fvisibility=hidden")
+     endif()
+     add_definitions("-fvisibility=hidden")
+     add_definitions("-fvisibility-inlines-hidden")
+@@ -103,7 +103,7 @@ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+     endif()
+ endif()
+ 
+diff --git a/android/samples/fiber/http/src/main/cpp/CMakeLists.txt b/android/samples/fiber/http/src/main/cpp/CMakeLists.txt
+index fb755ae..f9f398c 100644
+--- a/android/samples/fiber/http/src/main/cpp/CMakeLists.txt
++++ b/android/samples/fiber/http/src/main/cpp/CMakeLists.txt
+@@ -56,7 +56,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+ 
+     # xxx: don't set any CMAKE_SHARED_LINKER_FLAGS on NDK with gnustl_shared
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-fvisibility=hidden")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fvisibility=hidden")
+     endif()
+     add_definitions("-fvisibility=hidden")
+     add_definitions("-fvisibility-inlines-hidden")
+@@ -103,7 +103,7 @@ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+     endif()
+ endif()
+ 
+diff --git a/android/samples/http/http/src/main/cpp/CMakeLists.txt b/android/samples/http/http/src/main/cpp/CMakeLists.txt
+index fb755ae..f9f398c 100644
+--- a/android/samples/http/http/src/main/cpp/CMakeLists.txt
++++ b/android/samples/http/http/src/main/cpp/CMakeLists.txt
+@@ -56,7 +56,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+ 
+     # xxx: don't set any CMAKE_SHARED_LINKER_FLAGS on NDK with gnustl_shared
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-fvisibility=hidden")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fvisibility=hidden")
+     endif()
+     add_definitions("-fvisibility=hidden")
+     add_definitions("-fvisibility-inlines-hidden")
+@@ -103,7 +103,7 @@ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+     endif()
+ endif()
+ 
+diff --git a/android/samples/websocket/websocket/src/main/cpp/CMakeLists.txt b/android/samples/websocket/websocket/src/main/cpp/CMakeLists.txt
+index ffde3ee..b699e07 100644
+--- a/android/samples/websocket/websocket/src/main/cpp/CMakeLists.txt
++++ b/android/samples/websocket/websocket/src/main/cpp/CMakeLists.txt
+@@ -56,7 +56,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+ 
+     # xxx: don't set any CMAKE_SHARED_LINKER_FLAGS on NDK with gnustl_shared
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-fvisibility=hidden")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fvisibility=hidden")
+     endif()
+     add_definitions("-fvisibility=hidden")
+     add_definitions("-fvisibility-inlines-hidden")
+@@ -101,7 +101,7 @@ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME MATCHES "Android")
+     if (NOT ANDROID_STL MATCHES "gnustl_shared")
+-        set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+     endif()
+ endif()
+ 
+diff --git a/harmony/api12/acl_one/acl/src/main/cpp/CMakeLists.txt b/harmony/api12/acl_one/acl/src/main/cpp/CMakeLists.txt
+index ae0ee7c..f8b4c2f 100644
+--- a/harmony/api12/acl_one/acl/src/main/cpp/CMakeLists.txt
++++ b/harmony/api12/acl_one/acl/src/main/cpp/CMakeLists.txt
+@@ -52,7 +52,7 @@ set(libacl_cpp ${lib_acl_path}/libacl_cpp.a)
+ set(libprotocol ${lib_acl_path}/libprotocol.a)
+ 
+ set(lib_all ${libacl_cpp} ${libprotocol} ${libacl} -lz)
+-set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+ 
+ find_library(
+     hilog-lib
+diff --git a/harmony/api13/acl_one/acl/src/main/cpp/CMakeLists.txt b/harmony/api13/acl_one/acl/src/main/cpp/CMakeLists.txt
+index ae0ee7c..f8b4c2f 100644
+--- a/harmony/api13/acl_one/acl/src/main/cpp/CMakeLists.txt
++++ b/harmony/api13/acl_one/acl/src/main/cpp/CMakeLists.txt
+@@ -52,7 +52,7 @@ set(libacl_cpp ${lib_acl_path}/libacl_cpp.a)
+ set(libprotocol ${lib_acl_path}/libprotocol.a)
+ 
+ set(lib_all ${libacl_cpp} ${libprotocol} ${libacl} -lz)
+-set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+ 
+ find_library(
+     hilog-lib
+diff --git a/harmony/api16/acl_one/acl/src/main/cpp/CMakeLists.txt b/harmony/api16/acl_one/acl/src/main/cpp/CMakeLists.txt
+index ae0ee7c..f8b4c2f 100644
+--- a/harmony/api16/acl_one/acl/src/main/cpp/CMakeLists.txt
++++ b/harmony/api16/acl_one/acl/src/main/cpp/CMakeLists.txt
+@@ -52,7 +52,7 @@ set(libacl_cpp ${lib_acl_path}/libacl_cpp.a)
+ set(libprotocol ${lib_acl_path}/libprotocol.a)
+ 
+ set(lib_all ${libacl_cpp} ${libprotocol} ${libacl} -lz)
+-set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+ 
+ find_library(
+     hilog-lib
+diff --git a/harmony/api9/acl_one/entry/src/main/cpp/CMakeLists.txt b/harmony/api9/acl_one/entry/src/main/cpp/CMakeLists.txt
+index 88dc9c9..5f0c4f7 100644
+--- a/harmony/api9/acl_one/entry/src/main/cpp/CMakeLists.txt
++++ b/harmony/api9/acl_one/entry/src/main/cpp/CMakeLists.txt
+@@ -51,7 +51,7 @@ set(libacl_cpp ${lib_acl_path}/libacl_cpp.a)
+ set(libprotocol ${lib_acl_path}/libprotocol.a)
+ 
+ set(lib_all ${libacl_cpp} ${libprotocol} ${libacl} -lz)
+-set(CMAKE_SHARED_LINKER_FLAGS "-shared -O3 -flto")
++set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -shared -O3 -flto")
+ 
+ find_library(
+     hilog-lib
+diff --git a/lib_acl/CMakeLists.txt b/lib_acl/CMakeLists.txt
+index c154dfc..95e3404 100644
+--- a/lib_acl/CMakeLists.txt
++++ b/lib_acl/CMakeLists.txt
+@@ -58,7 +58,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+ 	add_definitions("-O2")
+ 	set(UNIX_OS true)
+ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+-	set(CMAKE_SHARED_LINKER_FLAGS "/DYNAMICBASE ws2_32.lib IPHlpApi.lib")
++	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DYNAMICBASE ws2_32.lib IPHlpApi.lib")
+ 	set(WIN_OS true)
+ else()
+ 	message(FATAL_ERROR "unknown CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
+@@ -243,7 +243,7 @@ if (ACL_BUILD_SHARED MATCHES "YES")
+ 		endif()
+ 	endif()
+ 
+-	set(CMAKE_SHARED_LINKER_FLAGS "${sys_ldflags}")
++	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${sys_ldflags}")
+ 	add_library(acl_shared SHARED ${acl_src})
+ 
+ 	if (${WIN_OS})
+diff --git a/lib_acl/src/net/connect/acl_inet_connect.c b/lib_acl/src/net/connect/acl_inet_connect.c
+index 0c8889a..f86ff47 100644
+--- a/lib_acl/src/net/connect/acl_inet_connect.c
++++ b/lib_acl/src/net/connect/acl_inet_connect.c
+@@ -314,7 +314,7 @@ static struct addrinfo *resolve_addr(const char *name, const char *service)
+ static int parse_addr(const char *addr, struct addr_res *res)
+ {
+ 	char *ptr, *local;
+-	const char *peer;
++	char *peer;
+ 
+ 	res->peer_family = PF_UNSPEC;
+ 
+diff --git a/lib_acl/src/private/private_vstream.c b/lib_acl/src/private/private_vstream.c
+index 884b443..f088fa9 100644
+--- a/lib_acl/src/private/private_vstream.c
++++ b/lib_acl/src/private/private_vstream.c
+@@ -686,7 +686,7 @@ ACL_VSTREAM *private_vstream_connect_ex(const char *addr, int block_mode,
+ {
+ 	ACL_VSTREAM *stream;
+ 	ACL_SOCKET fd;
+-	char *ptr;
++	const char *ptr;
+ 
+ 	acl_assert(addr && *addr);
+ 	ptr = strchr(addr, ':');
+diff --git a/lib_acl/src/stdlib/acl_getopt.c b/lib_acl/src/stdlib/acl_getopt.c
+index 0ba4601..7eb9916 100644
+--- a/lib_acl/src/stdlib/acl_getopt.c
++++ b/lib_acl/src/stdlib/acl_getopt.c
+@@ -27,7 +27,7 @@ void acl_getopt_init(void)
+ int acl_getopt(int argc, char * argv[], const char *optstring)
+ {
+ 	register char c;
+-	register char *place;
++	const char *place;
+ 
+ 	acl_optarg = NULL;
+ 
+diff --git a/lib_acl/src/stdlib/string/acl_mystring.c b/lib_acl/src/stdlib/string/acl_mystring.c
+index 5f7f0e9..d9cd059 100644
+--- a/lib_acl/src/stdlib/string/acl_mystring.c
++++ b/lib_acl/src/stdlib/string/acl_mystring.c
+@@ -222,7 +222,8 @@ int acl_strstrip(const char *haystack, const char *needle,
+ 	char *buf, int bsize)
+ {
+ 	const char *src;
+-	char *des, *ptr;
++	char *des;
++	const char *ptr;
+ 	int len, n, ncpy = 0;
+ 
+ 	if (haystack == NULL || *haystack == 0 || needle == NULL
+diff --git a/lib_acl_cpp/CMakeLists.txt b/lib_acl_cpp/CMakeLists.txt
+index e93ce73..5f4f976 100644
+--- a/lib_acl_cpp/CMakeLists.txt
++++ b/lib_acl_cpp/CMakeLists.txt
+@@ -58,7 +58,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+ 	add_definitions("-Os")
+ 	set(UNIX_OS true)
+ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+-	set(CMAKE_SHARED_LINKER_FLAGS "/DYNAMICBASE ws2_32.lib")
++	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DYNAMICBASE ws2_32.lib")
+ 	set(WIN_OS true)
+ else()
+ 	message(FATAL_ERROR "unknown CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
+@@ -341,7 +341,7 @@ if (ACL_BUILD_SHARED MATCHES "YES")
+ 		target_link_libraries(acl_cpp_shared libprotocol libacl)
+ 	else()
+ 		set(lc_flags "-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib -L${lib_output_path}")
+-		set(CMAKE_SHARED_LINKER_FLAGS "${lc_flags} ${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${lc_flags} ${sys_ldflags}")
+ 		set_target_properties(acl_cpp_shared PROPERTIES OUTPUT_NAME "acl_cpp")
+ 		target_link_libraries(acl_cpp_shared protocol acl)
+ 	endif()
+diff --git a/lib_fiber/c/CMakeLists.txt b/lib_fiber/c/CMakeLists.txt
+index 16b2e91..5fd3808 100644
+--- a/lib_fiber/c/CMakeLists.txt
++++ b/lib_fiber/c/CMakeLists.txt
+@@ -43,7 +43,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+ 	add_definitions("-Os")
+ 	set(UNIX_OS true)
+ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+-	set(CMAKE_SHARED_LINKER_FLAGS "/DYNAMICBASE ws2_32.lib")
++	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DYNAMICBASE ws2_32.lib")
+ 	set(WIN_OS true)
+ else()
+ 	message(FATAL_ERROR "unknown CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
+@@ -214,10 +214,10 @@ if (ACL_BUILD_SHARED MATCHES "YES")
+ 			ARCHIVE_OUTPUT_DIRECTORY ${lib_output_path}/shared
+ 			LIBRARY_OUTPUT_DIRECTORY ${lib_output_path}/shared
+ 		)
+-		set(CMAKE_SHARED_LINKER_FLAGS "${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${sys_ldflags}")
+ 	else()
+ 		set_target_properties(fiber_shared PROPERTIES OUTPUT_NAME "fiber")
+-		set(CMAKE_SHARED_LINKER_FLAGS "${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${sys_ldflags}")
+ 	endif()
+ 
+ 	if(CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "Darwin")
+diff --git a/lib_fiber/cpp/CMakeLists.txt b/lib_fiber/cpp/CMakeLists.txt
+index e45dd8c..b94c528 100644
+--- a/lib_fiber/cpp/CMakeLists.txt
++++ b/lib_fiber/cpp/CMakeLists.txt
+@@ -40,7 +40,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+ 	add_definitions("-Os")
+ 	set(UNIX_OS true)
+ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+-	set(CMAKE_SHARED_LINKER_FLAGS "/DYNAMICBASE ws2_32.lib")
++	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DYNAMICBASE ws2_32.lib")
+ 	set(WIN_OS true)
+ else()
+ 	message(FATAL_ERROR "unknown CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
+@@ -213,12 +213,12 @@ if (ACL_BUILD_SHARED MATCHES "YES")
+ 			ARCHIVE_OUTPUT_DIRECTORY ${lib_output_path}/shared
+ 			LIBRARY_OUTPUT_DIRECTORY ${lib_output_path}/shared
+ 		)
+-		set(CMAKE_SHARED_LINKER_FLAGS "${lc_ldflags} ${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${lc_ldflags} ${sys_ldflags}")
+ 		target_link_libraries(fiber_cpp_shared libacl_cpp libprotocol libacl libfiber Ws2_32)
+ 	else()
+ 		set_target_properties(fiber_cpp_shared PROPERTIES OUTPUT_NAME "fiber_cpp")
+ 		set(lc_ldflags "-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib -L${lib_output_path}")
+-		set(CMAKE_SHARED_LINKER_FLAGS "${lc_ldflags} ${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${lc_ldflags} ${sys_ldflags}")
+ 		target_link_libraries(fiber_cpp_shared acl_cpp protocol acl fiber)
+ 	endif()
+ 
+diff --git a/lib_protocol/CMakeLists.txt b/lib_protocol/CMakeLists.txt
+index 361be40..bc4fcb8 100644
+--- a/lib_protocol/CMakeLists.txt
++++ b/lib_protocol/CMakeLists.txt
+@@ -49,7 +49,7 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+ 	add_definitions("-Os")
+ 	set(UNIX_OS true)
+ elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+-	set(CMAKE_SHARED_LINKER_FLAGS "/DYNAMICBASE ws2_32.lib")
++	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DYNAMICBASE ws2_32.lib")
+ 	set(WIN_OS true)
+ else()
+ 	message(FATAL_ERROR "unknown CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}")
+@@ -207,12 +207,12 @@ if (ACL_BUILD_SHARED MATCHES "YES")
+ 			ARCHIVE_OUTPUT_DIRECTORY ${lib_output_path}/shared
+ 			LIBRARY_OUTPUT_DIRECTORY ${lib_output_path}/shared
+ 		)
+-		set(CMAKE_SHARED_LINKER_FLAGS "${lc_flags} ${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${lc_flags} ${sys_ldflags}")
+ 		target_link_libraries(protocol_shared libacl Ws2_32)
+ 	else()
+ 		set_target_properties(protocol_shared PROPERTIES OUTPUT_NAME "protocol")
+ 		set(lc_flags "-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib -L${lib_output_path}")
+-		set(CMAKE_SHARED_LINKER_FLAGS "${lc_flags} ${sys_ldflags}")
++		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${lc_flags} ${sys_ldflags}")
+ 		target_link_libraries(protocol_shared acl)
+ 	endif()
+ 
+-- 
+2.47.3
+

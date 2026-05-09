@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) cpp-ipc(native psysroot): unselect
+
+PACKAGE_NAME     = cpp-ipc
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://github.com/mutouyun/cpp-ipc
+DESCRIPTION      = A fast multi-producer, multi-consumer lock-free concurrent queue for C++11.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.4.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/mutouyun/cpp-ipc/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = cc9fea2d6c8da6b2289f98838b17b51c
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DLIBIPC_BUILD_SHARED_LIBS=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

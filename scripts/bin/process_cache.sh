@@ -479,7 +479,7 @@ check_cache() {
         mirror_url=${ENV_MIRROR_URL}/build-cache/${cachefile}
         if [ -e "${ENV_CACHE_DIR}/${cachefile}" ]; then
             wlog "INFO: cachefile: MATCH"
-            echo > ${matchfile}
+            echo ${cachefile} > ${matchfile}
         elif [ ! -z "${ENV_MIRROR_URL}" ] && [ "$(wget --spider -nv ${mirror_url} 2>&1 | grep -wc 200)" = "1" ]; then
             del_cache
             rm -rf ${insdir} ${insdir}-flag
@@ -488,7 +488,7 @@ check_cache() {
             echo -e "\033[32mwget ${mirror_url} to ${ENV_CACHE_DIR}/${cachefile}\033[0m"
             wlog "INFO: fetchcmd: wget -q ${mirror_url} -O ${ENV_CACHE_DIR}/${cachefile} --no-check-certificate"
             wlog "INFO: cachefile: MATCH"
-            echo > ${matchfile}
+            echo ${cachefile} > ${matchfile}
         else
             wlog "INFO: cachefile: UNMATCH, ${ENV_CACHE_DIR}/${cachefile} isn't existed."
         fi

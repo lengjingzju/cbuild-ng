@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) log4cplus(native psysroot): unselect
+
+PACKAGE_NAME     = log4cplus
+
+LICENSE          = Log4cplus
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/log4cplus/log4cplus
+DESCRIPTION      = log4cplus is a simple to use C++23 logging API providing thread--safe, flexible, and arbitrarily \
+                   granular control over log management and configuration. It is modeled after the Java log4j API.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.1.2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.xz
+SRC_URL          = https://github.com/log4cplus/log4cplus/releases/download/REL_$(subst .,_,$(VERSION))/$(SRC_NAME)
+SRC_MD5          = 9b07ce88a3130673848a26e7e983aa5b
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DLOG4CPLUS_BUILD_TESTING=OFF -DWITH_UNIT_TESTS=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

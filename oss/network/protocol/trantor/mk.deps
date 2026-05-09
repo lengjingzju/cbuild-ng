@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) trantor(native psysroot): unselect openssl
+
+PACKAGE_NAME     = trantor
+
+LICENSE          = MIT
+LICFILE          = file://License
+HOMEPAGE         = https://github.com/an-tao/trantor
+DESCRIPTION      = A non-blocking I/O cross-platform TCP network library, using C++14.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.28
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/an-tao/trantor/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = e7d15000b38cff3a079b43bd5f9275b0
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DBUILD_SHARED_LIBS=ON
+CMAKE_FLAGS     += -DTRANTOR_USE_TLS=openssl
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) spdlog(native psysroot): unselect
+
+PACKAGE_NAME     = spdlog
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/gabime/spdlog
+DESCRIPTION      = Fast C++ logging library.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.17.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/gabime/spdlog/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = f0d8dd02539fe609bdfd42c0549fe28d
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DSPDLOG_BUILD_SHARED=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

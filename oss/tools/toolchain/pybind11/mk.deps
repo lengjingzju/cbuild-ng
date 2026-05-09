@@ -1,0 +1,56 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) pybind11(native psysroot): unselect pcre2@@CONFIG_PYBIND11_FT_BUILD_TESTS \
+    eigen@@CONFIG_PYBIND11_FT_BUILD_TESTS python3@@CONFIG_PYBIND11_FT_BUILD_TESTS 
+
+PACKAGE_NAME     = pybind11
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/pybind/pybind11
+DESCRIPTION      = pybind11 is a lightweight header-only library that exposes C++ types in Python and vice \
+                   versa, mainly to create Python bindings of existing C++ code. Its goals and syntax are \
+                   similar to the excellent Boost.Python library by David Abrahams: to minimize boilerplate \
+                   code in traditional extension modules by inferring type information using compile-time \
+                   introspection.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.0.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/pybind/pybind11/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 933fa1b6b1fe34c9945ecb3fe67f5c4b
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+
+PYBIND11_BUILD_TESTS = n
+ifneq ($(NATIVE_BUILD),y)
+ifeq ($(CONFIG_PYBIND11_FT_BUILD_TESTS),y)
+PYBIND11_BUILD_TESTS = y
+endif
+else # NATIVE_BUILD
+ifeq ($(CONFIG_PYBIND11_FT_BUILD_TESTS_NATIVE),y)
+PYBIND11_BUILD_TESTS = y
+endif
+endif 
+CACHE_APPENDS   += PYBIND11_BUILD_TESTS=$(PYBIND11_BUILD_TESTS) 
+
+ifeq ($(PYBIND11_BUILD_TESTS),y)
+CMAKE_FLAGS      = -DPYBIND11_TEST=ON
+CMAKE_FLAGS     += -DPython_EXECUTABLE=$(PATH_PREFIX)$(bindir)/python3 \
+                   -DPython_LIBRARY=$(DEP_PREFIX)$(libdir)/libpython3.14.a
+else
+CMAKE_FLAGS      = -DPYBIND11_TEST=OFF
+endif
+
+CMAKE_FLAGS     += -DPYBIND11_INSTALL=ON -DPYBIND11_FINDPYTHON=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,38 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) speexdsp(native psysroot): unselect
+
+PACKAGE_NAME     = speexdsp
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://gitlab.xiph.org/xiph/speexdsp
+DESCRIPTION      = SpeexDSP is a patent-free, Open Source/Free Software DSP library derived from the Speex codec. \
+                   It provides the following features: Resampler, Echo canceller, Noise suppressor / preprocessor, \
+                   Automatic gain control (AGC), Voice activity detection (VAD), Jitter buffer.
+
+ENV_BUILD_TYPE  := release
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.2.1
+SRC_DIR          = speexdsp-SpeexDSP-$(VERSION)
+SRC_NAME         = SpeexDSP-$(VERSION).tar.bz2
+SRC_URL          = https://gitlab.xiph.org/xiph/speexdsp/-/archive/SpeexDSP-$(VERSION)/speexdsp-$(SRC_NAME)
+SRC_MD5          = 6218929818078814658b432145b4d4af
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS = --disable-examples
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && ./autogen.sh
+

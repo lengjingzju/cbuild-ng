@@ -1,0 +1,35 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) linuxptp(psysroot native): unselect
+
+PACKAGE_NAME     = linuxptp
+
+LICENSE          = GPL-2.0-or-later
+LICFILE          = file://COPYING
+HOMEPAGE         = https://www.linuxptp.org/
+DESCRIPTION      = This software is an implementation of the Precision Time Protocol (PTP) according to IEEE \
+                   standard 1588 for Linux. The project’s dual design goals are to provide a robust implementation \
+                   of the standard, and to use the most relevant and modern Application Programming Interfaces (API) \
+                   offered by the Linux kernel. Supporting legacy APIs and other platforms is not a goal.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 4.4
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tgz
+SRC_URL          = https://downloads.nwtime.org/linuxptp/$(SRC_NAME)
+SRC_MD5          = f90bf31785d4af24a4f93df0a547efd6
+OBJ_PREFIX       = $(SRC_PATH)
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+MAKE_FLAGS       = -C $(SRC_PATH) \
+                   prefix=$(INS_TOPDIR)$(INS_SUBDIR) \
+                   EXTRA_CFLAGS=-fPIC EXTRA_LDFLAGS=-fPIC
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

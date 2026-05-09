@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) zltoolkit(native psysroot): unselect openssl
+
+PACKAGE_NAME     = zltoolkit
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/ZLMediaKit/ZLToolKit
+DESCRIPTION      = A lightweight network framework based on C++11, utilizing thread pooling technology to \
+                   achieve high concurrency network IO.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 23027e93c09dcda23adf46c04a8247cfe8b48c88
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(PACKAGE_NAME)
+SRC_URL          = https://github.com/ZLMediaKit/ZLToolKit.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = n
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DBUILD_TESTS=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

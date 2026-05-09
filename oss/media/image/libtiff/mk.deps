@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libtiff(native psysroot): unselect
+
+PACKAGE_NAME     = libtiff
+
+LICENSE          = LibTIFF
+LICFILE          = file://LICENSE*
+HOMEPAGE         = http://www.simplesystems.org/libtiff/
+DESCRIPTION      = The LibTIFF software provides support for the Tag Image File Format (TIFF), a widely used format \
+                   for storing image data.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 4.7.1
+SRC_DIR          = tiff-$(VERSION)
+SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.xz
+SRC_URL          = https://download.osgeo.org/libtiff/tiff-$(VERSION).tar.xz
+SRC_MD5          = f1524d2d57d93e8a521c30e3a56b99e6
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -Dtiff-docs=OFF -Dtiff-tests=OFF
+CMAKE_FLAGS     += -Djpeg=OFF -Dzlib=OFF -Dzstd=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

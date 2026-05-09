@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) openh264(native psysroot): unselect
+
+PACKAGE_NAME     = openh264
+
+LICENSE          = BSD-2-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/cisco/openh264
+DESCRIPTION      = OpenH264 is a codec library which supports H.264 encoding and decoding. It is suitable for use \
+                   in real time applications such as WebRTC. See http://www.openh264.org/ for more details.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.6.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/cisco/openh264/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 0b01f0279eca1c7bb65395ea350fa85c 
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = meson
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

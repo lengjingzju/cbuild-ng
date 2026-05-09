@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libyuv(native psysroot): unselect
+
+PACKAGE_NAME     = libyuv
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://chromium.googlesource.com/libyuv/libyuv
+DESCRIPTION      = libyuv is an open source project that includes YUV scaling and conversion functionality.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 0f320a03f7ec918258be53d8d5040326c5420b23
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/lemenkov/libyuv.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = y
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

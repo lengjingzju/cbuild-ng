@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libuv(native psysroot): unselect
+
+PACKAGE_NAME     = libuv
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://libuv.org/
+DESCRIPTION      = libuv is a multi-platform support library with a focus on asynchronous I/O. It was primarily \
+                   developed for use by Node.js, but it's also used by Luvit, Julia, uvloop, and others.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.52.1
+SRC_DIR          = $(PACKAGE_NAME)-v$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://dist.libuv.org/dist/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = db711bbe3822dd4fe51fad0cd78baa57
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DLIBUV_BUILD_TESTS=OFF -DLIBUV_BUILD_BENCH=OFF -DBUILD_TESTING=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

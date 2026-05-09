@@ -917,8 +917,10 @@ def get_license(package, spdxs, coms):
 def html_body(infos, spdxs):
     coms = compatible_licenses.keys()
     letter   = ''
+    total_pkgs = len(infos)
     contents = '''  <div class="mume markdown-preview">
-'''
+    <p><strong>Total Packages: %d</strong></p>
+''' % (total_pkgs)
     sidebars = '''  <div class="md-sidebar-toc"><div class="md-toc">
 '''
 

@@ -1,0 +1,29 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) indicators(native psysroot): unselect
+
+PACKAGE_NAME     = indicators
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://github.com/p-ranav/indicators
+DESCRIPTION      = Activity Indicators for Modern C++.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 2.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/p-ranav/indicators/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 317d2658fbb45d9d192f88ae0f1c9e9d
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

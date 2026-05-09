@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libsdptransform(native psysroot): unselect nlohmann-json
+
+PACKAGE_NAME     = libsdptransform
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/ibc/libsdptransform
+DESCRIPTION      = C++ version of the sdp-transform JavaScript library exposing the same API. libsdptransform is a \
+                   simple parser and writer of SDP. Defines internal grammar based on RFC4566 - SDP, RFC5245 - ICE, \
+                   and many more.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.2.10
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/ibc/libsdptransform/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 9fd033c20f8cdd79c52bc90de36249aa
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) media-server(native psysroot): unselect
+
+PACKAGE_NAME     = media-server
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/ireader/media-server
+DESCRIPTION      = RTSP/RTP/RTMP/FLV/HLS/MPEG-TS/MPEG-PS/MPEG-DASH/MP4/fMP4/MKV/WebM library.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 16074a453090ac95657c1a13b8c42c9c33c6e10a
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/ireader/media-server.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = n
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+MAKE_FLAGS       = -C $(SRC_PATH) -f IMakefile
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

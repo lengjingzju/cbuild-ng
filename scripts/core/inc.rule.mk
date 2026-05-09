@@ -318,10 +318,10 @@ cachebuild:
 ifeq ($(wildcard $(CACHE_STATUS)), )
 	$(PREAT)$(MAKE) -f $(MAKE_FNAME) build
 	$(PREAT)$(call do_pushcache)
-	$(PREAT)$(COLORECHO) "\033[33mUpdate $(PACKAGE_ID) Cache.\033[0m"
+	$(PREAT)$(COLORECHO) "\033[33mUpdate $(PACKAGE_ID) Cache\033[0m"
 else
 	$(PREAT)$(call do_pullcache)
-	$(PREAT)$(COLORECHO) "\033[33mMatch $(PACKAGE_ID) Cache.\033[0m"
+	$(PREAT)$(COLORECHO) "\033[32mMatch $(PACKAGE_ID) Cache: $(shell cat $(CACHE_STATUS))\033[0m"
 endif
 	$(PREAT)rm -f $(CACHE_STATUS)
 

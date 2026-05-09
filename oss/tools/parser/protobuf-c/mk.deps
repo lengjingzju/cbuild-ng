@@ -1,0 +1,36 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) protobuf-c(native psysroot): unselect protobuf protobuf-native
+
+PACKAGE_NAME     = protobuf-c
+
+LICENSE          = BSD-2-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/protobuf-c/protobuf-c
+DESCRIPTION      = his is , a C implementation of the Google Protocol Buffers data serialization format. \
+                   It includes , a pure C library that implements protobuf encoding and decoding, and , \
+                   a code generator plugin for that converts Protocol Buffer files to C descriptor code.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/protobuf-c/protobuf-c/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 2409f0ab8a81b49d3dc92877115c0c63
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = 
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = PROTOC=$(PATH_PREFIX)$(bindir)/protoc
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && ./autogen.sh

@@ -1,0 +1,45 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) gsoap(native psysroot): unselect openssl zlib gsoap-native
+
+PACKAGE_NAME     = gsoap
+
+LICENSE          = GPL-2.0
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://sourceforge.net/projects/gsoap2/
+DESCRIPTION      = The gSOAP toolkit is an extensive suite of portable C and C++ software to develop XML Web services \
+                   with powerful type-safe XML data bindings. Easy-to-use code-generator tools allow you to directly \
+                   integrate XML data in C and C++. Serializes native application data in XML. Includes WSDL/XSD schema \
+                   binding and auto-coding tools, stub/skeleton compiler, Web server integration with Apache module and \
+                   IIS extension, high-performance XML processing with schema validation, fast MIME/MTOM streaming, \
+                   SOAP and REST Web API development, WS-* protocols (WS-Security, WS-Policy, WS-ReliableMessaging, etc), \
+                   XML-RPC and JSON. Licensed under GPLv2.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = zip
+VERSION          = 2.8.142
+SRC_DIR          = $(PACKAGE_NAME)-$(shell echo $(VERSION) | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1.\2/g')
+SRC_NAME         = $(PACKAGE_NAME)_$(VERSION).zip
+SRC_URL          = https://psychz.dl.sourceforge.net/project/gsoap2/$(SRC_NAME)
+SRC_MD5          = 53ed40a2e1d1811547a4c5c0827ba20d
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS += --enable-ssl --with-zlib --disable-samples
+
+ifneq ($(NATIVE_BUILD),y)
+MAKE_FLAGS      += SOAP=soapcpp2
+endif
+
+CFLAGS          += $(call link_hdrs)
+CXXFLAGS        += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

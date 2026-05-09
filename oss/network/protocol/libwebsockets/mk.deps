@@ -1,0 +1,45 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libwebsockets(native psysroot): unselect openssl
+
+PACKAGE_NAME     = libwebsockets
+
+LICENSE          = MIT & Others
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/warmcat/libwebsockets
+DESCRIPTION      = Libwebsockets is a simple-to-use, MIT-license, pure C library providing client and server for \
+                   http/1, http/2, websockets, MQTT and other protocols in a security-minded, lightweight, \
+                   configurable, scalable and flexible way. It's easy to build and cross-build via cmake and is \
+                   suitable for tasks from embedded RTOS through mass cloud serving. \
+                   It supports a lot of lightweight ancilliary implementations for things like JSON, CBOR, JOSE, \
+                   COSE, and supports OpenSSL and MbedTLS v2 and v3 out of the box for everything. It's very \
+                   gregarious when it comes to event loop sharing, supporting libuv, libevent, libev, sdevent, \
+                   glib and uloop, as well as custom event libs.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 4.5.8
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/warmcat/libwebsockets/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 5c6412e8833a6aa1af1cc0c08cd3ea04
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DLWS_WITHOUT_TESTAPPS=ON \
+                   -DLWS_WITHOUT_TEST_SERVER=ON \
+                   -DLWS_WITHOUT_TEST_SERVER_EXTPOLL=ON \
+                   -DLWS_WITHOUT_TEST_PING=ON \
+                   -DLWS_WITHOUT_TEST_CLIENT=ON
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	$(PREAT)sed -i -e 's@strchr((const char \*)fname@strchr(fname@g' $(SRC_PATH)/plugins/deaddrop/protocol_lws_deaddrop.c

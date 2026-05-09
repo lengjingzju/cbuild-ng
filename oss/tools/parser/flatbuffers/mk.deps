@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) flatbuffers(native psysroot): unselect
+
+PACKAGE_NAME     = flatbuffers
+
+LICENSE          = Apache-2.0
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/google/flatbuffers
+DESCRIPTION      = FlatBuffers is a cross platform serialization library architected for maximum memory efficiency. \
+                   It allows you to directly access serialized data without parsing/unpacking it first, while still \
+                   having great forwards/backwards compatibility.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 25.12.19-2026-02-06-03fffb2
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/google/flatbuffers/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 6cc017093ab6efad705af6ba1586133c
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DFLATBUFFERS_BUILD_SHAREDLIB=ON -DFLATBUFFERS_BUILD_TESTS=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

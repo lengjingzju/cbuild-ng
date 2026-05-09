@@ -1,0 +1,53 @@
+From 8754578160b3200b6bff98410efb003f502c053b Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Mon, 11 May 2026 09:26:43 +0800
+Subject: [PATCH] zltoolkit: add installation rules
+
+---
+ CMakeLists.txt | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 169cece..93c5fe3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -140,6 +140,33 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJ
+                                                  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+ 
+ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+-    #本工程为root工程，则添加测试程序
++    #本工程为root工程，则默认添加测试程序
++    set(default_BUILD_TESTS ON)
++else()
++    set(default_BUILD_TESTS OFF)
++endif()
++option(BUILD_TESTS "Build test programs" ${default_BUILD_TESTS})
++if (BUILD_TESTS)
+     add_subdirectory(tests)
+-endif ()
+\ No newline at end of file
++endif ()
++
++# -----------------------------------------------------------------------------
++# 安装规则
++# -----------------------------------------------------------------------------
++install(TARGETS ${PROJECT_NAME}
++    EXPORT ${PROJECT_NAME}Targets
++    LIBRARY DESTINATION lib
++    ARCHIVE DESTINATION lib
++    RUNTIME DESTINATION bin
++    INCLUDES DESTINATION include)
++
++# 安装头文件（保留 src 下的目录层次）
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
++    DESTINATION include/${PROJECT_NAME}
++    FILES_MATCHING
++    PATTERN "*.h"
++    PATTERN "*.hpp"
++    PATTERN "*.mm"
++    PATTERN "*/.*" EXCLUDE
++)
++
+-- 
+2.47.3
+

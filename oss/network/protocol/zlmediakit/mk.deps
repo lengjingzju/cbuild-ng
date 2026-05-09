@@ -1,0 +1,38 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) zlmediakit(native psysroot): unselect openssl zltoolkit jsoncpp media-server \
+    python3@CONFIG_ZLMEDIAKIT_FT_PYTHON pybind11@CONFIG_ZLMEDIAKIT_FT_PYTHON
+
+PACKAGE_NAME     = zlmediakit
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/ZLMediaKit/ZLMediaKit
+DESCRIPTION      = WebRTC/RTSP/RTMP/HTTP/HLS/HTTP-FLV/WebSocket-FLV/HTTP-TS/HTTP-fMP4/WebSocket-TS/WebSocket-fMP4\
+                   /GB28181/SRT/STUN/TURN server and client framework based on C++11.
+
+-include $(ENV_CFG_ROOT)/.config
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 37ea51a2ec35ca57e4f3f18c972f2b01dfb577aa
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(PACKAGE_NAME)
+SRC_URL          = https://github.com/ZLMediaKit/ZLMediaKit.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = n
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS     += -DENABLE_TESTS=OFF
+CMAKE_FLAGS     += -DENABLE_MP4=ON -DENABLE_RTPPROXY=ON -DENABLE_HLS=ON
+
+$(eval $(call ft-config,CONFIG_ZLMEDIAKIT_FT_PYTHON,-DENABLE_PYTHON=ON,-DENABLE_PYTHON=OFF))
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

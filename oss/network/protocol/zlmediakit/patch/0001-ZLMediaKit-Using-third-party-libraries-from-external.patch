@@ -1,0 +1,264 @@
+From e14f9d07d6c1f111f5b8f770093ad46171ceb834 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Mon, 11 May 2026 17:37:23 +0800
+Subject: [PATCH] ZLMediaKit: Using third-party libraries from external systems
+
+---
+ 3rdpart/CMakeLists.txt     | 221 +++++++++++++++++--------------------
+ api/source/mk_recorder.cpp |   1 +
+ 2 files changed, 101 insertions(+), 121 deletions(-)
+
+diff --git a/3rdpart/CMakeLists.txt b/3rdpart/CMakeLists.txt
+index 8a5a534d..8026a68c 100644
+--- a/3rdpart/CMakeLists.txt
++++ b/3rdpart/CMakeLists.txt
+@@ -1,133 +1,112 @@
+-# MIT License
+-#
+-# Copyright (c) 2016-2022 The ZLMediaKit project authors. All Rights Reserved.
+-#
+-# Permission is hereby granted, free of charge, to any person obtaining a copy
+-# of this software and associated documentation files (the "Software"), to deal
+-# in the Software without restriction, including without limitation the rights
+-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-# copies of the Software, and to permit persons to whom the Software is
+-# furnished to do so, subject to the following conditions:
+-#
+-# The above copyright notice and this permission notice shall be included in all
+-# copies or substantial portions of the Software.
+-#
+-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-# SOFTWARE.
+-#
+-
+-##############################################################################
++# ============================================================
++#  External precompiled libraries from sysroot
++#  jsoncpp / media-server / ZLToolKit / pybind11
++# ============================================================
+ 
++# -----------------------------
+ # jsoncpp
+-file(GLOB JSONCPP_SRC_LIST
+-  ${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/include/json/*.h
+-  ${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/src/lib_json/*.cpp
+-  ${CMAKE_CURRENT_SOURCE_DIR}/jsoncpp/src/lib_json/*.h)
+-  
+-add_library(jsoncpp STATIC ${JSONCPP_SRC_LIST})
+-target_compile_options(jsoncpp
+-  PRIVATE ${COMPILE_OPTIONS_DEFAULT})
+-target_include_directories(jsoncpp
+-  PRIVATE
+-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/jsoncpp/include"
+-  PUBLIC
+-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/jsoncpp/include")
++# -----------------------------
++find_path(JSONCPP_INCLUDE_DIR json/json.h
++    PATH_SUFFIXES include/json)
++
++find_library(JSONCPP_LIBRARY jsoncpp
++    PATH_SUFFIXES lib)
++
++add_library(jsoncpp STATIC IMPORTED GLOBAL)
++set_target_properties(jsoncpp PROPERTIES
++    IMPORTED_LOCATION "${JSONCPP_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${JSONCPP_INCLUDE_DIR}"
++)
+ 
+ update_cached_list(MK_LINK_LIBRARIES jsoncpp)
+ 
+-##############################################################################
+-
+-# media-server
+-set(MediaServer_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/media-server")
+-# TODO: 补一个函数处理各种库
+-
+-# 添加 mov、flv 库用于 MP4 录制
+-if (ENABLE_MP4)
+-  # MOV
+-  set(MediaServer_MOV_ROOT ${MediaServer_ROOT}/libmov)
+-  aux_source_directory(${MediaServer_MOV_ROOT}/include MOV_SRC_LIST)
+-  aux_source_directory(${MediaServer_MOV_ROOT}/source MOV_SRC_LIST)
+-  add_library(mov STATIC ${MOV_SRC_LIST})
+-  add_library(MediaServer::mov ALIAS mov)
+-  target_compile_options(mov PRIVATE ${COMPILE_OPTIONS_DEFAULT})
+-  target_include_directories(mov
+-          PRIVATE
+-          "$<BUILD_INTERFACE:${MediaServer_MOV_ROOT}/include>"
+-          PUBLIC
+-          "$<BUILD_INTERFACE:${MediaServer_MOV_ROOT}/include>")
+-
+-  # FLV
+-  set(MediaServer_FLV_ROOT ${MediaServer_ROOT}/libflv)
+-  aux_source_directory(${MediaServer_FLV_ROOT}/include FLV_SRC_LIST)
+-  aux_source_directory(${MediaServer_FLV_ROOT}/source FLV_SRC_LIST)
+-  add_library(flv STATIC ${FLV_SRC_LIST})
+-  add_library(MediaServer::flv ALIAS flv)
+-  target_compile_options(flv PRIVATE ${COMPILE_OPTIONS_DEFAULT})
+-  target_include_directories(flv
+-          PRIVATE
+-          "$<BUILD_INTERFACE:${MediaServer_FLV_ROOT}/include>"
+-          PUBLIC
+-          "$<BUILD_INTERFACE:${MediaServer_FLV_ROOT}/include>")
+-
+-  update_cached_list(MK_LINK_LIBRARIES MediaServer::flv MediaServer::mov)
+-
+-  if (ENABLE_MP4)
+-    message(STATUS "ENABLE_MP4 defined")
+-    update_cached_list(MK_COMPILE_DEFINITIONS ENABLE_MP4)
+-  endif ()
+-endif ()
+-
+-# 添加 mpeg 用于支持 ts 生成
+-if(ENABLE_RTPPROXY OR ENABLE_HLS)
+-  # mpeg
+-  set(MediaServer_MPEG_ROOT ${MediaServer_ROOT}/libmpeg)
+-  aux_source_directory(${MediaServer_MPEG_ROOT}/include MPEG_SRC_LIST)
+-  aux_source_directory(${MediaServer_MPEG_ROOT}/source  MPEG_SRC_LIST)
+-  add_library(mpeg STATIC ${MPEG_SRC_LIST})
+-  add_library(MediaServer::mpeg ALIAS mpeg)
+-  # media-server库相关编译宏
+-  # MPEG_H26X_VERIFY - 视频流类型识别
+-  # MPEG_ZERO_PAYLOAD_LENGTH - 兼容hik流
+-  # MPEG_DAHUA_AAC_FROM_G711 - 兼容dahua流
+-  target_compile_options(mpeg
+-    PRIVATE ${COMPILE_OPTIONS_DEFAULT} -DMPEG_H26X_VERIFY -DMPEG_ZERO_PAYLOAD_LENGTH -DMPEG_DAHUA_AAC_FROM_G711)
+-  target_include_directories(mpeg
+-    PRIVATE
+-      "$<BUILD_INTERFACE:${MediaServer_MPEG_ROOT}/include>"
+-    PUBLIC
+-      "$<BUILD_INTERFACE:${MediaServer_MPEG_ROOT}/include>")
+-
+-  update_cached_list(MK_LINK_LIBRARIES MediaServer::mpeg)
+-  if(ENABLE_RTPPROXY)
+-    message(STATUS "ENABLE_RTPPROXY defined")
+-    update_cached_list(MK_COMPILE_DEFINITIONS ENABLE_RTPPROXY)
+-  endif()
+-  if(ENABLE_HLS)
+-    message(STATUS "ENABLE_HLS defined")
+-    update_cached_list(MK_COMPILE_DEFINITIONS ENABLE_HLS)
+-  endif()
+-endif()
++# ============================================================
++# media-server (mov / flv / mpeg)
++# ============================================================
++
++# -----------------------------
++# mov
++# -----------------------------
++find_path(MOV_INCLUDE_DIR mov-format.h
++    PATH_SUFFIXES include/media-server/libmov)
++
++find_library(MOV_LIBRARY mov
++    PATH_SUFFIXES lib)
++
++add_library(mov STATIC IMPORTED GLOBAL)
++add_library(MediaServer::mov ALIAS mov)
++set_target_properties(mov PROPERTIES
++    IMPORTED_LOCATION "${MOV_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${MOV_INCLUDE_DIR}"
++)
++
++# -----------------------------
++# flv
++# -----------------------------
++find_path(FLV_INCLUDE_DIR flv-header.h
++    PATH_SUFFIXES include/media-server/libflv)
++
++find_library(FLV_LIBRARY flv
++    PATH_SUFFIXES lib)
++
++add_library(flv STATIC IMPORTED GLOBAL)
++add_library(MediaServer::flv ALIAS flv)
++set_target_properties(flv PROPERTIES
++    IMPORTED_LOCATION "${FLV_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${FLV_INCLUDE_DIR}"
++)
++
++# -----------------------------
++# mpeg
++# -----------------------------
++find_path(MPEG_INCLUDE_DIR mpeg-proto.h
++    PATH_SUFFIXES include/media-server/libmpeg)
+ 
+-##############################################################################
++find_library(MPEG_LIBRARY mpeg
++    PATH_SUFFIXES lib)
++
++add_library(mpeg STATIC IMPORTED GLOBAL)
++add_library(MediaServer::mpeg ALIAS mpeg)
++set_target_properties(mpeg PROPERTIES
++    IMPORTED_LOCATION "${MPEG_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${MPEG_INCLUDE_DIR}"
++    INTERFACE_COMPILE_DEFINITIONS
++        "MPEG_H26X_VERIFY;MPEG_ZERO_PAYLOAD_LENGTH;MPEG_DAHUA_AAC_FROM_G711"
++)
++
++update_cached_list(MK_LINK_LIBRARIES
++    MediaServer::mov
++    MediaServer::flv
++    MediaServer::mpeg
++)
++
++# ============================================================
++# ZLToolKit
++# ============================================================
++
++find_path(ZLTOOLKIT_INCLUDE_DIR Network/Socket.h
++    PATH_SUFFIXES include/ZLToolKit)
++
++find_library(ZLTOOLKIT_LIBRARY ZLToolKit
++    PATH_SUFFIXES lib)
++
++add_library(ZLToolKit SHARED IMPORTED GLOBAL)
++set_target_properties(ZLToolKit PROPERTIES
++    IMPORTED_LOCATION "${ZLTOOLKIT_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${ZLTOOLKIT_INCLUDE_DIR}"
++)
+ 
+-# toolkit
+-add_subdirectory(ZLToolKit)
+-# 添加库别名
+ add_library(ZLMediaKit::ToolKit ALIAS ZLToolKit)
+-# 添加依赖
+ update_cached_list(MK_LINK_LIBRARIES ZLMediaKit::ToolKit)
+ 
+-##############################################################################
++# ============================================================
++# pybind11
++# ============================================================
+ 
+ if (ENABLE_PYTHON)
+-  # ============ pybind11 lib ============
+-  add_subdirectory(pybind11)
+-  update_cached_list(MK_LINK_LIBRARIES pybind11::embed)
+-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pybind11/include)
+-  update_cached_list(MK_COMPILE_DEFINITIONS ENABLE_PYTHON)
+-endif ()
+\ No newline at end of file
++    find_package(pybind11 REQUIRED CONFIG
++        PATH_SUFFIXES share/cmake/pybind11)
++
++    update_cached_list(MK_COMPILE_DEFINITIONS ENABLE_PYTHON)
++endif()
++
+diff --git a/api/source/mk_recorder.cpp b/api/source/mk_recorder.cpp
+index 7e5c9dfa..5bc32f6d 100644
+--- a/api/source/mk_recorder.cpp
++++ b/api/source/mk_recorder.cpp
+@@ -12,6 +12,7 @@
+ #include "Rtmp/FlvMuxer.h"
+ #include "Record/Recorder.h"
+ #include "Record/MP4Reader.h"
++#include "Common/MultiMediaSourceMuxer.h"
+ 
+ using namespace std;
+ using namespace toolkit;
+-- 
+2.47.3
+

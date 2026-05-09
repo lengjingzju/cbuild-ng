@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) googletest(native psysroot): unselect
+
+PACKAGE_NAME     = googletest
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/google/googletest
+DESCRIPTION      = Google Testing and Mocking Framework.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.17.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/google/googletest/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_MD5          = b6f100bc2a5853a48046aa168ececf84
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DBUILD_SHARED_LIBS=ON -DGTEST_HAS_ABSL=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

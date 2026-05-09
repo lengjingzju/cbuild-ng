@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) popt(native psysroot): unselect
+
+PACKAGE_NAME     = popt
+
+LICENSE          = MIT
+LICFILE          = file://COPYING
+HOMEPAGE         = https://github.com/rpm-software-management/popt
+DESCRIPTION      = C library for parsing command line parameters.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.19
+SRC_DIR          = $(PACKAGE_NAME)-$(PACKAGE_NAME)-$(VERSION)-release
+SRC_NAME         = $(PACKAGE_NAME)-$(VERSION)-release.tar.gz
+SRC_URL          = https://github.com/rpm-software-management/popt/archive/refs/tags/$(SRC_NAME)
+SRC_MD5          = 42437c7d5ff0316f2be4f46c777b4850
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	$(PREAT)cd $(SRC_PATH) && ./autogen.sh

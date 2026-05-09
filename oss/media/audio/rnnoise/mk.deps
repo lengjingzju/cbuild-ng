@@ -1,0 +1,52 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) rnnoise(native psysroot): unselect
+
+PACKAGE_NAME     = rnnoise
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://github.com/xiph/rnnoise
+DESCRIPTION      = RNNoise is a noise suppression library based on a recurrent neural network.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 70f1d256acd4b34a572f999a05c87bf00b67730d
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/xiph/rnnoise.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = n
+
+MODEL            = rnnoise_data
+MODEL_LOCK       = $(ENV_DOWN_DIR)/lock/$(MODEL).lock
+MODEL_VER        = 0a8755f8e2d834eff6a54714ecc7d75f9932e845df35f8b59bc52a7cfe6e8b37
+MODEL_NAME       = $(MODEL)-$(MODEL_VER).tar.gz
+MODEL_URL        = https://media.xiph.org/rnnoise/models/$(MODEL_NAME)
+MODEL_MD5        = d3788ede0618db28d52ee77fc959bea1
+MODEL_URLS       = $(MODEL_URL);md5=$(MODEL_MD5)
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS += --disable-doc
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+dofetch: fetch_model
+fetch_model:
+	$(PREAT)mkdir -p $(shell dirname $(MODEL_LOCK)) && echo > $(MODEL_LOCK) && \
+		flock $(MODEL_LOCK) -c "bash $(FETCH_SCRIPT) tar \"$(MODEL_URLS)\" $(MODEL_NAME)"
+
+prepend: fetch_model
+	$(PREAT)if [ ! -e $(SRC_PATH)/src/rnnoise_data.h ]; then \
+		tar -xf $(ENV_DOWN_DIR)/$(MODEL_NAME) -C $(SRC_PATH); \
+	fi
+	$(PREAT)cd $(SRC_PATH) && autoreconf -isf

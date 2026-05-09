@@ -1,0 +1,45 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) berkeleydb(native psysroot): unselect
+
+PACKAGE_NAME     = berkeleydb
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://../LICENSE
+HOMEPAGE         = https://libdb.org/
+DESCRIPTION      = Berkeley DB.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 5.3.29
+SRC_DIR          = libdb-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/berkeleydb/libdb/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = e9a5c422a389ef5aac7755bb1110a0a0
+SRC_PATH         = $(WORKDIR)/$(SRC_DIR)/dist
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --disable-test --disable-java --disable-tcl --disable-debug
+AUTOTOOLS_FLAGS += --enable-cxx
+
+CFLAGS          += -std=c99
+
+CUSTOM_TARGETS   = prepend append
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	$(PREAT)sed -i \
+	    -e 's:^	| a29k :	| aarch64 | riscv32 | riscv64 | loongarch64 | a29k :g' \
+	    -e 's:^	| a29k-\* :	| aarch64-* | riscv32-* | riscv64-* | loongarch64-* | a29k-* :g' \
+	    $(SRC_PATH)/config.sub
+
+append:
+	$(PREAT)rm -rf $(INS_TOPDIR)$(INS_SUBDIR)/docs
+

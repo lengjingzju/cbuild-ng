@@ -1,0 +1,29 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) cpp-httplib(native psysroot): unselect openssl zlib
+
+PACKAGE_NAME     = cpp-httplib
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE
+HOMEPAGE         = https://github.com/yhirose/cpp-httplib
+DESCRIPTION      = A C++11 single-file header-only cross platform HTTP/HTTPS library.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.43.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/yhirose/cpp-httplib/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 6497d722d2f1c684be2f09546bbc4de0
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = cmake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

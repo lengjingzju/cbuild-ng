@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) libosip2(native psysroot): unselect gperf
+
+PACKAGE_NAME     = libosip2
+
+LICENSE          = LGPL-2.1-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://www.gnu.org/software/osip/
+DESCRIPTION      = oSIP is an LGPL implementation of SIP. It's stable, portable, flexible and compliant! -may be more-! \
+                   It is used mostly with eXosip2 stack (GPL) which provides simpler API for User-Agent implementation.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 5.3.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://ftp.gnu.org/gnu/osip/$(SRC_NAME)
+SRC_MD5          = 11c0d66a6daa71ac14f0719ab6b2d8a0
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = n
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-gperf
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

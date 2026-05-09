@@ -1,0 +1,47 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) spandsp(native psysroot): unselect libtiff libjpeg-turbo libtiff-native
+
+PACKAGE_NAME     = spandsp
+
+LICENSE          = LGPL-2.1-or-later
+LICFILE          = file://COPYING
+HOMEPAGE         = https://github.com/freeswitch/spandsp
+DESCRIPTION      = SpanDSP is a library of DSP functions for telephony, in the 8000 sample per second world of E1s, \
+                   T1s, and higher order PCM channels. It contains low level functions, such as basic filters. It also \
+                   contains higher level functions, such as cadenced supervisory tone detection, and a complete \
+                   software FAX machine. The software has been designed to avoid intellectual property issues, using \
+                   mature techniques where all relevant patents have expired. See the file DueDiligence for important \
+                   information about these intellectual property issues.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+FETCH_METHOD     = git
+VERSION          = 797760168945c96e91af55bde9d4edaea2e654f9
+SRC_DIR          = $(PACKAGE_NAME)
+SRC_NAME         = $(SRC_DIR)
+SRC_URL          = https://github.com/freeswitch/spandsp.git
+SRC_REV          = $(VERSION)
+SRC_SHARED       = n
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+autotools_flags  = --disable-doc --disable-tests
+
+MAKE_FLAGS       = CC_FOR_BUILD="gcc -I$(PATH_PREFIX)$(includedir) -I$(SRC_PATH)/src -I$(SRC_PATH)/tools -L$(PATH_PREFIX)$(libdir) -Wl,-rpath-link=$(PATH_PREFIX)$(libdir)"
+
+CFLAGS          += $(call link_hdrs)
+CXXFLAGS        += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
+
+CUSTOM_TARGETS   = prepend
+include $(ENV_MAKE_DIR)/inc.rule.mk
+
+prepend:
+	@cd $(SRC_PATH) && autoreconf -fi

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+EXTRA_CPFLAGS=$1
+EXTRA_LDFLAGS=$2
+
+subdirs=". liveMedia groupsock UsageEnvironment BasicUsageEnvironment testProgs mediaServer proxyServer hlsProxy"
+
+for subdir in $subdirs; do
+rm -f $subdir/Makefile
+echo > $subdir/Makefile
+cat $subdir/Makefile.head >> $subdir/Makefile
+cat <<EOF>> $subdir/Makefile
+COMPILE_OPTS               += \$(INCLUDES) -I. ${EXTRA_CPFLAGS}
+COMPILE_OPTS               += -O2 -fPIC -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
+COMPILE_OPTS               += -DNO_STD_LIB=1 -DNO_SSTREAM=1
+C                           = c
+C_COMPILER                  = ${CC}
+C_FLAGS                     = \$(COMPILE_OPTS)
+CPP                         = cpp
+CPLUSPLUS_COMPILER          = ${CXX}
+CPLUSPLUS_FLAGS             = \$(COMPILE_OPTS) -Wall -DBSD=1
+OBJ                         = o
+LINK                        = ${CXX} -o
+LINK_OPTS                   = ${EXTRA_LDFLAGS}
+CONSOLE_LINK_OPTS           = \$(LINK_OPTS)
+LIBRARY_LINK                = ${AR} rc # SPACE
+LIBRARY_LINK_OPTS           =
+LIB_SUFFIX                  = a
+LIBS_FOR_CONSOLE_APPLICATION= -lssl -lcrypto
+LIBS_FOR_GUI_APPLICATION    =
+EXE                         =
+EOF
+cat $subdir/Makefile.tail >> $subdir/Makefile
+done

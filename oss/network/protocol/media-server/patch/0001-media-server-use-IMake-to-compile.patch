@@ -1,0 +1,1205 @@
+From 7812bdacd80b9fecb14815c856915f1d4e2d9b28 Mon Sep 17 00:00:00 2001
+From: Jing Leng <3090101217@zju.edu.cn>
+Date: Mon, 11 May 2026 14:50:17 +0800
+Subject: [PATCH] media-server: use IMake to compile
+
+---
+ IMakefile                     |   83 +++
+ inc.makes                     | 1054 +++++++++++++++++++++++++++++++++
+ libflv/source/mpeg4-aac-asc.c |   10 +-
+ 3 files changed, 1142 insertions(+), 5 deletions(-)
+ create mode 100644 IMakefile
+ create mode 100644 inc.makes
+
+diff --git a/IMakefile b/IMakefile
+new file mode 100644
+index 0000000..a30b935
+--- /dev/null
++++ b/IMakefile
+@@ -0,0 +1,83 @@
++PACKAGE_NAME    = media-server
++install_top_inc = $(PACKAGE_NAME)
++INSTALL_HDRS   :=
++
++.PHONY: all clean install
++all:
++	@echo "Build $(PACKAGE_NAME) Done!"
++
++INC_MAKES      := app
++include inc.makes
++
++libdash-srcs   := $(wildcard libdash/src/*.c)
++libdash-incs   := $(addsuffix /include,$(addprefix -I,libdash libflv libhls libmov))
++libdash-libs   := $(addprefix -l,flv hls mov)
++libdash-deps   := $(addsuffix .so,$(addprefix $(OBJ_PREFIX)/,libflv libhls libmov))
++$(eval $(call add-liba-build,libdash.a,$(libdash-srcs),,$(libdash-incs)))
++$(eval $(call add-libso-build,libdash.so,$(libdash-srcs),$(libdash-libs),$(libdash-incs),$(libdash-deps)))
++INSTALL_INCLUDES_libdash := libdash/include/* /$(install_top_inc)/libdash
++INSTALL_HDRS   += install_includes_libdash
++
++libflv-srcs   := $(wildcard libflv/source/*.c)
++libflv-incs   := $(addsuffix /include,$(addprefix -I,libflv))
++$(eval $(call add-liba-build,libflv.a,$(libflv-srcs),,$(libflv-incs)))
++$(eval $(call add-libso-build,libflv.so,$(libflv-srcs),$(libflv-libs),$(libflv-incs)))
++INSTALL_INCLUDES_libflv := libflv/include/* /$(install_top_inc)/libflv
++INSTALL_HDRS   += install_includes_libflv
++
++libhls-srcs   := $(wildcard libhls/source/*.c)
++libhls-incs   := $(addsuffix /include,$(addprefix -I,libhls libmov libmpeg))
++libhls-libs   := $(addprefix -l,mov mpeg)
++libhls-deps   := $(addsuffix .so,$(addprefix $(OBJ_PREFIX)/,libmov libmpeg))
++$(eval $(call add-liba-build,libhls.a,$(libhls-srcs),,$(libhls-incs)))
++$(eval $(call add-libso-build,libhls.so,$(libhls-srcs),$(libhls-libs),$(libhls-incs),$(libhls-deps)))
++INSTALL_INCLUDES_libhls := libhls/include/* /$(install_top_inc)/libhls
++INSTALL_HDRS   += install_includes_libhls
++
++libmkv-srcs   := $(wildcard libmkv/src/*.c)
++libmkv-incs   := $(addsuffix /include,$(addprefix -I,libmkv))
++$(eval $(call add-liba-build,libmkv.a,$(libmkv-srcs),,$(libmkv-incs)))
++$(eval $(call add-libso-build,libmkv.so,$(libmkv-srcs),$(libmkv-libs),$(libmkv-incs)))
++INSTALL_INCLUDES_libmkv := libmkv/include/* /$(install_top_inc)/libmkv
++INSTALL_HDRS   += install_includes_libmkv
++
++libmov-srcs   := $(wildcard libmov/source/*.c)
++libmov-incs   := $(addsuffix /include,$(addprefix -I,libmov))
++$(eval $(call add-liba-build,libmov.a,$(libmov-srcs),,$(libmov-incs)))
++$(eval $(call add-libso-build,libmov.so,$(libmov-srcs),$(libmov-libs),$(libmov-incs)))
++INSTALL_INCLUDES_libmov := libmov/include/* /$(install_top_inc)/libmov
++INSTALL_HDRS   += install_includes_libmov
++
++libmpeg-srcs   := $(wildcard libmpeg/source/*.c)
++libmpeg-incs   := $(addsuffix /include,$(addprefix -I,libmpeg))
++$(eval $(call add-liba-build,libmpeg.a,$(libmpeg-srcs),,$(libmpeg-incs)))
++$(eval $(call add-libso-build,libmpeg.so,$(libmpeg-srcs),$(libmpeg-libs),$(libmpeg-incs)))
++INSTALL_INCLUDES_libmpeg := libmpeg/include/* /$(install_top_inc)/libmpeg
++INSTALL_HDRS   += install_includes_libmpeg
++
++librtmp-srcs   := $(wildcard librtmp/source/*.c)
++librtmp-incs   := $(addsuffix /include,$(addprefix -I,librtmp libflv))
++librtmp-libs   := $(addprefix -l,flv)
++librtmp-deps   := $(addsuffix .so,$(addprefix $(OBJ_PREFIX)/,libflv))
++$(eval $(call add-liba-build,librtmp.a,$(librtmp-srcs),,$(librtmp-incs)))
++$(eval $(call add-libso-build,librtmp.so,$(librtmp-srcs),$(librtmp-libs),$(librtmp-incs),$(librtmp-deps)))
++INSTALL_INCLUDES_librtmp := librtmp/include/* /$(install_top_inc)/librtmp
++INSTALL_HDRS   += install_includes_librtmp
++
++librtp-srcs   := $(wildcard librtp/source/*.c) $(wildcard librtp/payload/*.c) $(wildcard librtp/rtpext/*.c)
++librtp-incs   := $(addprefix -Ilibrtp/,include source payload rtpext)
++$(eval $(call add-liba-build,librtp.a,$(librtp-srcs),,$(librtp-incs)))
++$(eval $(call add-libso-build,librtp.so,$(librtp-srcs),$(librtp-libs),$(librtp-incs)))
++INSTALL_INCLUDES_librtp := librtp/include/* /$(install_top_inc)/librtp
++INSTALL_HDRS   += install_includes_librtp
++
++# librtsp and libsip need other project.
++
++all: $(LIB_TARGETS)
++
++clean: clean_objs
++	@rm -f $(LIB_TARGETS)
++	@echo "Clean $(PACKAGE_NAME) Done."
++
++install: install_libs $(INSTALL_HDRS)
++	@echo "Install $(PACKAGE_NAME) to $(INS_PREFIX) Done."
+diff --git a/inc.makes b/inc.makes
+new file mode 100644
+index 0000000..1d0e732
+--- /dev/null
++++ b/inc.makes
+@@ -0,0 +1,1054 @@
++############################################
++# SPDX-License-Identifier: MIT             #
++# Copyright (C) 2021-.... Jing Leng        #
++# Contact: Jing Leng <lengjingzju@163.com> #
++# https://github.com/lengjingzju/cbuild-ng #
++############################################
++
++############# Date: 2026-04-24 #############
++
++# The default behavior only includes inc.env.mk and inc.ins.mk.
++# INC_MAKES can be set to a combination of `disenv` `conf` `app` `mod` `disins`.
++#   disenv: Excluding inc.env.mk
++#   conf  : Including inc.conf.mk
++#   app   : Including inc.app.mk
++#   mod   : Including inc.mod.mk
++#   disins: Excluding inc.ins.mk
++
++################ inc.env.mk ################
++
++ifeq ($(filter disenv,$(INC_MAKES)), )
++
++COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
++TOLOG          ?= $(if $(filter -s,$(MFLAG)),1>/dev/null)
++PREAT          ?= @
++
++INSTALL_HDR    ?= $(PACKAGE_NAME)
++SEARCH_HDRS    ?= $(PACKAGE_DEPS)
++ifneq ($(NATIVE_BUILD),y)
++PACKAGE_ID     := $(PACKAGE_NAME)
++else
++PACKAGE_ID     := $(PACKAGE_NAME)-native
++endif
++
++ENV_BUILD_TYPE ?= optimized
++ifeq ($(ENV_BUILD_TYPE),debug)
++OPTIMIZER_FLAG ?= -O0 -g -ggdb
++else ifeq ($(ENV_BUILD_TYPE),release)
++OPTIMIZER_FLAG ?= -O3
++else ifeq ($(ENV_BUILD_TYPE),minsize)
++OPTIMIZER_FLAG ?= -Os -g -ggdb
++else
++OPTIMIZER_FLAG ?= -O2 -g -ggdb
++endif
++
++ifneq ($(ENV_BUILD_MODE),yocto)
++
++ifneq ($(NATIVE_BUILD),y)
++ENV_CROSS_ROOT ?= $(shell pwd)
++WORKDIR        ?= $(ENV_CROSS_ROOT)/objects/$(PACKAGE_NAME)
++SYS_PREFIX     ?= $(ENV_CROSS_ROOT)/sysroot
++ifneq ($(CROSS_DESTDIR), )
++INS_PREFIX     := $(CROSS_DESTDIR)
++endif
++ifneq ($(GLOBAL_SYSROOT),y)
++DEP_PREFIX     ?= $(WORKDIR)/sysroot
++else
++DEP_PREFIX     ?= $(SYS_PREFIX)
++endif
++else # NATIVE_BUILD
++ENV_NATIVE_ROOT?= $(shell pwd)
++WORKDIR        ?= $(ENV_NATIVE_ROOT)/objects/$(PACKAGE_NAME)
++SYS_PREFIX     ?= $(ENV_NATIVE_ROOT)/sysroot
++ifneq ($(NATIVE_DESTDIR), )
++INS_PREFIX     := $(NATIVE_DESTDIR)
++endif
++ifneq ($(GLOBAL_SYSROOT),y)
++DEP_PREFIX     ?= $(WORKDIR)/sysroot-native
++else
++DEP_PREFIX     ?= $(SYS_PREFIX)
++endif
++endif # NATIVE_BUILD
++
++INS_SUBDIR     ?= /usr
++INS_TOPDIR     ?= $(WORKDIR)/image
++INS_PREFIX     ?= $(WORKDIR)/image
++OBJ_SUBDIR     ?=
++OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
++ifneq ($(GLOBAL_SYSROOT),y)
++PATH_PREFIX    ?= $(WORKDIR)/sysroot-native
++else
++PATH_PREFIX    ?= $(ENV_NATIVE_ROOT)/sysroot
++endif
++
++else # ENV_BUILD_MODE
++
++# WORKDIR should be exported by yocto recipe.
++# Yocto doesn't have SYS_PREFIX INS_TOPDIR INS_SUBDIR
++ifneq ($(NATIVE_BUILD),y)
++INS_PREFIX     ?= $(WORKDIR)/image
++DEP_PREFIX     ?= $(WORKDIR)/recipe-sysroot
++else # NATIVE_BUILD
++INS_PREFIX     ?= $(WORKDIR)/image/$(WORKDIR)/recipe-sysroot-native
++DEP_PREFIX     ?= $(WORKDIR)/recipe-sysroot-native
++endif # NATIVE_BUILD
++
++OBJ_SUBDIR     ?=
++OBJ_PREFIX     ?= $(WORKDIR)/build$(OBJ_SUBDIR)
++PATH_PREFIX    ?= $(WORKDIR)/recipe-sysroot-native
++
++endif # ENV_BUILD_MODE
++
++ifneq ($(O), )
++OBJ_PREFIX     := $(O)$(OBJ_SUBDIR)
++endif
++
++ifneq ($(DESTDIR), )
++INS_PREFIX     := $(DESTDIR)
++endif
++
++ifneq ($(DEPDIR), )
++DEP_PREFIX     := $(DEPDIR)
++endif
++
++# convert `#define XXXXX 0xabcdef` to `ab cd ed`, and remove the prefix 0 of `mn`
++define get_version
++$(shell cat $1 | grep '^#define.*$2' | \
++	sed 's/.*0x\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\1$3\2$3\3/g' | \
++	sed 's/^0//g' | sed 's/$30/$3/g')
++endef
++
++define link_hdrs
++$(addprefix -I,$(addprefix $(DEP_PREFIX),/include /usr/include) \
++	$(if $(SEARCH_HDRS),$(wildcard \
++	$(addprefix $(DEP_PREFIX)/include/,$(SEARCH_HDRS)) \
++	$(addprefix $(DEP_PREFIX)/usr/include/,$(SEARCH_HDRS)) \
++)))
++endef
++
++ifeq ($(KERNELRELEASE), )
++
++comma          :=,
++define link_libs
++$(addprefix -L,$(addprefix $(DEP_PREFIX),/lib /usr/lib)) \
++$(addprefix -Wl$(comma)-rpath-link=,$(addprefix $(DEP_PREFIX),/lib /usr/lib))
++endef
++
++ifneq ($(filter y,$(NATIVE_DEPEND) $(NATIVE_BUILD)), )
++export PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/bin /usr/bin /sbin /usr/sbin)$(if $(PATH),:$(PATH)) | sed 's/ /:/g')
++export LD_LIBRARY_PATH:=$(shell echo $(addprefix $(PATH_PREFIX),/lib /usr/lib)$(if $(LD_LIBRARY_PATH),:$(LD_LIBRARY_PATH)) | sed 's/ /:/g')
++endif
++
++ifneq ($(LICFILE), )
++ifneq ($(ENV_BUILD_MODE),yocto)
++ifneq ($(NATIVE_BUILD),y)
++LICPATH        ?= $(SRC_PATH)
++LICDEST        ?= $(INS_PREFIX)
++define install_lics
++	$(ENV_TOOL_DIR)/process_sysroot.sh license $(LICPATH) $(LICDEST) $(PACKAGE_NAME) "$(LICFILE)"
++endef
++endif
++endif
++endif
++
++ifeq ($(install_lics), )
++define install_lics
++	true
++endef
++endif
++
++# yocto envs should be exported by yocto recipe.
++
++ifneq ($(ENV_BUILD_MODE),yocto)
++
++define ft-config
++ifneq ($(NATIVE_BUILD),y)
++FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
++$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
++else
++FT_CONFIG       += $$(if $$(filter y,$$($1_NATIVE)),$2,$3)
++$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1_NATIVE=$$($1_NATIVE))
++endif
++endef
++
++define FT-CONFIG
++FT_CONFIG       += $$(if $$(filter y,$$($1)),$2,$3)
++$(if $(filter y,$(CACHE_BUILD)),CACHE_APPENDS   += $1=$$($1))
++endef
++
++define imake-config
++ifneq ($(NATIVE_BUILD),y)
++ifeq ($$($1),y)
++CPFLAGS        += $2
++LDFLAGS        += $3
++endif
++CHECK_INFO     += $1=$$($1)
++else
++ifeq ($$($1_NATIVE),y)
++CPFLAGS        += $2
++LDFLAGS        += $3
++endif
++CHECK_INFO     += $1_NATIVE=$$($1_NATIVE)
++endif
++endef
++
++define IMAKE-CONFIG
++ifeq ($$($1),y)
++CPFLAGS        += $2
++LDFLAGS        += $3
++endif
++CHECK_INFO     += $1=$$($1)
++endef
++
++PREPARE_SYSROOT := -s CROSS_DESTDIR=$(WORKDIR)/sysroot NATIVE_DESTDIR=$(WORKDIR)/sysroot-native \
++                  NATIVE_BUILD= INSTALL_OPTION=link -C $(ENV_TOP_DIR) $(PACKAGE_ID)_psysroot
++
++ifneq ($(DIS_PC_EXPORT),y)
++export PKG_CONFIG_LIBDIR:=$(DEP_PREFIX)/usr/lib/pkgconfig
++export PKG_CONFIG_PATH:=$(shell echo $(wildcard $(addprefix $(DEP_PREFIX),$(addsuffix /pkgconfig,/lib /usr/lib))) | sed 's@ @:@g')
++endif
++
++ifneq ($(NATIVE_BUILD),y)
++
++ifneq ($(KERNEL_ARCH), )
++ARCH           := $(KERNEL_ARCH)
++export ARCH
++endif
++
++ifneq ($(ENV_BUILD_TOOL), )
++ifneq ($(findstring /,$(ENV_BUILD_TOOL)), )
++CROSS_TOOLPATH := $(shell dirname $(ENV_BUILD_TOOL))
++CROSS_COMPILE  := $(shell basename $(ENV_BUILD_TOOL))
++export PATH:=$(CROSS_TOOLPATH):$(PATH)
++else
++CROSS_COMPILE  := $(ENV_BUILD_TOOL)
++endif
++export CROSS_COMPILE
++endif
++
++ifeq ($(CC_TOOL),clang)
++CC             := clang
++CPP            := clang -E
++CXX            := clang++
++AS             := llvm-as
++LD             := lld
++AR             := llvm-ar
++RANLIB         := llvm-ranlib
++OBJCOPY        := llvm-objcopy
++STRIP          := llvm-strip
++else
++CC             := $(CROSS_COMPILE)gcc
++CPP            := $(CROSS_COMPILE)gcc -E
++CXX            := $(CROSS_COMPILE)g++
++AS             := $(CROSS_COMPILE)as
++LD             := $(CROSS_COMPILE)ld
++# Enabling LTO requires loading a plugin, ar/nm/ranlib do not add it automatically,
++# which is why we switched to using gcc-ar/gcc-nm/gcc-ranlib.
++AR             := $(CROSS_COMPILE)gcc-ar
++RANLIB         := $(CROSS_COMPILE)gcc-ranlib
++OBJCOPY        := $(CROSS_COMPILE)objcopy
++STRIP          := $(CROSS_COMPILE)strip
++endif
++export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
++
++else # NATIVE_BUILD
++
++undefine ARCH CROSS_COMPILE
++unexport ARCH CROSS_COMPILE
++
++ifeq ($(CC_TOOL),clang)
++CC             := clang
++CPP            := clang -E
++CXX            := clang++
++AS             := llvm-as
++LD             := lld
++AR             := llvm-ar
++RANLIB         := llvm-ranlib
++OBJCOPY        := llvm-objcopy
++STRIP          := llvm-strip
++else
++CC             := gcc
++CPP            := gcc -E
++CXX            := g++
++AS             := as
++LD             := ld
++AR             := ar
++RANLIB         := ranlib
++OBJCOPY        := objcopy
++STRIP          := strip
++endif
++export CC CXX CPP AS LD AR RANLIB OBJCOPY STRIP
++
++endif # NATIVE_BUILD
++
++ifeq ($(CC_TOOL),clang)
++ifeq ($(CROSS_COMPILE), )
++clang_ldflags  := -fuse-ld=lld
++else  # CROSS_COMPILE
++CROSS_SYSROOT  := $(shell PATH=$(PATH) $(CROSS_COMPILE)gcc -print-sysroot)
++ifeq ($(CROSS_SYSROOT),/)
++CROSS_SYSROOT  := /usr/$(patsubst %-,%,$(CROSS_COMPILE))
++endif
++clang_cpflags  := --target=$(patsubst %-,%,$(CROSS_COMPILE)) --sysroot=$(CROSS_SYSROOT)
++clang_ldflags  := $(clang_cpflags) -fuse-ld=lld
++clang_gccdir   := $(shell LANG=en_US PATH=$(PATH) $(CROSS_COMPILE)gcc -print-search-dirs | grep "^libraries:" | cut -d '=' -f 2 | cut -d ':' -f 1)
++clang_ldflags  += -L$(clang_gccdir) -Wl,-rpath-link=$(clang_gccdir) -B$(clang_gccdir)
++ifeq ($(USING_CLANG_CXX_BUILD),y)
++# Cross-compiling C++ requires providing C++ headers and libraries of LLVM.
++# For example, cross compile aarch64 on Debian, the following packages need to be installed:
++# sudo dpkg --add-architecture arm64
++# sudo apt update && sudo apt install libc++-dev:arm64 libc++abi-dev:arm64
++# Note: CMake failed to cross compile with clang because it did not use the set ldflags
++#       during the try_compile phase. While IMake does not have this issue.
++clang_incdir   ?= /usr/include/c++/v1
++clang_libdir   ?= /usr/lib/$(shell echo $(CROSS_COMPILE) | sed 's/-$$//')
++clang_cpflags  += -I$(clang_incdir)
++clang_ldflags  += -L$(clang_libdir) -Wl,-rpath-link=$(clang_libdir) -stdlib=libc++
++endif # USING_CLANG_CXX_BUILD
++endif # CROSS_COMPILE
++endif # clang
++
++endif # ENV_BUILD_MODE
++
++# Defines the GNU standard installation directories
++# Note: base_*dir and hdrdir are not defined in the GNUInstallDirs
++# GNUInstallDirs/Autotools: https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
++# CMake: https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
++# Meson: https://mesonbuild.com/Builtin-options.html#directories
++# Yocto: https://git.yoctoproject.org/poky/tree/meta/conf/bitbake.conf
++
++base_bindir    := /bin
++base_sbindir   := /sbin
++base_libdir    := /lib
++bindir         := /usr/bin
++sbindir        := /usr/sbin
++libdir         := /usr/lib
++libexecdir     := /usr/libexec
++hdrdir         := /usr/include/$(INSTALL_HDR)
++includedir     := /usr/include
++datarootdir    := /usr/share
++datadir        := $(datarootdir)
++infodir        := $(datadir)/info
++localedir      := $(datadir)/locale
++mandir         := $(datadir)/man
++docdir         := $(datadir)/doc
++sysconfdir     := /etc
++servicedir     := /srv
++sharedstatedir := /com
++localstatedir  := /var
++runstatedir    := /run
++
++endif # KERNELRELEASE
++endif
++
++################ inc.conf.mk ###############
++
++ifneq ($(filter conf,$(INC_MAKES)), )
++ifeq ($(KERNELRELEASE), )
++
++PREAT            ?= @
++CONF_WORKDIR     ?= $(ENV_NATIVE_ROOT)/objects/kconfig
++CONF_SRC         ?= $(ENV_MAKE_DIR)/../kconfig
++CONF_PATH        ?= $(CONF_WORKDIR)/image/usr/bin
++CONF_OUT         ?= $(if $(OBJ_PREFIX),$(OBJ_PREFIX),.)
++KCONFIG          ?= Kconfig
++CONF_SAVE_PATH   ?= config
++CONF_PREFIX      ?= srctree=$(shell pwd)
++CONF_HEADER      ?= $(shell echo __$(PACKAGE_NAME)_CONFIG_H__ | tr '[:lower:]' '[:upper:]')
++CONF_APPEND_CMD  ?=
++
++CONFIG_PATH      := $(CONF_OUT)/.config
++AUTOHEADER_PATH  := $(CONF_OUT)/config.h
++AUTOCONFIG_PATH  := $(CONF_OUT)/autoconfig/auto.conf
++RUSTCCFG_PATH    := $(CONF_OUT)/autoconfig/rustc.conf
++CONF_OPTIONS     := $(KCONFIG) --configpath $(CONFIG_PATH) \
++					--autoheaderpath $(AUTOHEADER_PATH) \
++					--autoconfigpath $(AUTOCONFIG_PATH) \
++					--rustccfgpath $(RUSTCCFG_PATH)
++
++define gen_config_header
++	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --syncconfig && \
++		sed -i -e "1 i #ifndef $(CONF_HEADER)" -e "1 i #define $(CONF_HEADER)" -e '1 i \\' \
++		-e '$$ a \\' -e "\$$ a #endif" $(AUTOHEADER_PATH) && \
++		$(if $(CONF_APPEND_CMD),$(CONF_APPEND_CMD),:)
++endef
++
++define sync_config_header
++	if [ -e $(CONFIG_PATH) ]; then \
++		if [ -e $(AUTOHEADER_PATH) ]; then \
++			if [ $$(stat -c %Y $(CONFIG_PATH)) -gt $$(stat -c %Y $(AUTOHEADER_PATH)) ]; then \
++				$(call gen_config_header); \
++			fi; \
++		else \
++			$(call gen_config_header); \
++		fi; \
++	fi
++endef
++
++ifneq ($(DEF_CONFIG), )
++config_hash_file := $(CONFIG_PATH)-md5-$(shell md5sum $(CONF_SAVE_PATH)/$(DEF_CONFIG) | cut -d ' ' -f 1)
++define process_config_hash
++	rm -f $(CONFIG_PATH)-md5-* && echo > $(config_hash_file)
++endef
++else
++define process_config_hash
++	rm -f $(CONFIG_PATH)-md5-*
++endef
++endif
++
++define load_specific_config
++	mkdir -p $(CONF_OUT); \
++	cp -f $1 $(CONFIG_PATH); \
++	$(call process_config_hash); \
++	$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --silent --defconfig $1; \
++	$(call gen_config_header); \
++	echo Load $1 to $(CONFIG_PATH)
++endef
++
++.PHONY: buildkconfig cleankconfig menuconfig loadconfig defconfig cleanconfig
++
++ifneq ($(ENV_BUILD_MODE),yocto)
++
++ifeq ($(CONF_MAKES), )
++CONF_MFLAG       ?= -s
++CONF_MAKES       := $(CONF_MFLAG) O=$(CONF_WORKDIR)/build DESTDIR=$(CONF_WORKDIR)/image -C $(CONF_SRC)
++endif
++
++buildkconfig:
++ifeq ($(wildcard $(CONF_PATH)/mconf), )
++	$(PREAT)unset PKG_CONFIG_LIBDIR PKG_CONFIG_PATH; $(MAKE) $(CONF_MAKES) && $(MAKE) $(CONF_MAKES) install
++endif
++
++cleankconfig:
++	$(PREAT)-$(MAKE) $(CONF_MAKES) clean
++
++else
++
++buildkconfig cleankconfig:
++
++endif
++
++menuconfig: buildkconfig
++	$(PREAT)mkdir -p $(CONF_OUT)
++	$(PREAT)mtime="$(if $(wildcard $(CONFIG_PATH)),$(if $(wildcard $(AUTOHEADER_PATH)),$$(stat -c %Y $(CONFIG_PATH)),0),0)"; \
++		$(CONF_PREFIX) $(CONF_PATH)/mconf $(CONF_OPTIONS); \
++		if [ "$${mtime}" != "$$(stat -c %Y $(CONFIG_PATH))" ]; then \
++			$(call gen_config_header); \
++		else \
++			$(call sync_config_header); \
++		fi
++
++ifneq ($(DEF_CONFIG), )
++menuconfig: loadconfig
++
++loadconfig: buildkconfig
++	$(PREAT)if [ ! -e $(CONFIG_PATH) ] || [ ! -e $(config_hash_file) ]; then \
++		$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG)); \
++	else \
++		$(call sync_config_header); \
++	fi
++
++defconfig: buildkconfig
++	$(PREAT)$(call load_specific_config,$(CONF_SAVE_PATH)/$(DEF_CONFIG))
++endif
++
++%_config: $(CONF_SAVE_PATH)/%_config buildkconfig
++	$(PREAT)$(call load_specific_config,$<)
++
++%_defconfig: $(CONF_SAVE_PATH)/%_defconfig buildkconfig
++	$(PREAT)$(call load_specific_config,$<)
++
++%_saveconfig: $(CONFIG_PATH) buildkconfig
++	$(PREAT)$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
++	$(PREAT)echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _saveconfig,_config,$@)
++
++%_savedefconfig: $(CONFIG_PATH) buildkconfig
++	$(PREAT)$(CONF_PREFIX) $(CONF_PATH)/conf $(CONF_OPTIONS) --savedefconfig=$(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
++	$(PREAT)echo Save $(CONFIG_PATH) to $(CONF_SAVE_PATH)/$(subst _savedefconfig,_defconfig,$@)
++
++cleanconfig: cleankconfig
++	$(PREAT)rm -rf $(CONFIG_PATH) $(CONFIG_PATH).old $(CONFIG_PATH)-md5-* $(AUTOHEADER_PATH) $(dir $(AUTOCONFIG_PATH))
++
++endif
++endif
++
++################ inc.app.mk ################
++
++ifneq ($(filter app,$(INC_MAKES)), )
++ifeq ($(KERNELRELEASE), )
++
++COLORECHO      := $(if $(findstring dash,$(shell readlink /bin/sh)),echo,echo -e)
++SRC_PATH       ?= .
++IGNORE_PATH    ?= .git .pc scripts out output obj objects
++REG_SUFFIX     ?= c cc cxx cpp S
++ifeq ($(USING_CXX_BUILD_C),y)
++CXX_SUFFIX     ?= c cc cp cxx cpp CPP c++ C
++CCC            := $(CXX)
++else
++CXX_SUFFIX     ?= cc cp cxx cpp CPP c++ C
++CCC            := $(CC)
++endif
++ASM_SUFFIX     ?= S s asm
++
++ifeq ($(SRCS), )
++SRCS           := $(shell find $(SRC_PATH) $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
++                      $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
++                  | sed "s/^\(\.\/\)\(.*\)/\2/g" | xargs) $(ASRCS)
++endif
++
++imake_cpflags  := -I. -I./include $(patsubst %,-I%,$(filter-out .,$(SRC_PATH))) $(patsubst %,-I%/include,$(filter-out .,$(SRC_PATH))) -I$(OBJ_PREFIX)
++imake_ldflags  := -L$(OBJ_PREFIX) -Wl,-rpath-link=$(OBJ_PREFIX)
++prior_ldflags  :=
++
++ifeq ($(CC_TOOL),clang)
++imake_cpflags  += $(clang_cpflags)
++imake_ldflags  += $(clang_ldflags)
++endif
++
++imake_cpflags  += $(call link_hdrs)
++imake_ldflags  += $(call link_libs)
++
++# Optimization flags
++imake_cpflags  += $(OPTIMIZER_FLAG)
++ifneq ($(ENV_BUILD_TYPE),debug)
++imake_ldflags  += -Wl,-O1
++ENV_LINK_SECTION ?= y
++endif
++ifeq ($(ENV_BUILD_TYPE),release)
++ENV_LINK_LTO   ?= y
++endif
++
++# Independent segments that can remove unused functions and variables when linking
++ifeq ($(ENV_LINK_SECTION),y)
++imake_cpflags  += -ffunction-sections -fdata-sections
++imake_ldflags  += -Wl,--gc-sections
++endif
++
++# Link Time Optimization: Global cross-file optimization can be performed when linking
++ifeq ($(ENV_LINK_LTO),y)
++imake_cpflags  += -flto
++imake_ldflags  += -flto
++endif
++
++#imake_ldflags += -static
++
++imake_cpflags  += -Wall # This enables all the warnings about constructions that some users consider questionable.
++imake_cpflags  += -Wextra # This enables some extra warning flags that are not enabled by -Wall (This option used to be called -W).
++imake_cpflags  += -Wlarger-than=$(if $(object_byte_size),$(object_byte_size),8192) # Warn whenever an object is defined whose size exceeds object_byte_size.
++imake_cpflags  += -Wframe-larger-than=$(if $(frame_byte_size),$(frame_byte_size),65536) # Warn if the size of a function frame exceeds frame_byte_size.
++#imake_cpflags += -Wdate-time #Warn when macros __TIME__, __DATE__ or __TIMESTAMP__ are encountered as they might prevent bit-wise-identical reproducible compilations.
++
++ifeq ($(ENV_STRICT_WARN),y)
++imake_cpflags  += -Wconversion # Warn for implicit conversions that may alter a value
++#imake_cpflags  += -Wshadow # Warn when a local variable shadows another
++endif
++
++# Set SIMD acceleration for ARM and X86/AMD64 for cross build
++ifneq ($(NATIVE_BUILD),y)
++ifeq ($(ENV_SIMD_TYPE),neon)
++imake_cpflags  += -DUSING_NEON
++else ifeq ($(ENV_SIMD_TYPE),sse4)
++imake_cpflags  += -DUSING_SSE128 -msse4
++imake_ldflags  += -msse4
++else ifeq ($(ENV_SIMD_TYPE),avx2)
++imake_cpflags  += -DUSING_AVX256 -mavx2
++imake_ldflags  += -mavx2
++else ifeq ($(ENV_SIMD_TYPE),avx512)
++imake_cpflags  += -DUSING_AVX512 -mavx512bw
++imake_ldflags  += -mavx512bw
++endif
++endif
++
++# Use https://github.com/slimm609/checksec.sh/ to check the secure
++ifeq ($(ENV_SECURITY),y)
++# NX(No-eXecute) or DEP(Data Execution Prevention)
++#-z execstack # the default value is execstack, close it with noexecstack
++# Canary
++SEC_CPFLAGS    += -fstack-protector-strong  # check stack overflow
++# Fortify
++SEC_CPFLAGS    += -D_FORTIFY_SOURCE=2       # check string funcs overflow
++SEC_CPFLAGS    += -Wformat -Werror=format-security
++# PIC(Position Independent Code) / PIE(Position-Independent Executable) / ASLR(Address Space Layout Randomization)
++#CPFLAGS: -fPIC for libraries, -fPIE for executables; LDFLAGS: -fPIC for shared libraries, -pie for executables
++# Don't link unused shared libraries
++SEC_LDFLAGS    += -Wl,--as-needed
++# RELRO(Relocation Read-Only) https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro
++SEC_LDFLAGS    += -Wl,-z,relro,-z,now
++
++imake_cpflags  += $(SEC_CPFLAGS)
++prior_ldflags  += $(SEC_LDFLAGS)
++endif
++
++# For more description, refer to https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Instrumentation-Options.html
++ifeq ($(ENV_SANITIZER),1)
++# Enable AddressSanitizer, a fast memory error detector to detect out-of-bounds and use-after-free bugs.
++SANITIZER_FLAG ?= -fsanitize=address
++else ifeq ($(ENV_SANITIZER),2)
++# Enable ThreadSanitizer, a fast data race detector.
++# Memory access instructions are instrumented to detect data race bugs.
++SANITIZER_FLAG ?= -fsanitize=thread
++else ifeq ($(ENV_SANITIZER),3)
++# Enable LeakSanitizer, a memory leak detector. This option only matters for linking of executables,
++# and the executable is linked against a library that overrides malloc and other allocator functions.
++SANITIZER_FLAG ?= -fsanitize=leak
++else ifeq ($(ENV_SANITIZER),4)
++# Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
++# Various computations are instrumented to detect undefined behavior at runtime.
++SANITIZER_FLAG ?= -fsanitize=undefined
++endif
++imake_cpflags  += $(SANITIZER_FLAG)
++imake_ldflags  += $(SANITIZER_FLAG)
++
++ifeq ($(ENV_ANALYZER),y)
++ifneq ($(filter %gcc,$(CC)), )
++# For more description, refer to https://gcc.gnu.org/onlinedocs/gcc-13.1.0/gcc/Static-Analyzer-Options.html
++ifeq ($(shell expr `PATH=$(PATH) $(CC) -dumpversion` \>= 10),1)
++imake_cpflags  += -fanalyzer
++imake_ldflags  += -fanalyzer
++endif
++else
++# For more description, refer to https://clang.llvm.org/docs/ClangStaticAnalyzer.html
++# clang --analyze -Xanalyzer -analyzer-checker=<package> <source-files>
++# <package> can be got from `clang -cc1 -analyzer-checker-help`
++imake_cpflags  += --analyze
++imake_ldflags  += --analyze
++endif
++endif
++
++ifeq ($(ENV_GPROF),y)
++ifneq ($(filter %gcc,$(CC)), )
++# Run the binary, it will generate the file of gmon.out, then run `gprof <bin> gmon.out > analysis.txt`
++# For more description, refer to https://sourceware.org/binutils/docs-2.42/gprof.html
++imake_cpflags  += -pg
++imake_ldflags  += -pg
++endif
++endif
++# Users also can use another performance and analyze tool, like: perf, valgrind
++
++imake_cpflags  += $(IMAKE_CPFLAGS)
++imake_ldflags  += $(IMAKE_LDFLAGS)
++prior_ldflags  += $(PRIOR_LDFLAGS)
++
++CHECK_INFO     += ENV_BUILD_TYPE=$(ENV_BUILD_TYPE)      \
++                  ENV_SECURITY=$(ENV_SECURITY)          \
++                  ENV_SANITIZER=$(ENV_SANITIZER)        \
++                  ENV_ANALYZER=$(ENV_ANALYZER)          \
++                  ENV_GPROF=$(ENV_GPROF)                \
++                  USING_CXX_BUILD_C=$(USING_CXX_BUILD_C)\
++                  CC=$(CC)                              \
++                  CFLAGS=$(CFLAGS)                      \
++                  CXXFLAGS=$(CXXFLAGS)                  \
++                  CPFLAGS=$(CPFLAGS)                    \
++                  LDFLAGS=$(LDFLAGS)                    \
++                  imake_cpflags=$(imake_cpflags)        \
++                  imake_ldflags=$(imake_ldflags)        \
++                  prior_ldflags=$(prior_ldflags)
++
++define translate_obj
++$(patsubst %,$(OBJ_PREFIX)/%.o,$(basename $(1)))
++endef
++
++define set_flags
++$(foreach v,$(2),$(eval $(1)_$(patsubst %,%.o,$(basename $(v))) := $(3)))
++endef
++
++define set_links
++-Wl,-Bstatic $(addprefix -l,$(1)) -Wl,-Bdynamic $(addprefix -l,$(2))
++endef
++
++define all_ver_obj
++$(strip \
++	$(if $(word 4,$(1)), \
++		$(if $(word 4,$(1)),$(word 1,$(1)).$(word 2,$(1)).$(word 3,$(1)).$(word 4,$(1))) \
++		$(if $(word 2,$(1)),$(word 1,$(1)).$(word 2,$(1))) \
++		$(word 1,$(1)) \
++		,\
++		$(if $(word 3,$(1)),$(word 1,$(1)).$(word 2,$(1)).$(word 3,$(1))) \
++		$(if $(word 2,$(1)),$(word 1,$(1)).$(word 2,$(1))) \
++		$(word 1,$(1)) \
++	)
++)
++endef
++
++define compile_tool
++$(if $(filter $(patsubst %,\%.%,$(CXX_SUFFIX)),$(1)),$(CXX),$(CC))
++endef
++
++define compile_cmd
++	$(PREAT)mkdir -p $$(dir $$@)
++ifeq ($(filter $(1),$(ASM_SUFFIX)), )
++	$(PREAT)$(2) $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -MM -MP -MT $$@ -MF $$(patsubst %.o,%.d,$$@) $$<
++endif
++	$(PREAT)$(COLORECHO) "\033[032m$(2)\033[0m	$$<" $(TOLOG)
++ifneq ($(2),$(AS))
++	$(PREAT)$(2) -c $(if $(filter $(1),$(CXX_SUFFIX)),$$(CXXFLAGS),$$(CFLAGS)) $$(imake_cpflags) $$(CPFLAGS) $$(CFLAGS_$$(patsubst $$(OBJ_PREFIX)/%,%,$$@)) $$(PRIVATE_CPFLAGS) -o $$@ $$<
++else
++	$(PREAT)$(2) $$(AFLAGS) $$(AFLAGS_$$(patsubst %.$(1),%.o,$$<)) -o $$@ $$<
++endif
++endef
++
++define compile_obj
++ifeq ($(filter $(1),$(REG_SUFFIX)),$(1))
++ifneq ($(filter %.$(1),$(SRCS)), )
++$$(patsubst %.$(1),$$(OBJ_PREFIX)/%.o,$$(filter %.$(1),$$(SRCS))): $$(OBJ_PREFIX)/%.o: %.$(1)
++$(call compile_cmd,$(1),$(2))
++endif
++endif
++endef
++
++define compile_vobj
++$(call translate_obj,$(3)): $(4)
++$(call compile_cmd,$(1),$(2))
++endef
++
++define compile_oobj
++$$(call translate_obj,$(3)): %.o: %.$(1)
++$(call compile_cmd,$(1),$(2))
++endef
++
++$(eval $(call compile_obj,c,$$(CCC)))
++$(eval $(call compile_obj,cc,$$(CXX)))
++$(eval $(call compile_obj,cp,$$(CXX)))
++$(eval $(call compile_obj,cxx,$$(CXX)))
++$(eval $(call compile_obj,cpp,$$(CXX)))
++$(eval $(call compile_obj,CPP,$$(CXX)))
++$(eval $(call compile_obj,c++,$$(CXX)))
++$(eval $(call compile_obj,C,$$(CXX)))
++$(eval $(call compile_obj,S,$$(CC)))
++$(eval $(call compile_obj,s,$$(AS)))
++$(eval $(call compile_obj,asm,$$(AS)))
++
++OBJS           := $(call translate_obj,$(SRCS)$(if $(VSRCS), $(VSRCS)))
++DEPS           := $(patsubst %.o,%.d,$(OBJS))
++CHECK_FILE     := $(OBJ_PREFIX)/checkinfo
++
++$(OBJS): $(MAKEFILE_LIST) $(CHECK_FILE)
++-include $(DEPS)
++
++$(CHECK_FILE): $(CHECK_FILE).tmp
++	$(PREAT)if [ -e $@ ] && [ $$(md5sum $@ | cut -d ' ' -f 1) = $$(md5sum $< | cut -d ' ' -f 1) ]; then \
++		rm -f $<; \
++	else \
++		mv -f $< $@; \
++	fi
++
++$(CHECK_FILE).tmp:
++	$(PREAT)mkdir -p $(OBJ_PREFIX)
++	$(PREAT)echo "$(CHECK_INFO)" > $@
++
++.PHONY: clean_objs
++
++clean_objs:
++	$(PREAT)rm -rf $(OBJS) $(DEPS) $(CHECK_FILE)
++
++define add-liba-build
++LIB_TARGETS += $$(OBJ_PREFIX)/$(1)
++$$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := -fPIC $(4)
++$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(3) $(5)
++	$(PREAT)$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
++	$(PREAT)rm -f $$@
++	$(PREAT)$$(AR) rc $$@ $$(call translate_obj,$(2))
++ifneq ($(3), )
++	$(PREAT)echo OPEN $$@ > $$@.mri $(foreach lib,$(3),
++	$(PREAT)echo ADDLIB $(lib) >> $$@.mri)
++	$(PREAT)echo SAVE >> $$@.mri
++	$(PREAT)echo END >> $$@.mri
++	$(PREAT)$$(AR) -M < $$@.mri
++	$(PREAT)rm -f $$@.mri
++endif
++endef
++
++define add-libso-build
++libso_names := $(call all_ver_obj,$(1))
++LIB_TARGETS += $(patsubst %,$(OBJ_PREFIX)/%,$(call all_ver_obj,$(1)))
++
++$$(OBJ_PREFIX)/$$(firstword $$(libso_names)): PRIVATE_CPFLAGS := -fPIC $(4)
++$$(OBJ_PREFIX)/$$(firstword $$(libso_names)): $$(call translate_obj,$(2)) $(5)
++	$(PREAT)$(COLORECHO) "\033[032mlib:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
++	$(PREAT)$$(call compile_tool,$(2)) -shared -fPIC -o $$@ $$(call translate_obj,$(2)) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3) \
++		$$(if $$(findstring -soname=,$(3)),,-Wl$$(comma)-soname=$$(if $$(word 2,$(1)),$$(firstword $(1)).$$(word 2,$(1)),$(1)))
++
++ifneq ($$(word 2,$$(libso_names)), )
++$$(OBJ_PREFIX)/$$(word 2,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 1,$$(libso_names))
++	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
++endif
++
++ifneq ($$(word 3,$$(libso_names)), )
++$$(OBJ_PREFIX)/$$(word 3,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 2,$$(libso_names))
++	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
++endif
++
++ifneq ($$(word 4,$$(libso_names)), )
++$$(OBJ_PREFIX)/$$(word 4,$$(libso_names)): $$(OBJ_PREFIX)/$$(word 3,$$(libso_names))
++	$(PREAT)cd $$(OBJ_PREFIX) && ln -sf $$(patsubst $$(OBJ_PREFIX)/%,%,$$<) $$(patsubst $$(OBJ_PREFIX)/%,%,$$@)
++endif
++
++endef
++
++define add-bin-build
++BIN_TARGETS += $$(OBJ_PREFIX)/$(1)
++$$(OBJ_PREFIX)/$(1): PRIVATE_CPFLAGS := $(if $(filter y,$(ENV_SECURITY)),-fPIE) $(4)
++$$(OBJ_PREFIX)/$(1): $$(call translate_obj,$(2)) $(5)
++	$(PREAT)$(COLORECHO) "\033[032mbin:\033[0m	\033[44m$$@\033[0m" $(TOLOG)
++	$(PREAT)$$(call compile_tool,$(2)) -o $$@ $$(call translate_obj,$(2)) $(if $(filter y,$(ENV_SECURITY)),-pie) $$(prior_ldflags) $$(LDFLAGS) $$(imake_ldflags) $(3)
++endef
++
++ifneq ($(LIBA_NAME), )
++$(eval $(call add-liba-build,$(LIBA_NAME),$(SRCS)))
++endif
++
++ifneq ($(LIBSO_NAME), )
++ifneq ($(and $(VERSION_FILE),$(VERSION_NAME)), )
++$(eval $(call add-libso-build,$(LIBSO_NAME) $(call get_version,$(VERSION_FILE),$(VERSION_NAME), ),$(SRCS)))
++else
++$(eval $(call add-libso-build,$(LIBSO_NAME),$(SRCS)))
++endif
++endif
++
++ifneq ($(BIN_NAME), )
++$(eval $(call add-bin-build,$(BIN_NAME),$(SRCS)))
++endif
++
++INSTALL_LIBRARIES ?= $(LIB_TARGETS)
++INSTALL_BINARIES  ?= $(BIN_TARGETS)
++
++endif
++endif
++
++################ inc.mod.mk ################
++
++ifneq ($(filter mod,$(INC_MAKES)), )
++ifneq ($(KERNELRELEASE), )
++
++MOD_NAME       ?= hello
++obj-m          := $(patsubst %,%.o,$(MOD_NAME))
++
++imake_ccflags  := $(patsubst %,-I%,$(src) $(src)/include $(obj))
++imake_ccflags  += $(call link_hdrs)
++imake_ccflags  += $(OPTIMIZER_FLAG)
++imake_ccflags  += $(IMAKE_CCFLAGS)
++
++ccflags-y      += $(imake_ccflags)
++
++define translate_obj
++$(patsubst $(src)/%,%,$(patsubst %,%.o,$(basename $(1))))
++endef
++
++define set_flags
++$(foreach v,$(2),$(eval $(1)_$(call translate_obj,$(v)) = $(3)))
++endef
++
++ifeq ($(words $(MOD_NAME)),1)
++
++IGNORE_PATH    ?= .git .pc scripts out output obj objects
++REG_SUFFIX     ?= c S
++
++ifeq ($(SRCS), )
++SRCS           := $(filter-out %.mod.c,$(shell find $(src) \
++                          $(patsubst %,-path '*/%' -prune -o,$(IGNORE_PATH)) \
++                          $(shell echo '$(patsubst %,-o -name "*.%" -print,$(REG_SUFFIX))' | sed 's/^...//') \
++                     | xargs))
++endif
++OBJS           := $(call translate_obj,$(SRCS))
++
++ifneq ($(words $(OBJS))-$(OBJS),1-$(MOD_NAME).o)
++$(MOD_NAME)-y  := $(OBJS)
++endif
++
++else
++
++# If multiple modules are compiled at the same time, user should
++# set objs under every module himself.
++
++endif
++
++#
++# Starting from kernel version 6.10(9a0ebe5011f4), the compilation dependency rule has been changed
++# from "$(obj)/%.o: $(src)/%.c" to "$(obj)/%.o: $(obj)/%.c", the original method of separating
++# compilation output from source code has failed, so the following rules has been added.
++#
++ifneq ($(obj), $(src))
++$(obj)/%.c : $(src)/%.c
++	$(PREAT)mkdir -p $(shell dirname $@)
++	$(PREAT)ln -sfT $< $@
++
++$(obj)/%.rs : $(src)/%.rs
++	$(PREAT)mkdir -p $(shell dirname $@)
++	$(PREAT)ln -sfT $< $@
++
++$(obj)/%.S : $(src)/%.S
++	$(PREAT)mkdir -p $(shell dirname $@)
++	$(PREAT)ln -sfT $< $@
++endif
++
++else # KERNELRELEASE
++
++KERNEL_SRC     ?= /lib/modules/$(shell uname -r)/build
++MOD_PATH       ?= $(shell realpath $(shell pwd))
++
++ifeq ($(MOD_MAKES), )
++MOD_MAKES      := -C $(KERNEL_SRC)
++else
++MOD_MAKES      += -C $(KERNEL_SRC)
++endif
++
++ifneq ($(ENV_BUILD_MODE),yocto)
++MOD_MAKES      += $(if $(KERNEL_OUT),O=$(KERNEL_OUT),O=)
++endif
++
++ifneq ($(filter $(OBJ_PREFIX),. $(MOD_PATH)), )
++MOD_OPATH      ?= $(shell realpath -m $(OBJ_PREFIX))
++MOD_MAKES      += M=$(MOD_PATH)
++
++modules_install_prepend:
++	@
++
++else
++
++MOD_OPATH      ?= $(shell realpath -m $(OBJ_PREFIX))
++MOD_MAKES      += M=$(MOD_OPATH) src=$(MOD_PATH)
++
++#
++# Starting from kernel version 6.13(13b25489b6f8b), the variable value of `build-dir` has
++# been changed from `$(KBUILD_EXTMOD)` to `.`, so the following variable setting has been added.
++#
++MOD_MAKES      += build-dir=$(MOD_OPATH)
++
++#
++# Note:
++# Users should copy the Kbuild or Makefile to avoid compilation failures.
++# If they don't want to copy it, they should modify the
++# "$(KERNEL_SRC)/scripts/Makefile.modpost" as follow:
++#   -include $(if $(wildcard $(KBUILD_EXTMOD)/Kbuild), \
++#   -             $(KBUILD_EXTMOD)/Kbuild, $(KBUILD_EXTMOD)/Makefile)
++#   +include $(if $(wildcard $(src)/Kbuild), $(src)/Kbuild, $(src)/Makefile)
++#
++KBUILD_MK      := $(if $(wildcard $(MOD_PATH)/Kbuild),Kbuild,Makefile)
++modules modules_clean modules_install: $(OBJ_PREFIX)/$(KBUILD_MK)
++$(OBJ_PREFIX)/$(KBUILD_MK): $(MOD_PATH)/$(KBUILD_MK)
++	$(PREAT)-mkdir -p $(dir $@)
++	$(PREAT)-cp -f $< $@
++
++#
++# Starting from kernel version 6.13(13b25489b6f8b and bad6beb2c0bb9), the variable value of `extmod_prefix`
++# has been removed, module will be install to `$(INS_PREFIX)/lib/modules/<full_ver>/updates/$(MOD_OPATH)`.
++# To avoid installation in this directory, so the following rule has been added.
++#
++modules_install_prepend:
++	$(PREAT)full_ver=$$($(MAKE) -s $(MOD_MAKES) kernelversion); \
++		major_ver=$$(echo $${full_ver} | cut -d. -f 1); \
++		minor_ver=$$(echo $${full_ver} | cut -d. -f 2); \
++		if [ $${major_ver} -gt 6 ] || ([ $${major_ver} -eq 6 ] && [ $${minor_ver} -ge 13 ]); then \
++			sed -i "s@$(MOD_OPATH)/@@g" $(MOD_OPATH)/modules.order; \
++		fi
++
++endif
++
++export SEARCH_HDRS PACKAGE_NAME
++
++.PHONY: modules modules_clean modules_install symvers_install
++
++modules:
++	$(PREAT)$(MAKE) $(MOD_MAKES) $(if $(SEARCH_HDRS), KBUILD_EXTRA_SYMBOLS="$(wildcard $(patsubst %,$(DEP_PREFIX)/usr/include/%/Module.symvers,$(SEARCH_HDRS)))") modules
++
++modules_clean:
++	$(PREAT)$(MAKE) $(MOD_MAKES) clean
++ifeq ($(filter $(MOD_OPATH)/% $(MOD_OPATH),$(MOD_PATH)), )
++	$(PREAT)rm -rf $(MOD_OPATH)
++endif
++
++modules_install: modules_install_prepend
++	$(PREAT)$(MAKE) $(MOD_MAKES) $(if $(INS_PREFIX), INSTALL_MOD_PATH=$(INS_PREFIX)) modules_install
++
++symvers_install:
++	$(PREAT)install -d $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
++	$(PREAT)sed -i "s@$(MOD_OPATH)/@@g" $(OBJ_PREFIX)/Module.symvers
++	$(PREAT)cp -drf --preserve=mode,timestamps $(OBJ_PREFIX)/Module.symvers $(INS_PREFIX)/usr/include/$(INSTALL_HDR)
++
++install_hdrs: symvers_install
++
++endif
++endif
++
++################ inc.ins.mk ################
++
++ifeq ($(filter disins,$(INC_MAKES)), )
++ifeq ($(KERNELRELEASE), )
++
++# Defines the compatible variables with previous inc.ins.mk
++
++INSTALL_BASE_BINARIES  ?= $(INSTALL_BINARIES)
++INSTALL_BASE_BINS      ?= $(INSTALL_BASE_BINARIES)
++INSTALL_BINS           ?= $(INSTALL_BINARIES)
++INSTALL_BASE_LIBRARIES ?= $(INSTALL_LIBRARIES)
++INSTALL_BASE_LIBS      ?= $(INSTALL_BASE_LIBRARIES)
++INSTALL_LIBS           ?= $(INSTALL_LIBRARIES)
++INSTALL_HDRS           ?= $(INSTALL_HEADERS)
++
++# Defines the installation functions and targets
++
++define install_obj
++.PHONY: install_$(1)s
++install_$(1)s:
++	$(PREAT)install -d $$(INS_PREFIX)$$($(1)dir)
++	$(PREAT)cp -drf --preserve=mode,timestamps $$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')) $$(INS_PREFIX)$$($(1)dir)
++endef
++
++define install_ext
++install_$(1)s_%:
++	$(PREAT)ivar="$$($(shell echo install_$(1)s | tr 'a-z' 'A-Z')$$(patsubst install_$(1)s%,%,$$@))"; \
++	isrc="$$$$(echo $$$${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$$$//g')"; \
++	idst="$$(INS_PREFIX)$$($(1)dir)$$$$(echo $$$${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$$$/\1/g')"; \
++	install -d $$$${idst} && cp -drf --preserve=mode,timestamps $$$${isrc} $$$${idst}
++endef
++
++$(eval $(call install_obj,base_bin))
++$(eval $(call install_obj,base_sbin))
++$(eval $(call install_obj,base_lib))
++$(eval $(call install_obj,bin))
++$(eval $(call install_obj,sbin))
++$(eval $(call install_obj,lib))
++$(eval $(call install_obj,libexec))
++$(eval $(call install_obj,hdr))
++$(eval $(call install_obj,include))
++$(eval $(call install_obj,data))
++$(eval $(call install_obj,info))
++$(eval $(call install_obj,locale))
++$(eval $(call install_obj,man))
++$(eval $(call install_obj,doc))
++$(eval $(call install_obj,sysconf))
++$(eval $(call install_obj,service))
++$(eval $(call install_obj,sharedstate))
++$(eval $(call install_obj,localstate))
++$(eval $(call install_obj,runstate))
++
++$(eval $(call install_ext,include))
++$(eval $(call install_ext,data))
++$(eval $(call install_ext,sysconf))
++
++install_todir_%:
++	$(PREAT)ivar="$($(shell echo install_todir | tr 'a-z' 'A-Z')$(patsubst install_todir%,%,$@))"; \
++	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
++	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
++	install -d $${idst} && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
++
++install_tofile_%:
++	$(PREAT)ivar="$($(shell echo install_tofile | tr 'a-z' 'A-Z')$(patsubst install_tofile%,%,$@))"; \
++	isrc="$$(echo $${ivar} | sed -E 's/\s+[a-zA-Z0-9/@_\.\-]+$$//g')"; \
++	idst="$(INS_PREFIX)$$(echo $${ivar} | sed -E 's/.*\s+([a-zA-Z0-9/@_\.\-]+)$$/\1/g')"; \
++	install -d $$(dirname $${idst}) && cp -drf --preserve=mode,timestamps $${isrc} $${idst}
++
++ifneq ($(ENV_BUILD_MODE),yocto)
++ifneq ($(DIS_LICENSE),y)
++.PHONY: license
++SYSROOT_SCRIPT  := $(ENV_TOOL_DIR)/process_sysroot.sh
++SRC_PATH        ?= .
++
++install release: license
++license:
++	$(PREAT)$(call install_lics)
++endif
++endif
++
++endif # KERNELRELEASE
++endif
+diff --git a/libflv/source/mpeg4-aac-asc.c b/libflv/source/mpeg4-aac-asc.c
+index c693ba0..3a08a8f 100644
+--- a/libflv/source/mpeg4-aac-asc.c
++++ b/libflv/source/mpeg4-aac-asc.c
+@@ -671,7 +671,7 @@ individual_channel_stream(common_window, scale_flag)
+ */
+ static int mpeg4_aac_individual_channel_stream_parse(struct mpeg4_bits_t* bits, struct mpeg4_aac_t* aac, uint8_t common_window, uint8_t scale_flag)
+ {
+-	mpeg4_bits_read_uint8(&bits, 8); // global_gain
++	mpeg4_bits_read_uint8(bits, 8); // global_gain
+ 	if (!common_window && !scale_flag)
+ 	{
+ 		// ics_info()
+@@ -679,14 +679,14 @@ static int mpeg4_aac_individual_channel_stream_parse(struct mpeg4_bits_t* bits,
+ 
+ 	// section_data ();
+ 	// scale_factor_data ();
+-	return mpeg4_bits_error(&bits);
++	return mpeg4_bits_error(bits);
+ }
+ 
+ static int mpeg4_aac_cpe_parse(struct mpeg4_bits_t* bits, struct mpeg4_aac_t* aac)
+ {
+ 	uint8_t element_instance_tag, common_window;
+-	element_instance_tag = mpeg4_bits_read_uint8(&bits, 4);
+-	common_window = mpeg4_bits_read_uint8(&bits, 1);
++	element_instance_tag = mpeg4_bits_read_uint8(bits, 4);
++	common_window = mpeg4_bits_read_uint8(bits, 1);
+ 	if (common_window)
+ 	{
+ 		// ics
+@@ -694,7 +694,7 @@ static int mpeg4_aac_cpe_parse(struct mpeg4_bits_t* bits, struct mpeg4_aac_t* aa
+ 
+ 	mpeg4_aac_individual_channel_stream_parse(bits, aac, common_window, 0);
+ 	mpeg4_aac_individual_channel_stream_parse(bits, aac, common_window, 0);
+-	return mpeg4_bits_error(&bits);
++	return mpeg4_bits_error(bits);
+ }
+ 
+ int mpeg4_aac_raw_data_block_parse(const uint8_t* data, size_t bytes, struct mpeg4_aac_t* aac)
+-- 
+2.47.3
+

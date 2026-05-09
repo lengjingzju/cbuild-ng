@@ -1,0 +1,39 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) readline(native psysroot): unselect ncurses
+
+PACKAGE_NAME     = readline
+
+LICENSE          = GPL-3.0-or-later
+LICFILE          = file://COPYING*
+HOMEPAGE         = https://tiswww.cwru.edu/php/chet/readline/rltop.html
+DESCRIPTION      = The GNU Readline library provides a set of functions for use by applications that allow users \
+                   to edit command lines as they are typed in. Both Emacs and vi editing modes are available. \
+                   The Readline library includes additional functions to maintain a list of previously-entered \
+                   command lines, to recall and perhaps reedit those lines, and perform csh-like history expansion \
+                   on previous commands.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 8.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://ftp.gnu.org/gnu/$(PACKAGE_NAME)/$(SRC_NAME)
+SRC_MD5          = 25a73bfb2a3ad7146c5e9d4408d9f6cd
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    =
+
+COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --with-curses
+
+CFLAGS          += $(call link_hdrs)
+CXXFLAGS        += $(call link_hdrs)
+LDFLAGS         += $(call link_libs)
+MAKE_FLAGS      += SHLIB_LIBS=-lncursesw
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

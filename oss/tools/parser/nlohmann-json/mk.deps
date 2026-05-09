@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) nlohmann-json(native psysroot): unselect
+
+PACKAGE_NAME     = nlohmann-json
+
+LICENSE          = MIT
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://github.com/nlohmann/json
+DESCRIPTION      = JSON for Modern C++.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.12.0
+SRC_DIR          = json
+SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.xz
+SRC_URL          = https://github.com/nlohmann/json/releases/download/v$(VERSION)/json.tar.xz
+SRC_MD5          = e155202b2a589137f6804724bd182f12
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DJSON_BuildTests=OFF
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

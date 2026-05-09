@@ -1,0 +1,11 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2026-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+config ZLMEDIAKIT_FT_PYTHON_NATIVE
+    default n
+    bool "ZLMediaKit: Enable or disable pybind11 (Not supported yet)"
+    depends on PYBIND11_NATIVE
+

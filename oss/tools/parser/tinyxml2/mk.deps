@@ -1,0 +1,32 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) tinyxml2(native psysroot): unselect
+
+PACKAGE_NAME     = tinyxml2
+
+LICENSE          = zlib
+LICFILE          = file://LICENSE.txt
+HOMEPAGE         = https://github.com/codingman/tinyxml2
+DESCRIPTION      = TinyXML-2 is a simple, small, efficient, C++ XML parser that can be easily integrated into other programs.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 9.0.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/codingman/tinyxml2/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = afecd941107a8e74d3d1b4363cf52bd7
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DBUILD_TESTING=OFF \
+                   -Dtinyxml2_BUILD_TESTING=OFF \
+                   -Dtinyxml2_SHARED_LIBS=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk
