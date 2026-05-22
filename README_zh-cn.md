@@ -410,6 +410,8 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
     * `unselect`    : 表示此包默认不编译，即 `default n`，否则此包默认编译，即 `default y`
     * `nokconfig`   : 表示此包不含 Kconfig 配置。同一目录有多个包时，此包无需设置 `nokconfig`，而其它包也有配置可以将配置的文件名设为 **包名.配置的后缀** ，否则需要设置 nokconfig
     * `kconfig`     : 表示多个包共享相同的 Kconfig，一般是同一个软件的交叉编译包和本地编译包共享
+    * `versioncfg`  : 表示自动生成Kconfig条目配置版本(版本、分支、校验(MD5/TAG/REVISION))
+        * 生成的三个配置项名称分别是 `CONFIG_<PKG>_VERSION` `CONFIG_<PKG>_BRANCH` `CONFIG_<PKG>_CHECKSUM` (`<PKG>` 指的是包名去掉 `prebuild-` 和 `-native` 后的大写字母)
 <br>
 
 * 特殊依赖(特殊符)

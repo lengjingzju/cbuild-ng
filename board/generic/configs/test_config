@@ -1,8 +1,404 @@
-CONFIG_BUSYBOX=y
-CONFIG_CJSON=y
-CONFIG_LIBPCAP=y
-CONFIG_LJSON=y
-CONFIG_LUA=y
-CONFIG_NCURSES_NATIVE=y
+#
+# Automatically generated file; DO NOT EDIT.
+# Build Configuration
+#
+
+#
+# oss
+#
+
+#
+# display
+#
+
+#
+# glib
+#
+# end of glib
+
+#
+# gls
+#
+# CONFIG_SPIRV_HEADERS is not set
+# CONFIG_SPIRV_HEADERS_NATIVE is not set
+# end of gls
+
+# CONFIG_QT is not set
+# CONFIG_QT_NATIVE is not set
+CONFIG_X_WINDOWS=y
+# CONFIG_LIBPTHREAD_STUBS is not set
+# CONFIG_LIBPTHREAD_STUBS_NATIVE is not set
+# CONFIG_UTIL_MACROS is not set
+# CONFIG_UTIL_MACROS_NATIVE is not set
+# CONFIG_XCB_PROTO is not set
+# CONFIG_XCB_PROTO_NATIVE is not set
+# CONFIG_XORGPROTO is not set
+# CONFIG_XORGPROTO_NATIVE is not set
+# CONFIG_XTRANS is not set
+# CONFIG_XTRANS_NATIVE is not set
+# end of display
+
+#
+# media
+#
+
+#
+# audio
+#
+# CONFIG_BCG729 is not set
+# CONFIG_BCG729_NATIVE is not set
+# CONFIG_FDK_AAC is not set
+# CONFIG_FDK_AAC_NATIVE is not set
+# CONFIG_LIBG722 is not set
+# CONFIG_LIBG722_NATIVE is not set
+# CONFIG_LIBOGG is not set
+# CONFIG_LIBOGG_NATIVE is not set
+# CONFIG_OPUS is not set
+# CONFIG_OPUS_NATIVE is not set
+# CONFIG_RNNOISE is not set
+# CONFIG_RNNOISE_NATIVE is not set
+# CONFIG_SPEEXDSP is not set
+# CONFIG_SPEEXDSP_NATIVE is not set
+# CONFIG_WEBRTC_AUDIO_PROCESSING is not set
+# CONFIG_WEBRTC_AUDIO_PROCESSING_NATIVE is not set
+# end of audio
+
+#
+# framework
+#
+# CONFIG_FFMPEG is not set
+# CONFIG_FFMPEG_NATIVE is not set
+# CONFIG_SDL2 is not set
+# CONFIG_SDL2_NATIVE is not set
+# end of framework
+
+#
+# i18n
+#
+# CONFIG_GETTEXT is not set
+# CONFIG_GETTEXT_NATIVE is not set
+# CONFIG_LIBICONV is not set
+# CONFIG_LIBICONV_NATIVE is not set
+# end of i18n
+
+#
+# image
+#
+# CONFIG_LIBJPEG_TURBO is not set
+# CONFIG_LIBJPEG_TURBO_NATIVE is not set
+# CONFIG_LIBTIFF is not set
+# CONFIG_LIBTIFF_NATIVE is not set
+# CONFIG_LIBYUV is not set
+# CONFIG_LIBYUV_NATIVE is not set
+# end of image
+
+#
+# text
+#
 CONFIG_NCURSES=y
+CONFIG_NCURSES_NATIVE=y
+# end of text
+
+#
+# video
+#
+# CONFIG_OPENH264 is not set
+# CONFIG_OPENH264_NATIVE is not set
+# CONFIG_X264 is not set
+# CONFIG_X264_NATIVE is not set
+# CONFIG_X265 is not set
+# CONFIG_X265_NATIVE is not set
+# end of video
+# end of media
+
+#
+# network
+#
+
+#
+# debug
+#
+# CONFIG_IPERF is not set
+# CONFIG_IPERF_NATIVE is not set
+CONFIG_LIBPCAP=y
+# CONFIG_LIBPCAP_NATIVE is not set
 CONFIG_TCPDUMP=y
+# end of debug
+
+#
+# misc
+#
+# CONFIG_LIBTASN1 is not set
+# CONFIG_LIBTASN1_NATIVE is not set
+# end of misc
+
+#
+# protocol
+#
+# CONFIG_ASIO is not set
+# CONFIG_ASIO_NATIVE is not set
+# CONFIG_C_ARES is not set
+# CONFIG_C_ARES_NATIVE is not set
+# CONFIG_LIBUV is not set
+# CONFIG_LIBUV_NATIVE is not set
+# CONFIG_MEDIA_SERVER is not set
+# CONFIG_MEDIA_SERVER_NATIVE is not set
+# CONFIG_PJPROJECT is not set
+# CONFIG_PJPROJECT_NATIVE is not set
+# CONFIG_WEBSOCKETPP is not set
+# CONFIG_WEBSOCKETPP_NATIVE is not set
+# end of protocol
+
+#
+# security
+#
+# CONFIG_OPENSSL is not set
+# CONFIG_OPENSSL_NATIVE is not set
+# end of security
+
+#
+# transmission
+#
+# end of transmission
+# end of network
+
+#
+# system
+#
+
+#
+# audio
+#
+# CONFIG_ALSA_LIB is not set
+# CONFIG_ALSA_LIB_NATIVE is not set
+# CONFIG_TINYALSA is not set
+# CONFIG_TINYALSA_NATIVE is not set
+# end of audio
+
+#
+# base
+#
+CONFIG_BUSYBOX=y
+# end of base
+
+#
+# filesystem
+#
+# CONFIG_EXFAT_UTILS is not set
+# CONFIG_EXFAT_UTILS_NATIVE is not set
+# end of filesystem
+
+#
+# graphics
+#
+# CONFIG_LIBDRM is not set
+# CONFIG_LIBDRM_NATIVE is not set
+# end of graphics
+
+#
+# hardware
+#
+# CONFIG_C_PERIPHERY is not set
+# CONFIG_C_PERIPHERY_NATIVE is not set
+# CONFIG_LIBUSB is not set
+# CONFIG_LIBUSB_NATIVE is not set
+# CONFIG_LINUXPTP is not set
+# CONFIG_LINUXPTP_NATIVE is not set
+# CONFIG_UVC_GADGET is not set
+# CONFIG_V4L_UTILS is not set
+# CONFIG_V4L_UTILS_NATIVE is not set
+# end of hardware
+
+#
+# network
+#
+# CONFIG_LIBNL is not set
+# CONFIG_LIBNL_NATIVE is not set
+# CONFIG_WIRELESS_TOOLS is not set
+# CONFIG_WIRELESS_TOOLS_NATIVE is not set
+# end of network
+
+#
+# security
+#
+# CONFIG_LIBCAP is not set
+# CONFIG_LIBCAP_NATIVE is not set
+# CONFIG_LIBCAP_NG is not set
+# CONFIG_LIBCAP_NG_NATIVE is not set
+# end of security
+
+#
+# selinux
+#
+# CONFIG_AUDIT is not set
+# CONFIG_AUDIT_NATIVE is not set
+# CONFIG_LIBSEPOL is not set
+# CONFIG_LIBSEPOL_NATIVE is not set
+# end of selinux
+# end of system
+
+#
+# tools
+#
+
+#
+# base
+#
+# CONFIG_ABSEIL_CPP is not set
+# CONFIG_ABSEIL_CPP_NATIVE is not set
+# CONFIG_CONCURRENTQUEUE is not set
+# CONFIG_CONCURRENTQUEUE_NATIVE is not set
+# CONFIG_CPP_IPC is not set
+# CONFIG_CPP_IPC_NATIVE is not set
+# CONFIG_GFLAGS is not set
+# CONFIG_GFLAGS_NATIVE is not set
+# CONFIG_JCORE is not set
+# CONFIG_JCORE_NATIVE is not set
+# CONFIG_LIBFFI is not set
+# CONFIG_LIBFFI_NATIVE is not set
+# CONFIG_POPT is not set
+# CONFIG_POPT_NATIVE is not set
+# CONFIG_TBB is not set
+# CONFIG_TBB_NATIVE is not set
+# end of base
+
+#
+# compress
+#
+# CONFIG_BZIP2 is not set
+# CONFIG_BZIP2_NATIVE is not set
+# CONFIG_LZ4 is not set
+# CONFIG_LZ4_NATIVE is not set
+# CONFIG_LZIP is not set
+# CONFIG_LZIP_NATIVE is not set
+# CONFIG_XZ is not set
+# CONFIG_XZ_NATIVE is not set
+# CONFIG_ZLIB is not set
+# CONFIG_ZLIB_NATIVE is not set
+# CONFIG_ZSTD is not set
+# CONFIG_ZSTD_NATIVE is not set
+# end of compress
+
+#
+# database
+#
+# CONFIG_BERKELEYDB is not set
+# CONFIG_BERKELEYDB_NATIVE is not set
+# CONFIG_SQLITE is not set
+# CONFIG_SQLITE_NATIVE is not set
+# end of database
+
+#
+# debug
+#
+# CONFIG_GOOGLETEST is not set
+# CONFIG_GOOGLETEST_NATIVE is not set
+# CONFIG_STRACE is not set
+# CONFIG_STRACE_NATIVE is not set
+# CONFIG_VALGRIND is not set
+# CONFIG_VALGRIND_NATIVE is not set
+# end of debug
+
+#
+# logger
+#
+# CONFIG_FMT is not set
+# CONFIG_FMT_NATIVE is not set
+# CONFIG_LOG4CPLUS is not set
+# CONFIG_LOG4CPLUS_NATIVE is not set
+# CONFIG_SPDLOG is not set
+# CONFIG_SPDLOG_NATIVE is not set
+# end of logger
+
+#
+# math
+#
+# CONFIG_EIGEN is not set
+# CONFIG_EIGEN_NATIVE is not set
+# CONFIG_FP16 is not set
+# CONFIG_FP16_NATIVE is not set
+# CONFIG_GMP is not set
+# CONFIG_GMP_NATIVE is not set
+# end of math
+
+#
+# parser
+#
+CONFIG_CJSON=y
+# CONFIG_CJSON_NATIVE is not set
+# CONFIG_EXPAT is not set
+# CONFIG_EXPAT_NATIVE is not set
+# CONFIG_FLATBUFFERS is not set
+# CONFIG_FLATBUFFERS_NATIVE is not set
+# CONFIG_JSON_C is not set
+# CONFIG_JSON_C_NATIVE is not set
+# CONFIG_JSONCPP is not set
+# CONFIG_JSONCPP_NATIVE is not set
+CONFIG_LJSON=y
+# CONFIG_LJSON_NATIVE is not set
+# CONFIG_NLOHMANN_JSON is not set
+# CONFIG_NLOHMANN_JSON_NATIVE is not set
+# CONFIG_PCRE2 is not set
+# CONFIG_PCRE2_NATIVE is not set
+# CONFIG_RAPIDJSON is not set
+# CONFIG_RAPIDJSON_NATIVE is not set
+# CONFIG_TINYXML2 is not set
+# CONFIG_TINYXML2_NATIVE is not set
+# end of parser
+
+#
+# toolchain
+#
+# CONFIG_BOOST is not set
+# CONFIG_BOOST_NATIVE is not set
+# CONFIG_CMAKE_NATIVE is not set
+# CONFIG_GPERF is not set
+# CONFIG_GPERF_NATIVE is not set
+# CONFIG_KCONFIG is not set
+# CONFIG_KCONFIG_NATIVE is not set
+# CONFIG_LIBTOOL is not set
+# CONFIG_LIBTOOL_NATIVE is not set
+# CONFIG_LIBUNWIND is not set
+# CONFIG_LIBUNWIND_NATIVE is not set
+CONFIG_LUA=y
+# CONFIG_LUA_NATIVE is not set
+# CONFIG_ORC is not set
+# CONFIG_ORC_NATIVE is not set
+# CONFIG_PATCHELF is not set
+# CONFIG_PATCHELF_NATIVE is not set
+# CONFIG_PYBIND11 is not set
+# CONFIG_PYBIND11_NATIVE is not set
+# CONFIG_PYTHON3_NATIVE is not set
+# CONFIG_READLINE is not set
+# CONFIG_READLINE_NATIVE is not set
+# end of toolchain
+
+#
+# utility
+#
+# CONFIG_INDICATORS is not set
+# CONFIG_INDICATORS_NATIVE is not set
+# end of utility
+# end of tools
+# end of oss
+
+#
+# system
+#
+CONFIG_CBUILD=y
+# CONFIG_CBUILD_NATIVE is not set
+CONFIG_EXECLD=y
+# CONFIG_EXECLD_NATIVE is not set
+# CONFIG_LINUX is not set
+CONFIG_ROOTFS=y
+# end of system
+
+#
+# VERSION
+#
+# CONFIG_JCORE_VERCFG is not set
+CONFIG_LJSON_VERCFG=y
+CONFIG_LJSON_VERSION="5.0.3"
+CONFIG_LJSON_BRANCH=""
+CONFIG_LJSON_CHECKSUM="806b8d3b2046ec489cdc245446a04302c39ef550"
+# end of VERSION

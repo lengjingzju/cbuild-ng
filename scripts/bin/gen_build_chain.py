@@ -37,6 +37,7 @@ class Deps:
         self.ActualList = []
         self.VirtualList = []
         self.FinallyList = []
+        self.VerCfgSet = set()
 
         self.conf_name = ''
         self.conf_str = ''
@@ -68,6 +69,7 @@ class Deps:
         item['acount'] = 0      # actual dependence items count
         item['select'] = []
         item['imply'] = []
+        item['versioncfg'] = False # Kconfig configuration version
         item['default'] = True
         item['conf'] = ''
 
@@ -125,6 +127,9 @@ class Deps:
                     item['conf'] = 'kconfig'
                 elif dep == 'nokconfig':
                     item['conf'] = ''
+                elif dep == 'versioncfg':
+                    item['versioncfg'] = True
+                    self.VerCfgSet.add(item['target'].replace('-native', '').replace('prebuild-', ''))
                 elif dep == 'unselect':
                     item['default'] = False
                 elif dep == 'selected':
@@ -941,6 +946,7 @@ class Deps:
         if self.prepend_flag:
             config_prepend = 'CONFIG_'
         target = '%s%s' % (config_prepend, escape_toupper(item['target']))
+        package = item['target'].replace('-native', '').replace('prebuild-', '')
 
         if 'choice' in item['vtype']:
             fp.write('choice\n')
@@ -1012,6 +1018,8 @@ class Deps:
         if deps:
             fp.write('\tdepends on %s\n' % (' && '.join(deps)))
 
+        if item['versioncfg']:
+            fp.write('\tselect %s%s_VERCFG\n' % (config_prepend, escape_toupper(package)))
         if item['select']:
             for t in item['select']:
                 fp.write('\tselect %s%s\n' % (config_prepend, escape_toupper(t)))
@@ -1020,7 +1028,6 @@ class Deps:
                 fp.write('\timply %s%s\n' % (config_prepend, escape_toupper(t)))
 
 
-        package = item['target'].replace('-native', '').replace('prebuild-', '')
         if package in self.InfoDict.keys():
             package_keys = self.InfoDict[package].keys()
             fp.write('\thelp\n')
@@ -1127,6 +1134,42 @@ class Deps:
             cur_dirs.pop()
             cur_depth -= 1
             fp.write('endmenu\n\n')
+
+
+    def gen_kconfig_version(self, fp):
+        if not self.VerCfgSet:
+            return
+        fp.write('menu "VERSION"\n\n')
+
+        config_prepend = ''
+        if self.prepend_flag:
+            config_prepend = 'CONFIG_'
+        VerCfgList = sorted(self.VerCfgSet)
+
+        for package in VerCfgList:
+            target = '%s%s' % (config_prepend, escape_toupper(package))
+
+            fp.write('menuconfig %s_VERCFG\n' % (target))
+            fp.write('\tbool "%s"\n' % (package))
+            fp.write('\tdefault n\n\n')
+
+            fp.write('if %s_VERCFG\n\n' % (target))
+
+            fp.write('config %s_VERSION\n' % (target))
+            fp.write('\tstring "Version"\n')
+            fp.write('\tdefault ""\n\n')
+
+            fp.write('config %s_BRANCH\n' % (target))
+            fp.write('\tstring "Branch"\n')
+            fp.write('\tdefault ""\n\n')
+
+            fp.write('config %s_CHECKSUM\n' % (target))
+            fp.write('\tstring "Checksum (md5/tag/revison)"\n')
+            fp.write('\tdefault ""\n\n')
+
+            fp.write('endif\n\n')
+        fp.write('endmenu\n\n')
+
 
     def gen_info(self, filename):
         with open(filename, 'w') as fp:
@@ -1749,6 +1792,7 @@ def do_normal_analysis(args):
     with open(kconfig_out, 'w') as fp:
         fp.write('mainmenu "Build Configuration"\n\n')
         deps.gen_kconfig(fp, deps.ItemList, False, max_depth, '')
+        deps.gen_kconfig_version(fp)
     print('\033[32mGenerate %s OK.\033[0m' % kconfig_out)
 
     target_list = [item['target'] for item in deps.ActualList]
@@ -1833,6 +1877,7 @@ def do_yocto_analysis(args):
             deps.gen_kconfig(fp, deps.PokyList, False, max_depth, '')
         if deps.ItemList:
             deps.gen_kconfig(fp, deps.ItemList, False, max_depth, '')
+        deps.gen_kconfig_version(fp)
     deps.gen_yocto_target(target_out)
     print('\033[32mGenerate %s OK.\033[0m' % kconfig_out)
 

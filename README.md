@@ -423,6 +423,8 @@ Note: The virtual packages will not participate in compilation, but is used to o
     * `nokconfig`   : Indicates that this package doesn't contain Kconfig
         * When there are multiple packages in the same directory, and only one package has Kconfig, then this package doesn't need to set `nokconfig`, and other packages should set it
     * `kconfig`     : Indicates that multiple packages share the same Kconfig, generally, the cross/native compilation package of the same software share the same Kconfig
+    * `versioncfg`  : Indicates the configuration version for automatically generating Kconfig entries (Version, Branch, Checksum [MD5/TAG/REVISION]).
+        * The generated configuration items are named: `CONFIG_<PKG>_VERSION`, `CONFIG_<PKG>_BRANCH`, and `CONFIG_<PKG>_CHECKSUM`. (`<PKG>` refers to the package name converted to uppercase, with the prefix `prebuild-` and suffix `-native` removed.)
 <br>
 
 * Special Character

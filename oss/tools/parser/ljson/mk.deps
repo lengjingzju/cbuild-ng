@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) ljson(native psysroot): unselect
+#DEPS(mk.deps) ljson(native psysroot): unselect versioncfg
 
 PACKAGE_NAME     = ljson
 
@@ -18,14 +18,15 @@ DESCRIPTION      = LJSON is a C implemented JSON library that is much faster tha
                    it may only be the 15th decimal place difference. It is currently the fastest double to string \
                    algorithm; users can also choose the personally optimized grisu2 algorithm or dragonbox algorithm.
 
+-include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 5.0.3
+VERSION          = $(shell echo $(CONFIG_LJSON_VERSION))
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lengjingzju/json.git
-SRC_REV          = 806b8d3b2046ec489cdc245446a04302c39ef550
+SRC_REV          = $(shell echo $(CONFIG_LJSON_CHECKSUM))
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
