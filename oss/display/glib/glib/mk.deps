@@ -37,4 +37,4 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i "s@^gdb_install_dir = join_paths.*@gdb_install_dir = join_paths(glib_datadir, 'gdb', 'auto-load')@g" $(SRC_PATH)/glib/meson.build
+	$(PREAT)sed -i "s@^gdb_install_dir = join_paths.*@gdb_install_dir = join_paths(glib_datadir, 'gdb', 'auto-load')@g" $(SRC_PATH)/glib/meson.build

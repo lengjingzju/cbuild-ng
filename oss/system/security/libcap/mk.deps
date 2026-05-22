@@ -32,7 +32,7 @@ CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@sed -i -e 's@^prefix=.*@prefix=\$${pcfiledir}/../..@g' \
+	$(PREAT)sed -i -e 's@^prefix=.*@prefix=\$${pcfiledir}/../..@g' \
 			-e 's@^exec_prefix=.*@exec_prefix=\$${prefix}@g'\
 			-e 's@^libdir=.*@libdir=\$${prefix}/lib@g'\
 			-e 's@^includedir=.*@includedir=\$${prefix}/usr/include@g'\

@@ -40,4 +40,4 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@cp -f $(SRC_PATH)/hostapd/defconfig $(SRC_PATH)/hostapd/.config
+	$(PREAT)cp -f $(SRC_PATH)/hostapd/defconfig $(SRC_PATH)/hostapd/.config

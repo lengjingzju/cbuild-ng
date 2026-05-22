@@ -45,4 +45,4 @@ include $(ENV_MAKE_DIR)/inc.rule.mk
 
 # FAILED: install script '.../gio-querymodules ...' could not be run, stopped
 prepend:
-	@sed -i '/gnome.post_install/ d' $(SRC_PATH)/meson.build
+	$(PREAT)sed -i '/gnome.post_install/ d' $(SRC_PATH)/meson.build

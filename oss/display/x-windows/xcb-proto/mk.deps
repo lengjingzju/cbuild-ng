@@ -32,4 +32,4 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's:pkgconfigdir = $$(datarootdir)/pkgconfig:pkgconfigdir = $$(libdir)/pkgconfig:g' $(SRC_PATH)/Makefile.in $(SRC_PATH)/Makefile.am
+	$(PREAT)sed -i 's:pkgconfigdir = $$(datarootdir)/pkgconfig:pkgconfigdir = $$(libdir)/pkgconfig:g' $(SRC_PATH)/Makefile.am $(SRC_PATH)/Makefile.in

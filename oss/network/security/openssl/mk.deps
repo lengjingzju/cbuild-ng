@@ -33,9 +33,9 @@ CUSTOM_TARGETS   = prepend compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@cd $(SRC_PATH) && \
+	$(PREAT)cd $(SRC_PATH) && \
 		./config shared no-asm no-async --prefix=$(INS_TOPDIR)$(INS_SUBDIR) --libdir=lib $(if $(CROSS_COMPILE),--cross-compile-prefix='') $(TOLOG)
-	@sed -i 's/ -m64//g' $(SRC_PATH)/Makefile
+	$(PREAT)sed -i 's/ -m64//g' $(SRC_PATH)/Makefile
 
 compile:
-	@cd $(SRC_PATH) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+	$(PREAT)cd $(SRC_PATH) && $(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)

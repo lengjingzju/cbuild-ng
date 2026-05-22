@@ -31,5 +31,5 @@ CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)
-	@ln -sf tcpdump $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)
+	$(PREAT)rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)
+	$(PREAT)ln -sf tcpdump $(INS_TOPDIR)$(INS_SUBDIR)/bin/tcpdump.$(VERSION)

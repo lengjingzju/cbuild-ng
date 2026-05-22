@@ -45,5 +45,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@cd $(SRC_PATH) && autoreconf
-	@sed -i 's@ln -s \$$(ALSA_GCONF_DIR)/\$$\$$i .@ln -sf ../../../usr/share/alsa/alsa.conf.d/\$$\$$i .@g' `grep -rl 'ln -s \$$(ALSA_GCONF_DIR)/\$$\$$i .' $(SRC_PATH) | xargs` $(SRC_PATH)/configure
+	$(PREAT)cd $(SRC_PATH) && autoreconf
+	$(PREAT)sed -i 's@ln -s \$$(ALSA_GCONF_DIR)/\$$\$$i .@ln -sf ../../../usr/share/alsa/alsa.conf.d/\$$\$$i .@g' `grep -rl 'ln -s \$$(ALSA_GCONF_DIR)/\$$\$$i .' $(SRC_PATH) | xargs` $(SRC_PATH)/configure

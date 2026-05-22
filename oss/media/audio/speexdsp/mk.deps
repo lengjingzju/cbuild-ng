@@ -34,5 +34,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@cd $(SRC_PATH) && ./autogen.sh
+	$(PREAT)cd $(SRC_PATH) && ./autogen.sh
 

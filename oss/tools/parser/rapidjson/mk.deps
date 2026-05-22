@@ -34,4 +34,4 @@ CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@rm -rf $(INS_TOPDIR)$(docdir)
+	$(PREAT)rm -rf $(INS_TOPDIR)$(docdir)

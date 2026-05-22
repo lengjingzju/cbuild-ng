@@ -49,5 +49,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's/ host-key check-config$$//g' $(SRC_PATH)/Makefile.in
+	$(PREAT)sed -i 's/ host-key check-config$$//g' $(SRC_PATH)/Makefile.in
 

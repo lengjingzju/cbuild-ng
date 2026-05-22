@@ -97,8 +97,8 @@ CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 compile:
-	@sed -i 's@NULL, x265pic_lyrptr_out)@NULL, x265pic_lyrptr_out[i])@g' $(SRC_PATH)/libavcodec/libx265.c
-	@cd $(OBJ_PREFIX) && \
+	$(PREAT)sed -i 's@NULL, x265pic_lyrptr_out)@NULL, x265pic_lyrptr_out[i])@g' $(SRC_PATH)/libavcodec/libx265.c
+	$(PREAT)cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(if $(CROSS_COMPILE),--enable-cross-compile --cross-prefix=$(CROSS_COMPILE) \
 				--arch=$(shell $(MACHINE_SCRIPT) arch) --target-os=linux) \
 			$(INS_CONFIG) $(AUTOTOOLS_FLAGS) $(FT_CONFIG) $(TOLOG) && \

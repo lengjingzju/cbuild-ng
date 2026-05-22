@@ -35,4 +35,4 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's/CMAKE_C_STANDARD 17/CMAKE_C_STANDARD 11/g' $(SRC_PATH)/CMakeLists.txt
+	$(PREAT)sed -i 's/CMAKE_C_STANDARD 17/CMAKE_C_STANDARD 11/g' $(SRC_PATH)/CMakeLists.txt

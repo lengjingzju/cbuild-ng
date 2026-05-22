@@ -36,7 +36,7 @@ CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@cd $(INS_TOPDIR)/sbin && ln -sf ../bin/udevadm
-	@cp -dfp $(INS_TOPDIR)/usr/share/pkgconfig/udev.pc $(INS_TOPDIR)/lib/pkgconfig/udev.pc
-	@rm -rf $(INS_TOPDIR)/usr/share
-	@sed -i 's:\.\./\.\./\.\.:../..:g' $(INS_TOPDIR)/lib/pkgconfig/udev.pc
+	$(PREAT)cd $(INS_TOPDIR)/sbin && ln -sf ../bin/udevadm
+	$(PREAT)cp -dfp $(INS_TOPDIR)/usr/share/pkgconfig/udev.pc $(INS_TOPDIR)/lib/pkgconfig/udev.pc
+	$(PREAT)rm -rf $(INS_TOPDIR)/usr/share
+	$(PREAT)sed -i 's:\.\./\.\./\.\.:../..:g' $(INS_TOPDIR)/lib/pkgconfig/udev.pc

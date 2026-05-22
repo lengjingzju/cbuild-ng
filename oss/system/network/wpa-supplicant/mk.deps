@@ -41,5 +41,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's/enum macsec_offload offload/int offload/g' $(SRC_PATH)/src/drivers/driver_macsec_linux.c
-	@cp -f $(SRC_PATH)/wpa_supplicant/defconfig $(SRC_PATH)/wpa_supplicant/.config
+	$(PREAT)sed -i 's/enum macsec_offload offload/int offload/g' $(SRC_PATH)/src/drivers/driver_macsec_linux.c
+	$(PREAT)cp -f $(SRC_PATH)/wpa_supplicant/defconfig $(SRC_PATH)/wpa_supplicant/.config

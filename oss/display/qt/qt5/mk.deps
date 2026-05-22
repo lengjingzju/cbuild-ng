@@ -74,36 +74,36 @@ export LD_LIBRARY_PATH:=$(PATH_PREFIX)/usr/lib/pulseaudio:$(LD_LIBRARY_PATH)
 endif
 
 compile:
-	@if [ ! -e $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM) ]; then \
+	$(PREAT)if [ ! -e $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM) ]; then \
 		cp -drfp $(SRC_PATH)/qtbase/mkspecs/linux-aarch64-gnu-g++ $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM); \
 		sed -i 's/aarch64-linux-gnu-/$(CROSS_COMPILE)/g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	fi
-	@if [ $$(grep -c '^QMAKE_LIBS\s*=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
+	$(PREAT)if [ $$(grep -c '^QMAKE_LIBS\s*=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
 		sed -i '/load(qt_config)/i QMAKE_LIBS              = $(LINK_LIBS)' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	else \
 		sed -i 's:^QMAKE_LIBS\s*=.*:QMAKE_LIBS              = $(LINK_LIBS):g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	fi
-	@if [ $$(grep -c '^QMAKE_CXXFLAGS\s*+=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
+	$(PREAT)if [ $$(grep -c '^QMAKE_CXXFLAGS\s*+=' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf) -eq 0 ]; then \
 		sed -i '/load(qt_config)/i QMAKE_CXXFLAGS         += -std=c++17' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	else \
 		sed -i 's:^QMAKE_CXXFLAGS\s*+=.*:QMAKE_CXXFLAGS         += -std=c++17:g' $(SRC_PATH)/qtbase/mkspecs/$(XPLATFORM)/qmake.conf; \
 	fi
-	@sed -i -e 's/++1x/++11/g' -e  's/++1y/++14/g' -e  's/++1z/++17/g' $(SRC_PATH)/qtbase/mkspecs/common/g++-base.conf
-	@sed -i 's/return($$$$pkg_config)/return("pkg-config")/g' $(SRC_PATH)/qtbase/mkspecs/features/qt_configure.prf
+	$(PREAT)sed -i -e 's/++1x/++11/g' -e  's/++1y/++14/g' -e  's/++1z/++17/g' $(SRC_PATH)/qtbase/mkspecs/common/g++-base.conf
+	$(PREAT)sed -i 's/return($$$$pkg_config)/return("pkg-config")/g' $(SRC_PATH)/qtbase/mkspecs/features/qt_configure.prf
 
-	@sed -i 's/c++14/c++17/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/mapbox-gl-native.pro
-	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/geometry.hpp) -eq 0 ]; then \
+	$(PREAT)sed -i 's/c++14/c++17/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/mapbox-gl-native.pro
+	$(PREAT)if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/geometry.hpp) -eq 0 ]; then \
 		sed -i '/#pragma once/a #include <cstdint>' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/geometry.hpp; \
 	fi
-	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/string.hpp) -eq 0 ]; then \
+	$(PREAT)if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/string.hpp) -eq 0 ]; then \
 		sed -i '/#pragma once/a #include <cstdint>' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/include/mbgl/util/string.hpp; \
 	fi
-	@if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/src/mbgl/gl/stencil_mode.hpp) -eq 0 ]; then \
+	$(PREAT)if [ $$(grep -c 'cstdint' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/src/mbgl/gl/stencil_mode.hpp) -eq 0 ]; then \
 		sed -i '/#pragma once/a #include <cstdint>' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/src/mbgl/gl/stencil_mode.hpp; \
 	fi
-	@sed -i 's/const SizeType length/SizeType length/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/deps/rapidjson/1.1.0/include/rapidjson/document.h
+	$(PREAT)sed -i 's/const SizeType length/SizeType length/g' $(SRC_PATH)/qtlocation/src/3rdparty/mapbox-gl-native/deps/rapidjson/1.1.0/include/rapidjson/document.h
 
-	@mkdir -p $(OBJ_PREFIX) && cd $(OBJ_PREFIX) && \
+	$(PREAT)mkdir -p $(OBJ_PREFIX) && cd $(OBJ_PREFIX) && \
 		$(SRC_PATH)/configure $(CONFIGURE_FLAGS) $(TOLOG) && \
 		$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
 

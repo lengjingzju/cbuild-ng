@@ -35,5 +35,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's@CFLAGS += -I\.\./include@CFLAGS += \$$(EXTRA_CFLAGS) -I../include@g' $(SRC_PATH)/src/Makefile
+	$(PREAT)sed -i 's@CFLAGS += -I\.\./include@CFLAGS += \$$(EXTRA_CFLAGS) -I../include@g' $(SRC_PATH)/src/Makefile
 

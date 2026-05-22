@@ -37,5 +37,5 @@ EXTRA_CPFLAGS    = $(CXXFLAGS) $(call link_hdrs)
 EXTRA_LDFLAGS    = $(LDFLAGS) $(call link_libs)
 
 compile:
-	@cd $(SRC_PATH) && $(GENMAKE) "$(EXTRA_CPFLAGS)" "$(EXTRA_LDFLAGS)"
-	@$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)
+	$(PREAT)cd $(SRC_PATH) && $(GENMAKE) "$(EXTRA_CPFLAGS)" "$(EXTRA_LDFLAGS)"
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install $(TOLOG)

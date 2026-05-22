@@ -24,19 +24,51 @@ SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/pjsip/pjproject/archive/refs/tags/$(VERSION).tar.gz
 SRC_MD5          = 9ad9b91b8b99ef476ad443a7b786bf6f
-
-AUTOTOOLS_FLAGS  = 
+OBJ_PREFIX       = $(SRC_PATH)
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
 COMPILE_TOOL     = autotools
+AUTOTOOLS_FLAGS  = --enable-shared          \
+                   --disable-upnp           \
+                   --disable-resample       \
+                   --disable-sound          \
+                   --disable-video          \
+                   --disable-ext-sound      \
+                   --disable-speex-aec      \
+                   --disable-g711-codec     \
+                   --disable-l16-codec      \
+                   --disable-gsm-codec      \
+                   --disable-g722-codec     \
+                   --disable-g7221-codec    \
+                   --disable-speex-codec    \
+                   --disable-ilbc-codec     \
+                   --disable-libsamplerate  \
+                   --enable-resample-dll    \
+                   --disable-speex-resample \
+                   --disable-sdl            \
+                   --disable-ffmpeg         \
+                   --disable-v4l2           \
+                   --disable-openh264       \
+                   --disable-vpx            \
+                   --disable-ipp            \
+                   --disable-ssl            \
+                   --disable-silk           \
+                   --disable-opus           \
+                   --disable-bcg729         \
+                   --disable-lyra           \
+                   --disable-libsrtp        \
+                   --disable-libyuv         \
+                   --disable-libwebrtc      \
+                   --disable-libwebrtc-aec3
 
-OBJ_PREFIX       = $(SRC_PATH)
-export LD       := $(CC)
+
+export LD       := $(CXX)
 
 CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's@armv7l@arm@g' $(SRC_PATH)/aconfigure
+	$(PREAT)sed -i 's@./aconfigure@\$$(dirname \$$0)/aconfigure@g' $(SRC_PATH)/configure
+	$(PREAT)sed -i 's@armv7l@arm@g' $(SRC_PATH)/aconfigure

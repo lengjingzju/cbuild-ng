@@ -72,7 +72,7 @@ CUSTOM_TARGETS   = build
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 build:
-	@mkdir -p $(INS_TOPDIR)
+	$(PREAT)mkdir -p $(INS_TOPDIR)
 
 else
 
@@ -83,11 +83,11 @@ endif
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@if [ -e $(INS_TOPDIR)$(INS_SUBDIR)/etc ]; then mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc; fi
-	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
-	@ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
-	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
-	@ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
+	$(PREAT)if [ -e $(INS_TOPDIR)$(INS_SUBDIR)/etc ]; then mv $(INS_TOPDIR)$(INS_SUBDIR)/etc $(INS_TOPDIR)/etc; fi
+	$(PREAT)rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
+	$(PREAT)ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/bin/ld.bfd
+	$(PREAT)rm -f $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
+	$(PREAT)ln -sf ld $(INS_TOPDIR)$(INS_SUBDIR)/$(CROSS_TARGET)/bin/ld.bfd
 
 ifneq ($(INSTALL_OPTION), release)
 install:

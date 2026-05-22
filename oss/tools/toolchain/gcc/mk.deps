@@ -66,7 +66,7 @@ CUSTOM_TARGETS   = build
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 build:
-	@mkdir -p $(INS_TOPDIR)
+	$(PREAT)mkdir -p $(INS_TOPDIR)
 
 else
 
@@ -77,20 +77,20 @@ endif
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's@print-multi-os-directory@print-multi-directory@g' `find $(SRC_PATH) -name configure -o -name configure.ac -o -name Makefile.in | xargs`
+	$(PREAT)sed -i 's@print-multi-os-directory@print-multi-directory@g' `find $(SRC_PATH) -name configure -o -name configure.ac -o -name Makefile.in | xargs`
 
 compile:
-	@cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) all-host $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install-host $(TOLOG)
+	$(PREAT)cd $(OBJ_PREFIX) && $(MAKE) $(MAKE_FLAGS) all-host $(TOLOG) && $(MAKE) $(MAKE_FLAGS) install-host $(TOLOG)
 
 append:
-	@rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/cpp $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)*
-	@ln -sf g++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++
-	@for bin in c++ g++ gcc gcc-ar gcc-nm gcc-ranlib; do \
+	$(PREAT)rm -f $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/cpp $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)*
+	$(PREAT)ln -sf g++ $(INS_TOPDIR)$(INS_SUBDIR)/bin/c++
+	$(PREAT)for bin in c++ g++ gcc gcc-ar gcc-nm gcc-ranlib; do \
 		if [ -e $(INS_TOPDIR)$(INS_SUBDIR)/bin/$${bin} ]; then \
 			ln -sf $${bin} $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)$${bin}; \
 		fi; \
 	done
-	@ln -sf $(CROSS_COMPILE)gcc $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)gcc-$(VERSION)
+	$(PREAT)ln -sf $(CROSS_COMPILE)gcc $(INS_TOPDIR)$(INS_SUBDIR)/bin/$(CROSS_COMPILE)gcc-$(VERSION)
 
 ifneq ($(INSTALL_OPTION), release)
 install:

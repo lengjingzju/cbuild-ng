@@ -38,4 +38,4 @@ CUSTOM_TARGETS   = append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 append:
-	@sed -i 's@prefix=/usr@prefix=\$${pcfiledir}/../..@g' $(INS_TOPDIR)$(INS_SUBDIR)/lib/pkgconfig/*.pc
+	$(PREAT)sed -i 's@prefix=/usr@prefix=\$${pcfiledir}/../..@g' $(INS_TOPDIR)$(INS_SUBDIR)/lib/pkgconfig/*.pc

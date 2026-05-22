@@ -31,7 +31,7 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's@\$${CMAKE_INSTALL_DATADIR}/pkgconfig@$${CMAKE_INSTALL_LIBDIR}/pkgconfig@g' $(SRC_PATH)/CMakeLists.txt
+	$(PREAT)sed -i 's@\$${CMAKE_INSTALL_DATADIR}/pkgconfig@$${CMAKE_INSTALL_LIBDIR}/pkgconfig@g' $(SRC_PATH)/CMakeLists.txt
 
 release:
-	@$(call release_lics)
+	$(PREAT)$(call release_lics)

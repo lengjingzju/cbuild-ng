@@ -37,5 +37,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@if [ ! -e $(SRC_PATH)/README ]; then echo > $(SRC_PATH)/README; fi
-	@cd $(SRC_PATH) && autoreconf -f --install
+	$(PREAT)if [ ! -e $(SRC_PATH)/README ]; then echo > $(SRC_PATH)/README; fi
+	$(PREAT)cd $(SRC_PATH) && autoreconf -f --install

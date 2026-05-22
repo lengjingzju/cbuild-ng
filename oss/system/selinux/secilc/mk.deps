@@ -36,5 +36,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i '/_MANPAGE/ d' $(SRC_PATH)/Makefile
+	$(PREAT)sed -i '/_MANPAGE/ d' $(SRC_PATH)/Makefile
 

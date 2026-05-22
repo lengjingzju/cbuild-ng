@@ -31,4 +31,4 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i 's@/share/pkgconfig@/lib/pkgconfig@g' $(SRC_PATH)/CMakeLists.txt
+	$(PREAT)sed -i 's@/share/pkgconfig@/lib/pkgconfig@g' $(SRC_PATH)/CMakeLists.txt

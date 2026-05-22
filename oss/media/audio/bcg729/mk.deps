@@ -20,10 +20,10 @@ ENV_BUILD_TYPE  := release
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 1.1.1
-SRC_DIR          = bcg729-$(VERSION)
-SRC_NAME         = $(SRC_DIR).tar.bz2
-SRC_URL          = https://gitlab.linphone.org/BC/public/bcg729/-/archive/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 23b0c28422df3251adbc81e596ef9861
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/BelledonneCommunications/bcg729/archive/refs/tags/$(VERSION).tar.gz
+SRC_MD5          = 3e8277a684b8060c60bf9fb5ef99920b
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

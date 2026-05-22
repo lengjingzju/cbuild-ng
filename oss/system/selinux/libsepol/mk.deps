@@ -34,5 +34,5 @@ CUSTOM_TARGETS   = prepend
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	@sed -i -e 's@\-Wall \-Werror@-Wall@g' -e 's@\-Werror \-Wall@-Wall@g' \
+	$(PREAT)sed -i -e 's@\-Wall \-Werror@-Wall@g' -e 's@\-Werror \-Wall@-Wall@g' \
 		$(SRC_PATH)/src/Makefile $(SRC_PATH)/utils/Makefile $(SRC_PATH)/tests/Makefile

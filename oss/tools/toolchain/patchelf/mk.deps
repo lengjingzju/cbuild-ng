@@ -48,4 +48,4 @@ include $(ENV_MAKE_DIR)/inc.rule.mk
 
 # Downloading from git should do it.
 prepend:
-	@cd $(SRC_PATH) && ./bootstrap.sh
+	$(PREAT)cd $(SRC_PATH) && ./bootstrap.sh
