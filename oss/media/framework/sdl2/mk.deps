@@ -4,19 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) sdl2(native psysroot): unselect \
-    alsa-lib@@CONFIG_SDL2_FT_ALSA \
-    directfb@@CONFIG_SDL2_FT_DIRECTFB \
-    mesa@@CONFIG_SDL2_FT_OPENGL \
-    jack@@CONFIG_SDL2_FT_JACK \
-    libdrm@@CONFIG_SDL2_FT_KMSDRM \
-    pulseaudio@@CONFIG_SDL2_FT_PULSEAUDIO \
-    wayland@@CONFIG_SDL2_FT_WAYLAND \
-    libxkbcommon@@CONFIG_SDL2_FT_WAYLAND \
-    libx11@@CONFIG_SDL2_FT_X11 \
-    libxext@@CONFIG_SDL2_FT_X11 \
-    libxrandr@@CONFIG_SDL2_FT_X11 \
-    libxrender@@CONFIG_SDL2_FT_X11
+#DEPS(mk.deps) sdl2(native psysroot): unselect featurecfg
 
 # fix "error: bits/sys_errlist.h: No such file or directory": sudo apt install gcc-multilib g++-multilib
 
@@ -45,14 +33,14 @@ CACHE_DEPENDS    =
 COMPILE_TOOL     = cmake
 CMAKE_FLAGS     += -DCMAKE_REQUIRED_LINK_OPTIONS="$(shell echo $(call link_libs) | sed 's/ /;/g')"
 
-$(eval $(call ft-config,CONFIG_SDL2_FT_ALSA,-DSDL_ALSA=ON,-DSDL_ALSA=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_DIRECTFB,-DSDL_DIRECTFB=ON,-DSDL_DIRECTFB=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_OPENGL,-DSDL_OPENGL=ON -DSDL_OPENGLES=ON,-DSDL_OPENGL=OFF -DSDL_OPENGLES=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_JACK,-DSDL_JACK=ON,-DSDL_JACK=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_KMSDRM,-DSDL_KMSDRM=ON,-DSDL_KMSDRM=OFF,))
-$(eval $(call ft-config,CONFIG_SDL2_FT_PULSEAUDIO,-DSDL_PULSEAUDIO=ON,-DSDL_PULSEAUDIO=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_VULKAN,-DSDL_VULKAN=ON,-DSDL_VULKAN=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_WAYLAND,-DSDL_WAYLAND=ON,-DSDL_WAYLAND=OFF))
-$(eval $(call ft-config,CONFIG_SDL2_FT_X11,-DSDL_X11=ON,-DSDL_X11=OFF))
+$(eval $(call ft-config,CONFIG_SDL2_FT_ALSA,-DSDL_ALSA=ON,-DSDL_ALSA=OFF,alsa-lib selected))
+$(eval $(call ft-config,CONFIG_SDL2_FT_DIRECTFB,-DSDL_DIRECTFB=ON,-DSDL_DIRECTFB=OFF,directfb))
+$(eval $(call ft-config,CONFIG_SDL2_FT_OPENGL,-DSDL_OPENGL=ON -DSDL_OPENGLES=ON,-DSDL_OPENGL=OFF -DSDL_OPENGLES=OFF,mesa selected))
+$(eval $(call ft-config,CONFIG_SDL2_FT_JACK,-DSDL_JACK=ON,-DSDL_JACK=OFF,jack))
+$(eval $(call ft-config,CONFIG_SDL2_FT_KMSDRM,-DSDL_KMSDRM=ON,-DSDL_KMSDRM=OFF,libdrm selected,CONFIG_SDL2_FT_OPENGL))
+$(eval $(call ft-config,CONFIG_SDL2_FT_PULSEAUDIO,-DSDL_PULSEAUDIO=ON,-DSDL_PULSEAUDIO=OFF,pulseaudio selected))
+$(eval $(call ft-config,CONFIG_SDL2_FT_VULKAN,-DSDL_VULKAN=ON,-DSDL_VULKAN=OFF,,CONFIG_SDL2_FT_OPENGL))
+$(eval $(call ft-config,CONFIG_SDL2_FT_WAYLAND,-DSDL_WAYLAND=ON,-DSDL_WAYLAND=OFF,wayland libxkbcommon))
+$(eval $(call ft-config,CONFIG_SDL2_FT_X11,-DSDL_X11=ON,-DSDL_X11=OFF,libx11 libxext libxrandr libxrender))
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

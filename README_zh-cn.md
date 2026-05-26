@@ -412,6 +412,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
     * `kconfig`     : 表示多个包共享相同的 Kconfig，一般是同一个软件的交叉编译包和本地编译包共享
     * `versioncfg`  : 表示自动生成Kconfig条目配置版本(版本、分支、校验(MD5/TAG/REVISION))
         * 生成的三个配置项名称分别是 `CONFIG_<PKG>_VERSION` `CONFIG_<PKG>_BRANCH` `CONFIG_<PKG>_CHECKSUM` (`<PKG>` 指的是包名去掉 `prebuild-` 和 `-native` 后的大写字母)
+    * `featurecfg`  : 表示自动解析 `$(eval $(call ft-config,CONFIG_` 语句添加条件变量 `depname@@condition` 和配置Kconfig
 <br>
 
 * 特殊依赖(特殊符)
@@ -436,6 +437,7 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
         * 例如： `&&||libtest` 被隐式推导为 `&&*build-libtest||prebuild-libtest||libtest`
         * 例如： `&&*build-libtest||prebuild-libtest||libtest` 表示强选中这三个包中第一个存在的包，并弱依赖后面两个实包
     * `depname@condition` or `depname@@condition` : condition 为 y 且 depname 选中时，此包才依赖 depname，只用在 Classic Build 中
+        * 特殊依赖 `featurecfg` 会自动解析 `$(eval $(call ft-config,CONFIG_` 语句添加条件变量
     * 其它说明:
         * 对 Classic Build 来说，`?` `??` 没有区别，`|` `||` 没有区别，`@` `@@` 没有区别
         * 对 Yocto Build 来说，`?` `|` `@` 中的弱依赖只会设置 `DEPENDS`，`??` `||` `@@` 中的弱依赖会同时设置 `DEPENDS` 和 `RDEPENDS:${PN}`
@@ -633,8 +635,12 @@ CBuild 编译系统主要由三部分组成: 任务分析处理工具、Makefile
 * `$(call link_libs)`   : 自动生成查找库文件的 LDFLAGS
 * `$(call install_lics)`: 安装 license 文件到 `/usr/local/license/$(PACKAGE_NAME)`
 
-* `$(eval $(call ft-config,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置))`: 动态特性配置
+* `$(eval $(call ft-config,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置,依赖的包集合,附加依赖CONFIG))`: 动态特性配置
     * 根据 `.config` 中指定配置名的值设置变量 `FT_CONFIG` 的值
+    * 某项没有值可以为空，最后没有值可以省略逗号，例如 ``$(eval $(call ft-config,CONFIG配置名,CONFIG配置值y时的配置))`
+    * 依赖的包集合使用空格隔开，特殊包字符串 `selected` 表示默认选中该选项，依赖的包在当前文件的所有 `ft-config` 语句中只能出现一次
+    * 附加依赖CONFIG会添加到该选项的 `depends_on`，子项值必须 `CONFIG_` 开头，可以多个选项组合，例如 `(CONFIG_A && CONFIG_B) || CONFIG_C`
+    * 只有声明了特殊依赖 `featurecfg` 才会处理“依赖的包集合,附加依赖CONFIG”，自动添加条件依赖和选项Kconfig配置
 * `$(eval $(call FT-CONFIG,CONFIG配置名,CONFIG配置值y时的配置,CONFIG配置值不为y时的配置))`: 动态特性配置
     * 作用同上，只是 `ft-config` 函数在 `NATIVE_BUILD=y` 时会将 `CONFIG配置名` 改为 `CONFIG配置名_NATIVE`；而 `FT-CONFIG` 函数不会
 

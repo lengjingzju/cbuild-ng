@@ -425,6 +425,7 @@ Note: The virtual packages will not participate in compilation, but is used to o
     * `kconfig`     : Indicates that multiple packages share the same Kconfig, generally, the cross/native compilation package of the same software share the same Kconfig
     * `versioncfg`  : Indicates the configuration version for automatically generating Kconfig entries (Version, Branch, Checksum [MD5/TAG/REVISION]).
         * The generated configuration items are named: `CONFIG_<PKG>_VERSION`, `CONFIG_<PKG>_BRANCH`, and `CONFIG_<PKG>_CHECKSUM`. (`<PKG>` refers to the package name converted to uppercase, with the prefix `prebuild-` and suffix `-native` removed.)
+    * `featurecfg`: Indicates automatic parsing of `$(eval $(call ft-config,CONFIG_` statements to add conditional variables `depname@@condition` and Kconfig
 <br>
 
 * Special Character
@@ -450,6 +451,7 @@ Note: The virtual packages will not participate in compilation, but is used to o
         * For example: `&&||libtest` is implicitly deduced as `&&*build-libtest||prebuild-libtest||libtest`
             * It means that the first virtual packages is strongly selected, and the next two actual packages are weakly dependencies
     * `depname@condition` or `depname@@condition` : If condition is set to y and depname is selected, this package will depend on the depname package (Classic Build)
+        * Special dependency `featurecfg` automatically parses `$(eval $(call ft-config,CONFIG_` statements to add conditional variables
     * Additional Notes              :
         * For Classic Build, there is no difference between `?` and `??`, there is no difference between `|` and `||`, there is no difference between `@` and `@@`
         * For Yocto Build, `?` `|` `@` only set `DEPENDS`, `??` `||` `@@` set both `DEPENDS` and `RDEPENDS:${PN}`
@@ -652,8 +654,12 @@ Note: bitbake cann't directly use the environment variables of the current shell
 * `$(call link_libs)`   : Automatically sets CFLAGS that looks for libraries
 * `$(call install_lics)`: Installs license files to `/usr/local/license/$(PACKAGE_NAME)`
 
-* `$(eval $(call ft-config,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>))`: Dynamic feature configuration
+* `$(eval $(call ft-config,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>,<depends>,<extra Kconfig>))`: Dynamic feature configuration
     * Set the value of variable `FT_CONFIG` based on the configuration name specified in the `.config`
+    * Parameters can be empty if no value exists; trailing empty parameters can omit commas, e.g., `$(eval $(call ft-config,<CONFIG_NAME>,<configuration when CONFIG value is y>))`
+    * Dependency package set uses spaces as separators; special package string `selected` indicates default selection of this option; each dependency package may only appear once across all `ft-config` statements in the current file
+    * Additional dependent CONFIGs are added to the option's `depends_on`; sub-items must start with `CONFIG_` and support combined options, e.g., `(CONFIG_A && CONFIG_B) || CONFIG_C`
+    * Only when declaring the special dependency `featurecfg` will "dependency package set, additional dependent CONFIG" be processed, automatically adding conditional dependencies and option Kconfig configurations
 * `$(eval $(call FT-CONFIG,<CONFIG_NAME>,<configuration when CONFIG value is y>,<configuration when CONFIG value is not y>))`: Dynamic feature configuration
     * The function is the same as above, except that the `ft-config` function will change the `CONFIG_NAME` to `CONFIG_NAME_NATIVE` when `NATIVE_BUILD=y`; The `FT-CONFIG` function does not.
 

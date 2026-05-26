@@ -4,31 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) ffmpeg(native psysroot): unselect \
-    alsa-lib@@CONFIG_FFMPEG_FT_ALSA \
-    bzip2@@CONFIG_FFMPEG_FT_BZLIB \
-    fdk-aac@@CONFIG_FFMPEG_FT_FDK_AAC \
-    libgsm@@CONFIG_FFMPEG_FT_GSM \
-    jack@@CONFIG_FFMPEG_FT_JACK \
-    opus@@CONFIG_FFMPEG_FT_LIBOPUS \
-    libvorbis@@CONFIG_FFMPEG_FT_LIBVORBIS \
-    xz@@CONFIG_FFMPEG_FT_LZMA \
-    intel-mediasdk@@CONFIG_FFMPEG_FT_MFX \
-    lame@@CONFIG_FFMPEG_FT_MP3LAME \
-    openssl@@CONFIG_FFMPEG_FT_OPENSSL \
-    sdl2@@CONFIG_FFMPEG_FT_SDL2 \
-    speex@@CONFIG_FFMPEG_FT_SPEEX \
-    srt@@CONFIG_FFMPEG_FT_SRT \
-    libtheora@@CONFIG_FFMPEG_FT_THEORA \
-    libogg@@CONFIG_FFMPEG_FT_THEORA \
-    libva@@CONFIG_FFMPEG_FT_VAAPI \
-    libvdpau@@CONFIG_FFMPEG_FT_VDPAU \
-    libvpx@@CONFIG_FFMPEG_FT_VPX \
-    x264@@CONFIG_FFMPEG_FT_X264 \
-    x265@@CONFIG_FFMPEG_FT_X265 \
-    libxcb@@CONFIG_FFMPEG_FT_XCB \
-    libxv@@CONFIG_FFMPEG_FT_XV \
-    zlib@@CONFIG_FFMPEG_FT_ZLIB
+#DEPS(mk.deps) ffmpeg(native psysroot): unselect featurecfg
 
 PACKAGE_NAME     = ffmpeg
 
@@ -58,40 +34,40 @@ AUTOTOOLS_FLAGS += --extra-cflags="$(call link_hdrs)" --extra-ldflags="$(call li
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR)$(INS_SUBDIR)
 
 # libraries to build in addition to avutil
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVDEVICE,--enable-avdevice,--disable-avdevice))
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFILTER,--enable-avfilter,--disable-avfilter))
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVCODEC,--enable-avcodec,--disable-avcodec))
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFORMAT,--enable-avformat,--disable-avformat))
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_SWRESAMPLE,--enable-swresample,--disable-swresample))
-$(eval $(call ft-config,CONFIG_FFMPEG_EN_SWSCALE,--enable-swscale,--disable-swscale))
-#$(eval $(call ft-config,CONFIG_FFMPEG_EN_POSTPROC,--enable-postproc,--disable-postproc))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVDEVICE,--enable-avdevice,--disable-avdevice,selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFILTER,--enable-avfilter,--disable-avfilter,selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVCODEC,--enable-avcodec,--disable-avcodec,selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_AVFORMAT,--enable-avformat,--disable-avformat,selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_SWRESAMPLE,--enable-swresample,--disable-swresample,selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_EN_SWSCALE,--enable-swscale,--disable-swscale,selected))
+#$(eval $(call ft-config,CONFIG_FFMPEG_EN_POSTPROC,--enable-postproc,--disable-postproc,selected))
 
 # features to support
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_ALSA,--enable-alsa,--disable-alsa))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_ALSA,--enable-alsa,--disable-alsa,alsa-lib selected))
 $(eval $(call ft-config,CONFIG_FFMPEG_FT_ALTIVEC,--enable-altivec,--disable-altivec))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_BZLIB,--enable-bzlib,--disable-bzlib))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_FDK_AAC,--enable-libfdk-aac --enable-nonfree,--disable-libfdk-aac))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_GPL,--enable-gpl,--disable-gpl))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_GSM,--enable-libgsm,--disable-libgsm))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_JACK,--enable-indev=jack,--disable-indev=jack))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_LIBOPUS,--enable-libopus,--disable-libopus))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_LIBVORBIS,--enable-libvorbis,--disable-libvorbis))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_LZMA,--enable-lzma,--disable-lzma))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_MFX,--enable-libmfx,--disable-libmfx))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_MP3LAME,--enable-libmp3lame,--disable-libmp3lame))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_OPENSSL,--enable-openssl --enable-version3,--disable-openssl))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_SDL2,--enable-sdl2,--disable-sdl2))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_SPEEX,--enable-libspeex,--disable-libspeex))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_SRT,--enable-libsrt,--disable-libsrt))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_THEORA,--enable-libtheora,--disable-libtheora))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_VAAPI,--enable-vaapi,--disable-vaapi))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_VDPAU,--enable-vdpau,--disable-vdpau))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_VPX,--enable-libvpx,--disable-libvpx))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_X264,--enable-libx264,--disable-libx264))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_X265,--enable-libx265,--disable-libx265))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_XCB,--enable-libxcb,--disable-libxcb))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_XV,--enable-outdev=xv,--disable-outdev=xv))
-$(eval $(call ft-config,CONFIG_FFMPEG_FT_ZLIB,--enable-zlib,--disable-zlib))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_BZLIB,--enable-bzlib,--disable-bzlib,bzip2 selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_FDK_AAC,--enable-libfdk-aac --enable-nonfree,--disable-libfdk-aac,fdk-aac selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_GPL,--enable-gpl,--disable-gpl selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_GSM,--enable-libgsm,--disable-libgsm,libgsm))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_JACK,--enable-indev=jack,--disable-indev=jack,jack))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_LIBOPUS,--enable-libopus,--disable-libopus,opus selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_LIBVORBIS,--enable-libvorbis,--disable-libvorbis,libvorbis selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_LZMA,--enable-lzma,--disable-lzma,xz selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_MFX,--enable-libmfx,--disable-libmfx,intel-mediasdk))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_MP3LAME,--enable-libmp3lame,--disable-libmp3lame,lame))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_OPENSSL,--enable-openssl --enable-version3,--disable-openssl,openssl selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_SDL2,--enable-sdl2,--disable-sdl2,sdl2 selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_SPEEX,--enable-libspeex,--disable-libspeex,speex))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_SRT,--enable-libsrt,--disable-libsrt,srt selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_THEORA,--enable-libtheora,--disable-libtheora,libtheora libogg))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_VAAPI,--enable-vaapi,--disable-vaapi,libva))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_VDPAU,--enable-vdpau,--disable-vdpau,libvdpau))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_VPX,--enable-libvpx,--disable-libvpx,libvpx))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_X264,--enable-libx264,--disable-libx264,x264 selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_X265,--enable-libx265,--disable-libx265,x265 selected))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_XCB,--enable-libxcb,--disable-libxcb,libxcb))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_XV,--enable-outdev=xv,--disable-outdev=xv,libxv))
+$(eval $(call ft-config,CONFIG_FFMPEG_FT_ZLIB,--enable-zlib,--disable-zlib,zlib selected))
 
 CUSTOM_TARGETS   = compile
 include $(ENV_MAKE_DIR)/inc.rule.mk

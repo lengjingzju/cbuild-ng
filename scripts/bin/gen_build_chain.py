@@ -70,6 +70,8 @@ class Deps:
         item['select'] = []
         item['imply'] = []
         item['versioncfg'] = False # Kconfig configuration version
+        item['featurecfg'] = False # Kconfig configuration feature
+        item['features'] = [] # Kconfig configuration feature
         item['default'] = True
         item['conf'] = ''
 
@@ -98,6 +100,26 @@ class Deps:
                         print("\033[032mSearch Layer:\033[0m \033[44m%s\033[0m" % per_line[0:-2].strip())
                         dirs.append(per_line[0:-2].strip())
         return dirs
+
+
+    def remove_config_prefix(self, expr):
+        def repl(m):
+            name = m.group(0)
+            if name.startswith("CONFIG_"):
+                return name[7:]   # len("CONFIG_") == 7
+            return name
+
+        return self.RegexDict['CFGTOKEN'].sub(repl, expr)
+
+
+    def ensure_native_suffix(self, expr):
+        def repl(m):
+            name = m.group(0)
+            if not name.endswith("_NATIVE"):
+                return name + "_NATIVE"
+            return name
+
+        return self.RegexDict['CFGTOKEN'].sub(repl, expr)
 
 
     def __get_append_flag(self, item, check_append):
@@ -130,6 +152,8 @@ class Deps:
                 elif dep == 'versioncfg':
                     item['versioncfg'] = True
                     self.VerCfgSet.add(item['target'].replace('-native', '').replace('prebuild-', ''))
+                elif dep == 'featurecfg':
+                    item['featurecfg'] = True
                 elif dep == 'unselect':
                     item['default'] = False
                 elif dep == 'selected':
@@ -239,6 +263,28 @@ class Deps:
                     nitem['ideps'].append(dep + split_str + '%s' % (cond))
                 else:
                     nitem['ideps'].append(dep + split_str + '%s_NATIVE' % (cond))
+
+        nitem['features'] = []
+        if item['features']:
+            for ft in item['features']:
+                var_depends = []
+                if ft['depends']:
+                    for dep in ft['depends']:
+                        if not dep.endswith('-native') and dep not in self.uni_packages:
+                            dep = dep + '-native'
+                        if dep != nitem['target'] and dep not in var_depends:
+                            var_depends.append(dep)
+
+                var_extracfg = ''
+                if ft['extracfg']:
+                    var_extracfg = self.ensure_native_suffix(ft['extracfg'])
+
+                nitem['features'].append({
+                    'config': ft['config'] + '_NATIVE',
+                    'default': ft['default'],
+                    'depends': var_depends,
+                    'extracfg': var_extracfg
+                })
 
         nitem['wrule'] = []
         for wrule in item['wrule']:
@@ -508,6 +554,9 @@ class Deps:
             dep_flag = False
             ItemDict = {}
             items = []
+            item = {}
+            self.__init_item(item)
+            native_flag = False
             attrs = set()
             package = ''
             match_type = ''
@@ -581,12 +630,34 @@ class Deps:
                             else:
                                 last_group = ret.groups()[1].strip()
 
+                    if item['featurecfg'] and not ret:
+                        ret = self.RegexDict['FTHEAD'].match(per_line)
+                        if ret:
+                            match_type = 'FTHEAD'
+                            if per_line[-1] == '\\':
+                                last_group = per_line[:-1].strip()
+                                continue
+                            else:
+                                last_group = per_line.strip()
+
                     if not match_type:
                         continue
 
                 if match_type == 'DEPS':
                     match_type = ''
                     dep_flag = True
+
+                    if native_flag:
+                        native_flag = False
+                        nitem = self.__get_native_deps(item)
+                        if self.__get_append_flag(nitem, True):
+                            if makestr and '/' in makestr:
+                                ItemDict[makestr + '.native'] = nitem
+                            else:
+                                self.__add_item_to_list(nitem, refs)
+                        self.ActualList.append(nitem)
+                        items.append(nitem)
+
                     item = {}
                     self.__init_item(item)
 
@@ -657,14 +728,7 @@ class Deps:
 
                     if 'native' in item['targets']:
                         item['targets'].remove('native')
-                        nitem = self.__get_native_deps(item)
-                        if self.__get_append_flag(nitem, True):
-                            if makestr and '/' in makestr:
-                                ItemDict[makestr + '.native'] = nitem
-                            else:
-                                self.__add_item_to_list(nitem, refs)
-                        self.ActualList.append(nitem)
-                        items.append(nitem)
+                        native_flag = True
                     continue
 
                 elif match_type == 'INCDEPS':
@@ -693,9 +757,50 @@ class Deps:
                     if vname in version:
                         version = subprocess.getoutput('bash %s %s' % (os.path.join(os.getenv('ENV_TOOL_DIR'), 'process_machine.sh'), vname))
                     self.InfoDict[package]['VERSION'] = version
+
+                elif match_type == 'FTHEAD':
+                    match_type = ''
+                    feature = self.RegexDict['FTCFG'].match(last_group)
+                    if feature:
+                        var_config = feature.group(1).strip()
+                        var_depends = []
+                        var_default = 'n'
+
+                        var_deps = (feature.group(4) or '').strip()
+                        if var_deps:
+                            var_deps = re.split(r'\s+', var_deps)
+                            for dep in var_deps:
+                                if dep == 'selected':
+                                    var_default = 'y'
+                                else:
+                                    var_depends.append(dep)
+                                    item['ideps'].append('%s@@CONFIG_%s' % (dep, var_config))
+
+                        var_extracfg = (feature.group(5) or '').strip()
+                        if var_extracfg and not self.prepend_flag:
+                            var_extracfg = self.remove_config_prefix(var_extracfg)
+
+                        item['features'].append({
+                            'config': var_config,
+                            'default': var_default,
+                            'depends': var_depends,
+                            'extracfg': var_extracfg,
+                        })
+
                 elif match_type:
                     self.InfoDict[package][match_type] = last_group.strip('"').strip()
                     match_type = ''
+
+            if native_flag:
+                native_flag = False
+                nitem = self.__get_native_deps(item)
+                if self.__get_append_flag(nitem, True):
+                    if makestr and '/' in makestr:
+                        ItemDict[makestr + '.native'] = nitem
+                    else:
+                        self.__add_item_to_list(nitem, refs)
+                self.ActualList.append(nitem)
+                items.append(nitem)
 
             if ItemDict:
                 keys = [t for t in ItemDict.keys()]
@@ -941,6 +1046,28 @@ class Deps:
         return '',[]
 
 
+    def __write_feature_kconfig(self, item):
+        if not item['features']:
+            return ''
+
+        config_prepend = ''
+        if self.prepend_flag:
+            config_prepend = 'CONFIG_'
+
+        ft_cfg_str = '\n'
+        for ft in item['features']:
+            ft_cfg_str += 'config %s%s\n' % (config_prepend, ft['config'])
+            ft_cfg_str += '\tbool "Enable or Disable %s"\n' % (ft['config'])
+            ft_cfg_str += '\tdefault %s\n' % (ft['default'])
+            if ft['depends']:
+                deps = ['%s%s' % (config_prepend, escape_toupper(t)) for t in ft['depends']]
+                ft_cfg_str += '\tdepends on %s\n' % (' && '.join(deps))
+            if ft['extracfg']:
+                ft_cfg_str += '\tdepends on %s\n' % (ft['extracfg'])
+            ft_cfg_str += '\n'
+        return ft_cfg_str
+
+
     def __write_one_kconfig(self, fp, item, choice_flag, max_depth):
         config_prepend = ''
         if self.prepend_flag:
@@ -965,7 +1092,7 @@ class Deps:
                 else:
                     fp.write('\tbool "[v]-%s"\n' % (item['target']))
         else:
-            if not choice_flag and item['conf'] and item['conf'] != 'kconfig':
+            if not choice_flag and (item['conf'] or item['features']) and item['conf'] != 'kconfig':
                 fp.write('menuconfig %s\n' % (target))
             else:
                 fp.write('config %s\n' % (target))
@@ -1044,24 +1171,32 @@ class Deps:
                 fp.write('\tDescription : %s\n' % (self.InfoDict[package]['DESCRIPTION'].replace('\n', '\n\t              ')))
         fp.write('\n')
 
-        if item['conf']:
+        ft_cfg_str = self.__write_feature_kconfig(item)
+
+        if item['conf'] or ft_cfg_str:
             if item['conf'] == 'kconfig':
                 kconf_path,shared_targets = self.__check_shared_kconfig(item['target'])
                 if shared_targets and shared_targets[-1] == item['target']:
-                    conf_str = 'if %s\nmenu "%s configuration (%s)"\nsource "%s"\nendmenu\nendif\n\n' % (
+                    conf_str = 'if %s\nmenu "%s configuration (%s)"\nsource "%s"\n%sendmenu\nendif\n\n' % (
                             ' || '.join(['%s%s' % (config_prepend, escape_toupper(v)) for v in shared_targets]),
-                            shared_targets[0], item['spath'], kconf_path)
+                            shared_targets[0], item['spath'], kconf_path, ft_cfg_str)
                     if choice_flag:
                         self.conf_str += conf_str
                     else:
                         fp.write('%s' % (conf_str))
-            elif choice_flag:
-                conf_str = 'if %s\nmenu "%s (%s)"\nsource "%s"\nendmenu\nendif\n\n' % (target,
-                        item['target'], item['spath'], item['conf'])
-                self.conf_str += conf_str
             else:
-                conf_str = 'if %s\nsource "%s"\nendif\n\n' % (target, item['conf'])
-                fp.write('%s' % (conf_str))
+                cfg_str = ''
+                if item['conf']:
+                    cfg_str += 'source "%s"\n' % (item['conf'])
+                cfg_str += ft_cfg_str
+
+                if choice_flag:
+                    conf_str = 'if %s\nmenu "%s (%s)"\n%sendmenu\nendif\n\n' % (target,
+                            item['target'], item['spath'], cfg_str)
+                    self.conf_str += conf_str
+                else:
+                    conf_str = 'if %s\n%sendif\n\n' % (target, cfg_str)
+                    fp.write('%s' % (conf_str))
 
         if 'choice' in item['vtype']:
             self.gen_kconfig(fp, item['member'], True, max_depth, item['spath'])
@@ -1770,6 +1905,18 @@ def do_normal_analysis(args):
     deps.RegexDict['INCRULE'] = re.compile(r'include\s+.*inc\.rule\.mk')
     deps.RegexDict['PACKAGE'] = re.compile(r'PACKAGE_NAME\s*[\?:]*=\s*([\w\-\.]+)')
     deps.RegexDict['VARS'] = re.compile(r'(\w+)\s*[\?:]*=\s*(.+)')
+    deps.RegexDict['FTHEAD'] = re.compile(r'^\s*\$\(eval\s+\$\(call\s+ft-config,\s*CONFIG_(\w+).*')
+    deps.RegexDict['FTCFG'] = re.compile(
+        r'''^\s*\$\(eval\s+\$\(call\s+ft-config,\s*
+        CONFIG_(\w+)                            # config
+        (?:\s*,\s*([^,\s]*(?:[^,]*[^,\s])?))?   # enable
+        (?:\s*,\s*([^,\s]*(?:[^,]*[^,\s])?))?   # disable
+        (?:\s*,\s*([^,\s]*(?:[^,]*[^,\s])?))?   # depends
+        (?:\s*,\s*([^,\s]*(?:[^,]*[^,\s])?))?   # extracfg
+        \s*\)\s*\)\s*$''',
+        re.VERBOSE
+    )
+    deps.RegexDict['CFGTOKEN'] = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
     deps.search_normal_depends(dep_name, vir_name, search_dirs, ignore_dirs, go_on_dirs)
     if not deps.PathList:

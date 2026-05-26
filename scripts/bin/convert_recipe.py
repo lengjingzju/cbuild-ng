@@ -226,8 +226,9 @@ class PkgInfo:
 
             if self.pkgconfig:
                 for item in self.pkgconfig:
-                    fp.write('$(eval $(call ft-config,CONFIG_%s_FT_%s,%s,%s))\n' % \
-                            (self.toupper(self.package), self.toupper(item[0]), item[1], item[2]))
+                    fp.write('$(eval $(call ft-config,CONFIG_%s_FT_%s,%s,%s,%s))\n' % \
+                            (self.toupper(self.package), self.toupper(item[0]), \
+                            item[1], item[2], ' '.join(item[3])))
             fp.write('\n')
 
             fp.write('include $(ENV_MAKE_DIR)/inc.rule.mk\n')
