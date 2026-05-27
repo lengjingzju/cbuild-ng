@@ -1155,6 +1155,7 @@ Note: The reason for providing the above functions is that multiple libraries or
     * MAKE_FNAME    : Current Makefile name, its default value is `mk.deps`
     * MAKE_FLAGS    : The extra flags for `make` / `ninja` command (meson compiles with ninja)
     * COMPILE_TOOL  : It provides the following compilation methods:
+        * imake     : Official IMake build for CBuild; adds `-C $(SRC_PATH) $(REL_CONFIG)` to `MAKE_FLAGS`
         * autotools : `configure` command will run before `MAKES` command, related variables:
             * AUTOTOOLS_FLAGS   : Users can set extra flags for `configure` compilation
             * AUTOTOOLS_CROSS   : Read-only, cross-compilation flags for `configure` command

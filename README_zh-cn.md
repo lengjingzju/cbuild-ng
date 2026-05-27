@@ -1137,7 +1137,8 @@ $ sudo apt update && sudo apt install libc++-dev:arm64 libc++abi-dev:arm64
     * BUILD_JOBS        : 多线程编译参数，默认值为 `$(ENV_BUILD_JOBS)`
     * MAKE_FNAME        : 当前 Makefile 的名字，默认值为 `mk.deps`
     * MAKE_FLAGS        : 可设置额外的 `make` / `ninja` 命令参数(meson 编译使用 ninja)
-    * COMPILE_TOOL      : 编译方式，可选值为: `autotools` `cmake` `meson` 或 空
+    * COMPILE_TOOL      : 编译方式，可选值为: `imake` `autotools` `cmake` `meson` 或 空
+        * imake         :  CBuild 的官方 IMake 编译，添加 `-C $(SRC_PATH) $(REL_CONFIG)` 到 `MAKE_FLAGS`
         * autotools     :  make 命令前运行 `configure` 命令，有如下相关变量:
             * AUTOTOOLS_FLAGS   : 可设置额外的 `configure` 命令参数
             * AUTOTOOLS_CROSS   : 提供额外的 `configure` 命令交叉编译参数

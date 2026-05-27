@@ -31,6 +31,6 @@ SRC_REV          = $(shell echo $(CONFIG_LJSON_CHECKSUM))
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none
 
-MAKE_FLAGS       = -C $(SRC_PATH)
+COMPILE_TOOL     = imake
 
 include $(ENV_MAKE_DIR)/inc.rule.mk

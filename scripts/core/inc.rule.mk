@@ -57,7 +57,10 @@ CXXFLAGS        += $(clang_cpflags)
 LDFLAGS         += $(clang_ldflags)
 endif
 
-ifeq ($(COMPILE_TOOL),autotools)
+ifeq ($(COMPILE_TOOL),imake)
+MAKE_FLAGS      += -C $(SRC_PATH) $(REL_CONFIG)
+
+else ifeq ($(COMPILE_TOOL),autotools)
 AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
 ifeq ($(INS_FULLER),y)
 INS_CONFIG      ?= --prefix=$(INS_TOPDIR) $(foreach v,bin sbin lib libexec include dataroot $(if $(filter y,$(INS_HASRUN)),runstate),$(call ins_common_cfg,$(v)))
