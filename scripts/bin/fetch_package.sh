@@ -96,12 +96,25 @@ do_fetch() {
 
     if [ ! -e ${ENV_DOWN_DIR}/$package ] || [ ! -e ${checksrc} ]; then
         download_req=1
-        if [ "$packname" != "$package" ] && [ -e ${ENV_DOWN_DIR}/$packname ] && [ -e ${checksrc} ]; then
-            cd ${ENV_DOWN_DIR}
-            tar -xf $packname || rm -rf $packname $package
-            if [ -e ${ENV_DOWN_DIR}/$packname ]; then
-                download_req=0
-                rm -f ${checksrc}
+        if [ -e ${ENV_DOWN_DIR}/$packname ]; then
+            if [ "$packname" != "$package" ]; then
+                # git or svn
+                if  [ -e ${checksrc} ]; then
+                    cd ${ENV_DOWN_DIR}
+                    tar -xf $packname || rm -rf $packname $package
+                    if [ -e ${ENV_DOWN_DIR}/$packname ]; then
+                        download_req=0
+                        rm -f ${checksrc}
+                    fi
+                fi
+            else
+                # tar or zip
+                if [ ! -z "$md5" ]; then
+                    rmd5=$(md5sum ${ENV_DOWN_DIR}/$packname | cut -d ' ' -f 1)
+                    if [ "$md5" = "$rmd5" ]; then
+                        download_req=0
+                    fi
+                fi
             fi
         fi
 
@@ -296,18 +309,20 @@ do_fetch() {
                     fi
                 fi
 
-                if [ $changed -ne 0 ]; then
+                if [ $changed -ne 0 ] || [ ! -e ${ENV_DOWN_DIR}/$packname ]; then
                     cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
                     echo -n "$(cd ${ENV_DOWN_DIR}/$package && git log -1 --pretty=format:%H)" > ${checksrc}
                 fi
                 ;;
 
             svn)
+                changed=0
                 if [ ! -z "$rev" ]; then
                     cd ${ENV_DOWN_DIR}/$package
                     rrev=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
 
                     if [ "$rev" != "$rrev" ]; then
+                        changed=1
                         rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                         svn update -q
                         svn update -q -r $rev
@@ -315,8 +330,6 @@ do_fetch() {
                             echo "ERROR: failed to update rev ($rev) of $package." >&2
                             exit 1
                         fi
-                        cd ${ENV_DOWN_DIR} && tar -zcf $packname $package
-                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${checksrc}
                     fi
                 else
                     cd ${ENV_DOWN_DIR}/$package
@@ -324,9 +337,14 @@ do_fetch() {
                     svn update -q
                     rev2=$(svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')
                     if [ "$rev1" != "$rev2" ]; then
-                        cd ${ENV_DOWN_DIR} && rm -f $packname && tar -zcf $packname $package
-                        echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${checksrc}
+                        changed=1
+                        rm -rf ${ENV_DOWN_DIR}/$packname ${checksrc}
                     fi
+                fi
+
+                if [ $changed -ne 0 ] || [ ! -e ${ENV_DOWN_DIR}/$packname ]; then
+                    cd ${ENV_DOWN_DIR} && rm -f $packname && tar -zcf $packname $package
+                    echo -n "$(cd ${ENV_DOWN_DIR}/$package && svn log -l 1 | sed -n '2p' | sed -E 's/^r([0-9]+)\s.*/\1/g')" > ${checksrc}
                 fi
                 ;;
             *)
