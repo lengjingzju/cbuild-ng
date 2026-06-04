@@ -1,0 +1,30 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) dav1d(native psysroot): unselect
+
+PACKAGE_NAME     = dav1d
+
+LICENSE          = BSD-2-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://code.videolan.org/videolan/dav1d
+DESCRIPTION      = dav1d is an AV1 cross-platform decoder, open-source, and focused on speed and correctness.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.5.3
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://code.videolan.org/videolan/dav1d/-/archive/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = 1488bbeb92834c5f12de9a16298afeee
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = meson
+MESON_FLAGS      = -Denable_examples=false -Denable_tests=false -Denable_docs=false
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

@@ -1,0 +1,35 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) vvenc(native psysroot): unselect
+
+PACKAGE_NAME     = vvenc
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://github.com/fraunhoferhhi/vvdec
+DESCRIPTION      = VVenC, the Fraunhofer Versatile Video Encoder, is a fast and efficient software H.266/VVC encoder \
+                   implementation with the following main features: \
+                   * Easy to use encoder implementation with five predefined quality/speed presets; \
+                   * Perceptual optimization to improve subjective video quality, based on the XPSNR visual model; \
+                   * Extensive frame-level and task-based parallelization with very good scaling; \
+                   * Frame-level single-pass and two-pass rate control supporting variable bit-rate (VBR) encoding.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 1.14.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 73002b025df8a3c39b328890914e4593
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DBUILD_SHARED_LIBS=ON
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

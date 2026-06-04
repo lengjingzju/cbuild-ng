@@ -1,0 +1,33 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) vvdec(native psysroot): unselect
+
+PACKAGE_NAME     = vvdec
+
+LICENSE          = BSD-3-Clause
+LICFILE          = file://LICENSE*
+HOMEPAGE         = https://github.com/fraunhoferhhi/vvdec
+DESCRIPTION      = VVdeC, the Fraunhofer Versatile Video Decoder, is a fast software H.266/VVC decoder implementation \
+                   supporting all features of the VVC Main10 profile.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 3.1.0
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/fraunhoferhhi/vvdec/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = 574fbeb4ddff1a7e064153f47d053c9d
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = cmake
+CMAKE_FLAGS      = -DBUILD_SHARED_LIBS=ON
+
+CXXFLAGS        += -Wno-error=unused-but-set-variable
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

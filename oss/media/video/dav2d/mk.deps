@@ -1,0 +1,31 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) dav2d(native psysroot): unselect
+
+PACKAGE_NAME     = dav2d
+
+LICENSE          = BSD-2-Clause
+LICFILE          = file://COPYING
+HOMEPAGE         = https://code.videolan.org/videolan/dav2d
+DESCRIPTION      = dav2d is an AV2 cross-platform decoder, open-source, and focused on speed and correctness. \
+                   It is based on our popular dav1d decoder.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.0.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.bz2
+SRC_URL          = https://code.videolan.org/videolan/dav2d/-/archive/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = ea06d1f7d97f5de34964063b294da087
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+
+COMPILE_TOOL     = meson
+MESON_FLAGS      = -Denable_examples=false -Denable_tests=false -Denable_docs=false
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

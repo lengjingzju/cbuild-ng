@@ -198,11 +198,9 @@ all: $(if $(filter y,$(CACHE_BUILD)),cachebuild,nocachebuild)
 
 ifeq ($(filter build,$(CUSTOM_TARGETS)), )
 build:
-	$(PREAT)if [ "$(OBJ_DISRM)" != "y" ] && [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ]; then \
+	$(PREAT)if [ "$(OBJ_DISRM)" != "y" ] && [ ! -e $(OBJ_PREFIX)/$(BUILD_MARK) ] && [ "$(findstring $(OBJ_PREFIX),$(SRC_PATH))" = "" ]; then \
 		rm -rf $(OBJ_PREFIX); \
-		if [ "$(findstring $(OBJ_PREFIX),$(SRC_PATH))" = "" ]; then \
-			mkdir -p $(OBJ_PREFIX); \
-		fi; \
+		mkdir -p $(OBJ_PREFIX); \
 	else \
 		rm -f $(OBJ_PREFIX)/$(BUILD_MARK); \
 	fi
