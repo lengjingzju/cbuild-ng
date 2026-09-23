@@ -38,11 +38,11 @@ DESCRIPTION      = The GNU Binutils are a collection of binary tools. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.46.0
+VERSION          = 2.47
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ftp.gnu.org/gnu/binutils/$(SRC_NAME)
-SRC_MD5          = 81bb6810bcd1119819dc0804956e1c92
+SRC_MD5          = d772acfbd55a81644e9fe7b8189cd2a5
 INS_FULLER       = n
 
 CACHE_BUILD      = y

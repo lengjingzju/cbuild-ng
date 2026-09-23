@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0         #
 # Copyright (C) 2025-.... Jing Leng        #
 # Contact: Jing Leng <lengjingzju@163.com> #
-# kconfig from linux-6.12.28               #
+# kconfig from linux-6.18.53               #
 ############################################
 
 OBJ_PREFIX     ?= $(if $(O),$(O),./build)

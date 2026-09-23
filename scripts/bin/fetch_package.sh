@@ -146,7 +146,7 @@ do_fetch() {
                 if [ ! -e ${ENV_DOWN_DIR}/$package ]; then
                     for murl in $(python3 $mirrortool $url); do
                         echo -e "\033[32mwget $murl to ${ENV_DOWN_DIR}/$package\033[0m"
-                        wget -q -t 3 -T 15 $murl -O ${ENV_DOWN_DIR}/$package --no-check-certificate
+                        wget -U "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36" -q -t 3 -T 15 $murl -O ${ENV_DOWN_DIR}/$package --no-check-certificate
                         if [ $? -ne 0 ]; then
                             rm -f ${ENV_DOWN_DIR}/$package
                             echo "Failed to download $murl"
