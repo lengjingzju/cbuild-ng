@@ -16,7 +16,7 @@ DESCRIPTION      = Header-only library for conversion to/from half-precision flo
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 3d2de1816307bac63c16a297e8c4dc501b4076df
+VERSION          = 782eea126dc5c755827be751a099eb01826175cf
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/Maratyszcza/FP16.git

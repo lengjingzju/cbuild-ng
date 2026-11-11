@@ -15,11 +15,11 @@ DESCRIPTION      = Google Testing and Mocking Framework.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.17.0
+VERSION          = 1.18.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/google/googletest/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = b6f100bc2a5853a48046aa168ececf84
+SRC_MD5          = ae87634285dbe148a7abc6d19c4c05bd
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -17,11 +17,11 @@ DESCRIPTION      = util-linux is a random collection of Linux utilities.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.42
+VERSION          = 2.42.4
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/util-linux/util-linux/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 9cda1bdbf25b9f6119403994be1d2ae3
+SRC_MD5          = 6fbc063a2af467bae8c5994c6a8ab23d
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

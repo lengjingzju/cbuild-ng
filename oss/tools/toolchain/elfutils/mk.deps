@@ -17,14 +17,14 @@ DESCRIPTION      = elfutils is a collection of utilities and libraries to read, 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.195
+VERSION          = 0.197
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://sourceware.org/elfutils/ftp/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 3e8ef51c43beceddbbb74879549cf72c
+SRC_MD5          = 072992c8388b958dc006c6cfb74a0100
 
 CACHE_BUILD      = y
-CACHE_DEPENDS    = 
+CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 

@@ -17,12 +17,11 @@ DESCRIPTION      = checkpolicy is a program that checks and compiles a SELinux s
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = tar
-VERSION          = 3.10
+VERSION          = 3.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = 88341a244247f981a23945daec04cd5c
+SRC_MD5          = 50a5584e16d960b91ea8441c99bff932
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -17,12 +17,11 @@ DESCRIPTION      = The libsemanage library provides an API for the manipulation 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = tar
-VERSION          = 3.10
+VERSION          = 3.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = fc210165ede52547ebf3d9dfa0d66f50
+SRC_MD5          = d1948effd9060dd1f300dc4e3ca096e4
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

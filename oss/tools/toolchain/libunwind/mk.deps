@@ -23,7 +23,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 VERSION          = 1.8.3
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          =https://github.com/libunwind/libunwind/releases/download/v$(VERSION)/$(SRC_NAME)
+SRC_URL          = https://github.com/libunwind/libunwind/releases/download/v$(VERSION)/$(SRC_NAME)
 SRC_MD5          = 13bc7b41462ac6ea157d350eaf6c1503
 
 CACHE_BUILD      = y

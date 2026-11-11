@@ -1,13 +1,14 @@
-From 7812bdacd80b9fecb14815c856915f1d4e2d9b28 Mon Sep 17 00:00:00 2001
+From 572a861327c73b41c65d29877bdef5f59a486846 Mon Sep 17 00:00:00 2001
 From: Jing Leng <3090101217@zju.edu.cn>
-Date: Mon, 11 May 2026 14:50:17 +0800
+Date: Wed, 11 Nov 2026 14:32:27 +0800
 Subject: [PATCH] media-server: use IMake to compile
 
 ---
  IMakefile                     |   83 +++
  inc.makes                     | 1054 +++++++++++++++++++++++++++++++++
  libflv/source/mpeg4-aac-asc.c |   10 +-
- 3 files changed, 1142 insertions(+), 5 deletions(-)
+ libmov/source/mov-reader.c    |    1 -
+ 4 files changed, 1142 insertions(+), 6 deletions(-)
  create mode 100644 IMakefile
  create mode 100644 inc.makes
 
@@ -1200,6 +1201,18 @@ index c693ba0..3a08a8f 100644
  }
  
  int mpeg4_aac_raw_data_block_parse(const uint8_t* data, size_t bytes, struct mpeg4_aac_t* aac)
+diff --git a/libmov/source/mov-reader.c b/libmov/source/mov-reader.c
+index c125125..fbdda24 100755
+--- a/libmov/source/mov-reader.c
++++ b/libmov/source/mov-reader.c
+@@ -11,7 +11,6 @@
+ 
+ #define AV_TRACK_TIMEBASE 1000
+ 
+-#define MOV_READER_BOX_TREE 1
+ //#define MOV_READER_FMP4_FAST 1
+ 
+ #define MOV_READER_FLAG_FMP4_FAST 0x01
 -- 
 2.47.3
 

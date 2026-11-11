@@ -20,11 +20,11 @@ DESCRIPTION      = c-periphery is a small C library for GPIO, LED, PWM, SPI, I2C
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.5.0
+VERSION          = 2.5.2
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/vsergeev/c-periphery/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = f95e0f1893bfc377d48631b5d508e745
+SRC_MD5          = 444c870c748d33e40df1536614469a6b
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

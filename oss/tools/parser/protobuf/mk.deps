@@ -18,11 +18,11 @@ DESCRIPTION      = Protocol buffers are Google’s language-neutral, platform-ne
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 34.1
+VERSION          = 36.2
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/protocolbuffers/protobuf/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = e47d104c917c9297b6241c87f27a9558
+SRC_MD5          = 06f3e627f7d5d5b3206bf5fc6388c032
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

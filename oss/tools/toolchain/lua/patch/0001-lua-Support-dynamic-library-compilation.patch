@@ -22,7 +22,7 @@ index 388fa17..fbaf3d6 100644
  # Lua version and release.
 +M= 5
  V= 5.5
- R= $V.0
+ R= $V.1
 +export M V R
  
  # Targets start here.

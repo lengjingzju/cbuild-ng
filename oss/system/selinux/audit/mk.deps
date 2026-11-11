@@ -19,11 +19,11 @@ DESCRIPTION      = The Linux Audit System is designed to make Linux compliant wi
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 4.1.4
+VERSION          = 4.2.1
 SRC_DIR          = $(PACKAGE_NAME)-userspace-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/linux-audit/audit-userspace/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 6575a4383f54ce971352620e6b5f746a
+SRC_MD5          = 6f61e4f4557da6890afc319b7c9168a8
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

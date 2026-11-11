@@ -16,11 +16,11 @@ DESCRIPTION      = GNU Libtool is a generic library support script that hides th
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.5.4
+VERSION          = 2.6.2
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://ftp.gnu.org/gnu/libtool/$(SRC_NAME)
-SRC_MD5          = 22e0a29df8af5fdde276ea3a7d351d30
+SRC_MD5          = 87743862e6cabfb9e76651bc64e31e5c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

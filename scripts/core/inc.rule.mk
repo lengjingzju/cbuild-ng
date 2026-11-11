@@ -350,7 +350,7 @@ psysroot:
 
 endif # CACHE_BUILD
 
-.PHONY: setdev unsetdev dofetch
+.PHONY: setdev unsetdev dofetch printurl
 
 setdev:
 	$(PREAT)mkdir -p $(shell dirname $(BUILD_DEVF))
@@ -371,6 +371,13 @@ dofetch:
 ifneq ($(SRC_URLS), )
 	$(PREAT)mkdir -p $(shell dirname $(FETCH_LOCK)) && echo > $(FETCH_LOCK)
 	$(PREAT)flock $(FETCH_LOCK) -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME)"
+else
+	@
+endif
+
+printurl:
+ifneq ($(SRC_URLS), )
+	$(PREAT)echo "$(SRC_URLS)"
 else
 	@
 endif

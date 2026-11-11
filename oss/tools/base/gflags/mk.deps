@@ -17,11 +17,11 @@ DESCRIPTION      = The gflags package contains a C++ library that implements com
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.3.0
+VERSION          = 2.3.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/gflags/gflags/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 7a151c1019d8a9fd2c126b7d9905e75b
+SRC_MD5          = 400fc3ef65a56f73d390778da0c15cb0
 INS_FULLER       = n
 
 CACHE_BUILD      = y

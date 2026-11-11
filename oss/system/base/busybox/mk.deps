@@ -23,11 +23,11 @@ DESCRIPTION      = BusyBox: The Swiss Army Knife of Embedded Linux. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.37.0
+VERSION          = 1.38.0
 SRC_DIR          = busybox-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://www.busybox.net/downloads/$(SRC_NAME)
-SRC_MD5          = 865b68ab41b923d9cdbebf3f2c8b04ec
+SRC_MD5          = 2a76df79da776a165bf85257403c97bc
 
 CACHE_BUILD      = y
 CACHE_CHECKSUM  += $(shell pwd)/config/$(CFG_NAME)
@@ -40,7 +40,6 @@ CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	$(PREAT)sed -i 's/main() {}/int main(void) { return 0; }/g' $(SRC_PATH)/scripts/kconfig/lxdialog/check-lxdialog.sh
 	$(PREAT)if [ ! -f $(OBJ_PREFIX)/.config ]; then \
 		cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME); \
 		mkdir -p $(OBJ_PREFIX); \

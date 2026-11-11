@@ -17,12 +17,13 @@ DESCRIPTION      = JsonCpp is a C++ library that allows manipulating JSON values
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-# zlmediakit is not compatible with 1.9.7(6f472bebd5197bd327c138d293d10e28) version
-VERSION          = 1.9.6
+
+
+VERSION          = 1.9.8
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = bf641b36615341b31ef917f104318608
+SRC_MD5          = e2ea9562cd8a56bb7bfede555612f411
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

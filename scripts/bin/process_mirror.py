@@ -8,15 +8,10 @@ import sys, os
 
 DEF_MIRROR_DICT = {
     "https://ftp.gnu.org/gnu/": [
-        "https://mirrors.ustc.edu.cn/gnu/",
         "https://mirrors.aliyun.com/gnu/"
     ],
     "https://ftp.gnu.org/pub/gnu/": [
-        "https://mirrors.ustc.edu.cn/gnu/",
         "https://mirrors.aliyun.com/gnu/"
-    ],
-    "https://www.kernel.org/pub/": [
-        "https://mirrors.ustc.edu.cn/kernel.org/"
     ],
     "https://www.kernel.org/pub/linux/kernel/": [
         "https://mirrors.aliyun.com/linux-kernel/"

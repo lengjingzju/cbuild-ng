@@ -19,7 +19,7 @@ DESCRIPTION      = WebRTC/RTSP/RTMP/HTTP/HLS/HTTP-FLV/WebSocket-FLV/HTTP-TS/HTTP
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 37ea51a2ec35ca57e4f3f18c972f2b01dfb577aa
+VERSION          = fb3265725f0880da1f52a3cc6e6eb04bbc327fa3
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
 SRC_URL          = https://github.com/ZLMediaKit/ZLMediaKit.git

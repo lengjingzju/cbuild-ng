@@ -18,11 +18,11 @@ DESCRIPTION      = FRR is free software that implements and manages various IPv4
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 10.6.1
+VERSION          = 10.7.1
 SRC_DIR          = $(PACKAGE_NAME)-$(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.gz
 SRC_URL          = https://github.com/FRRouting/frr/archive/refs/tags/$(SRC_NAME)
-SRC_MD5          = 2b4ef4eca3c0e3dbbfde02a4656e02ac
+SRC_MD5          = 46f4be829b647277a7f6615916539951
 INS_SUBDIR       =
 INS_FULLER       = y
 

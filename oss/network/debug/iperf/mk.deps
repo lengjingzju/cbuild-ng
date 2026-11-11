@@ -18,11 +18,11 @@ DESCRIPTION      = iPerf3 is a tool for active measurements of the maximum achie
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.21
+VERSION          = 3.22
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/esnet/iperf/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = 639c2ecd1e08a861f6271bc9930b0b1e
+SRC_MD5          = c83724cbda6a7c36e5a4c54019d96e6c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

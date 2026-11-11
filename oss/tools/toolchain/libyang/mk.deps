@@ -16,12 +16,14 @@ DESCRIPTION      = libyang is a YANG data modelling language parser and toolkit 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-# FRR is not compatible with 5.4.9 version
+# FRR is not compatible with 6.4.13 version
 VERSION          = 4.2.2
+#VERSION          = 6.4.13
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/CESNET/libyang/archive/refs/tags/v$(VERSION).tar.gz
 SRC_MD5          = 3dfc13b2d948faa6938ce0c032460dd6
+#SRC_MD5          = 6e6f4e4ebe0a8e58ac5ddf4affb80f3c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -15,11 +15,11 @@ DESCRIPTION      = A C++11 single-file header-only cross platform HTTP/HTTPS lib
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.43.3
+VERSION          = 0.66.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/yhirose/cpp-httplib/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 6497d722d2f1c684be2f09546bbc4de0
+SRC_MD5          = fdbf9c8b5c44df8f4eef8775c8b4f813
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

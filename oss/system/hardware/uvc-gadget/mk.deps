@@ -10,17 +10,18 @@ PACKAGE_NAME     = uvc-gadget
 
 LICENSE          = LGPL-2.1-or-later
 LICFILE          = file://lib/uvc.c;line=1-8
-HOMEPAGE         = https://git.ideasonboard.org/uvc-gadget.git
+HOMEPAGE         = https://gitlab.freedesktop.org/camera/uvc-gadget
 DESCRIPTION      = uvcgadget is a pure C library that implements handling of UVC gadget functions.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 0.3.0
+VERSION          = 0.4.0
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
-SRC_URL          = git://git.ideasonboard.org/$(SRC_NAME).git
+SRC_URL          = https://gitlab.freedesktop.org/camera/$(SRC_NAME).git
 SRC_TAG          = v$(VERSION)
+SRC_SHARED       = n
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

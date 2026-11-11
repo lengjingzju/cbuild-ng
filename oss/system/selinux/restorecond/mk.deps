@@ -16,12 +16,11 @@ DESCRIPTION      = The restorecond processes execute with the restorecond_t SELi
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = tar
-VERSION          = 3.10
+VERSION          = 3.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = fb0cc7ae62163961fe1267f941ff74e7
+SRC_MD5          = 9f8cd11c14fd18725c8114f0960138bc
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

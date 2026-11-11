@@ -16,7 +16,7 @@ DESCRIPTION      = RTSP/RTP/RTMP/FLV/HLS/MPEG-TS/MPEG-PS/MPEG-DASH/MP4/fMP4/MKV/
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 16074a453090ac95657c1a13b8c42c9c33c6e10a
+VERSION          = c0463893bc509e65bea9f4f76be68c1f89ccdfcf
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/ireader/media-server.git

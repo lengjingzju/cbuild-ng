@@ -16,11 +16,11 @@ DESCRIPTION      = libuv is a multi-platform support library with a focus on asy
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.52.1
+VERSION          = 1.53.0
 SRC_DIR          = $(PACKAGE_NAME)-v$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://dist.libuv.org/dist/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = db711bbe3822dd4fe51fad0cd78baa57
+SRC_MD5          = c4099213c7751373bb58fc6851cb21c7
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

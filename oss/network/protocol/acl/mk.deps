@@ -25,11 +25,11 @@ DESCRIPTION      = Advanced Cross-Platform C/C++ Network Communication Library a
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.6.7
+VERSION          = 3.6.9
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/acl-dev/acl/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 4bfbbda5522185d10434ae0f6c4fe148
+SRC_MD5          = ba5c43cd0c537854ae072ea905e211ba
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

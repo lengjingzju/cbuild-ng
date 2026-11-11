@@ -18,11 +18,11 @@ DESCRIPTION      = SQLite is a C-language library that implements a small, fast,
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3530100
+VERSION          = 3540100
 SRC_DIR          = $(PACKAGE_NAME)-autoconf-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://www.sqlite.org/2026/$(SRC_NAME)
-SRC_MD5          = af0fd4332e87e0d028aece375dbd2c84
+SRC_MD5          = 5578c8ff43f5eb1ec671f0a2766b53c9
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

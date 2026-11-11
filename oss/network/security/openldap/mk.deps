@@ -24,11 +24,11 @@ DESCRIPTION      = OpenLDAP Software is an open source implementation of the Lig
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.6.13
+VERSION          = 2.7.2
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tgz
 SRC_URL          = https://www.openldap.org/software/download/OpenLDAP/openldap-release/$(SRC_NAME)
-SRC_MD5          = 761be850c8ff85dbf5031af7c6c6da44
+SRC_MD5          = ba515d929ed07d86a193868aa3be5f4f
 INS_SUBDIR       =
 INS_FULLER       = y
 

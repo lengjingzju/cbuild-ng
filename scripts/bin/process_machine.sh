@@ -26,9 +26,11 @@ gcc_arch_option=
 linux_arch=
 linux_src=
 linux_out=
-linux_version=6.18.53
+linux_version=6.18.62
+linux_srchash=919065435169bbf9cac7730c272ee88b
 
 gcc_version=16.2.0
+gcc_srchash=19b777fb19ea4982731392481306f0d3
 
 if [ ! -z $soc ]; then
     case $soc in
@@ -170,6 +172,9 @@ case $choice in
     linux_version)
         echo "$linux_version"
         ;;
+    linux_srchash)
+        echo "$linux_srchash"
+        ;;
     linux_src)
         if [ -z "$linux_src" ]; then
             echo "${ENV_TOP_OUT}/kernel/linux-$linux_version"
@@ -187,6 +192,9 @@ case $choice in
 
     gcc_version)
         echo "$gcc_version"
+        ;;
+    gcc_srchash)
+        echo "$gcc_srchash"
         ;;
     gcc_arch_option)
         echo "$gcc_arch_option"

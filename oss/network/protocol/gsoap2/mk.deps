@@ -22,11 +22,11 @@ DESCRIPTION      = The gSOAP toolkit is an extensive suite of portable C and C++
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = zip
-VERSION          = 2.8.142
+VERSION          = 2.8.147
 SRC_DIR          = $(PACKAGE_NAME)-$(shell echo $(VERSION) | sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1.\2/g')
 SRC_NAME         = $(PACKAGE_NAME)_$(VERSION).zip
-SRC_URL          = https://psychz.dl.sourceforge.net/project/gsoap2/$(SRC_NAME)
-SRC_MD5          = 53ed40a2e1d1811547a4c5c0827ba20d
+SRC_URL          = https://downloads.sourceforge.net/project/gsoap2/$(SRC_NAME)
+SRC_MD5          = 24c41e848e0e37c3289dc71b04195d03
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

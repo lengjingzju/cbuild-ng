@@ -17,12 +17,11 @@ DESCRIPTION      = mcstrans provides an translation daemon to translate SELinux 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = tar
-VERSION          = 3.10
+VERSION          = 3.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = 3c5faba75f7393202884e64790419369
+SRC_MD5          = a91b2d40428c6c0b654b7098428eab0a
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

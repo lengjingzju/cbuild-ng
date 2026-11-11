@@ -17,7 +17,7 @@ DESCRIPTION      = A lightweight network framework based on C++11, utilizing thr
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 23027e93c09dcda23adf46c04a8247cfe8b48c88
+VERSION          = 39d4a647e441278c533258d0caeb152ef739127b
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(PACKAGE_NAME)
 SRC_URL          = https://github.com/ZLMediaKit/ZLToolKit.git

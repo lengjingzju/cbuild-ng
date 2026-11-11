@@ -16,11 +16,11 @@ DESCRIPTION      = Boost is a collection of high-quality and peer-reviewed libra
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.91.0
+VERSION          = 1.92.0
 SRC_DIR          = $(PACKAGE_NAME)_$(subst .,_,$(VERSION))
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://archives.boost.io/release/$(VERSION)/source/$(SRC_NAME)
-SRC_MD5          = 33cab4bc2a24f7cb8bb4120489bf6744
+SRC_MD5          = 1a0ff25792aa24fd84d55e63c5fbb24c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

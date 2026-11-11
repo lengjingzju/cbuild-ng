@@ -10,7 +10,7 @@ PACKAGE_NAME     = bcg729
 
 LICENSE          = GPL-3.0-only
 LICFILE          = file://LICENSE*
-HOMEPAGE         = https://gitlab.linphone.org/BC/public/bcg729
+HOMEPAGE         = https://www.linphone.org/en/bcg729-implementation/
 DESCRIPTION      = Bcg729 is an opensource implementation of both encoder and decoder of the ITU G729 Annex A/B speech codec. \
                    The library written in C 99 is fully portable and can be executed on many platforms including both ARM \
                    and x86 processors. libbcg729 supports concurrent channels encoding/decoding for multi call application \

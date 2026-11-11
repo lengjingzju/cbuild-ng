@@ -1577,6 +1577,7 @@ $ sudo pip3 install requests -i https://pypi.tuna.tsinghua.edu.cn/simple
         * 每个开源软件包有三行: 第1行是准备依赖的 sysroot，第2行是编译，第3行是安装到全局 sysroot
     * `make` 是不仅是包内可能是多线程编译，多个包也是同时编译，不统计编译时间
     * `make all_fetches` 只下载所有指定网络下载SRC_URL的包的源码
+    * `make all_printurls` 只打印所有指定网络下载包的URL
         *
 注: 第一次编译前最好选中支持缓存的包后下载所有的源码 `make all_fetchs`，防止源码无法一次下载成功导致其它问题
     * `make all_caches` 下载并编译所有选中的支持缓存的包的源码

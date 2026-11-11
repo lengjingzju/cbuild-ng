@@ -21,10 +21,12 @@ DESCRIPTION      = Valgrind is a GPL'd system for debugging and profiling Linux 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 VERSION          = 3.27.0
+# VERSION          = 3.28.0 # configure fail
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://sourceware.org/pub/valgrind/$(SRC_NAME)
 SRC_MD5          = 72ea4b0c8cd42919438e575956fd4a4d
+# SRC_MD5          = 2bfffc2585eba66a354816cc1ee87ffb
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

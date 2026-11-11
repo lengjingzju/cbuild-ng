@@ -1567,6 +1567,7 @@ Note: Manjaro's default shell is `zsh` , which needs to be changed to `bash`. No
         * Each OSS package in the time statistics file has three lines: line 1 is to prepare the sysroot for dependencies, line 2 is to compile, and line 3 is to install to the global sysroot
     * `make`: Multi-threadedly compiles all packages
     * `make all_fetches`: Only downloads source code of all packages which contain `SRC_URL` one by one
+    * `make all_printurls` Only prints URL of all packages which contain `SRC_URL` one by one
     * `make all_caches`: Downloads and compiles all cache packages one by one
     * `make all_statuses`: View the path, branch, last commit, and current modification status of all git download packages
 <br>

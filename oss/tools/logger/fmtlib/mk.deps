@@ -16,11 +16,11 @@ DESCRIPTION      = {fmt} is an open-source formatting library providing a fast a
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 12.1.0
+VERSION          = 12.2.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/fmtlib/fmt/archive/refs/tags/$(VERSION).tar.gz
-SRC_MD5          = 92eb6f492e4838e5f024ce5207beafc7
+SRC_MD5          = c748294999bc47680c040b180693884f
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

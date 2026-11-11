@@ -15,11 +15,11 @@ DESCRIPTION      = C++ implementation of SIP, ICE, TURN and related protocols.
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.13.2
+VERSION          = 1.14.0
 SRC_DIR          = $(PACKAGE_NAME)-$(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(PACKAGE_NAME)-$(VERSION).tar.gz
 SRC_URL          = https://github.com/resiprocate/resiprocate/archive/refs/tags/$(SRC_NAME)
-SRC_MD5          = 4033620f9b2588324d1417cea0a12e57
+SRC_MD5          = 4c3fda2878a4303895020ade9b8a6de6
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

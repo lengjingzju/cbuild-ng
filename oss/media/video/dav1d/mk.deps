@@ -15,11 +15,11 @@ DESCRIPTION      = dav1d is an AV1 cross-platform decoder, open-source, and focu
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.5.3
+VERSION          = 1.5.4
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://code.videolan.org/videolan/dav1d/-/archive/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 1488bbeb92834c5f12de9a16298afeee
+SRC_MD5          = d4325a3325a0f9eb37931ae8dc1c8d1c
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

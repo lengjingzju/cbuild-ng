@@ -17,11 +17,11 @@ DESCRIPTION      = This package provides an implementation of the Secure Real-ti
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.8.0
+VERSION          = 2.8.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/cisco/libsrtp/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = d4ebbad864e0272e9900904e50996d08
+SRC_MD5          = 2c70e3595a46fab2db5f24c5d626c4b6
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

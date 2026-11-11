@@ -23,11 +23,11 @@ DESCRIPTION      = wpa_supplicant is a WPA Supplicant for Linux, BSD, Mac OS X, 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.11
+VERSION          = 2.12
 SRC_DIR          = $(subst -,_,$(PACKAGE_NAME))-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = http://w1.fi/releases/$(SRC_NAME)
-SRC_MD5          = 72a4a00eddb7a499a58113c3361ab094
+SRC_MD5          = 3f1af56655ebca941d2035358331bbc9
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

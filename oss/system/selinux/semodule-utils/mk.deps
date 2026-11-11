@@ -15,12 +15,11 @@ DESCRIPTION      = This package contains the tools used to build policy modules 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = tar
-VERSION          = 3.10
+VERSION          = 3.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = 48b4bd0aa155d52a759d8c7777e3692c
+SRC_MD5          = 7cd168f60040e7e117e1ca05e3adb55d
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

@@ -16,11 +16,11 @@ DESCRIPTION      = A standalone library of the Fraunhofer FDK AAC code from Andr
 ENV_BUILD_TYPE  := release
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.0.3
+VERSION          = 3.0.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/mstorsjo/fdk-aac/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = fbaf688a6fd6ddf63c68566909a178b4
+SRC_MD5          = 63c167066e4df5e8d0fc5d9e8523756c
 INS_FULLER       = n
 
 CACHE_BUILD      = y

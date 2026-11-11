@@ -17,11 +17,16 @@ def escape_toupper(var):
 
 
 def escape_tolower(var):
-    return var.lower().replace('_', '-').replace('__dot__', '.').replace('__plus__', '+')
+    return var.lower().replace('__dot__', '.').replace('__plus__', '+').replace('_', '-')
 
 
 def re_replace_env(matchobj):
-    return os.getenv(matchobj.group(0)[2:-1])
+    name = matchobj.group(0)[2:-1]
+    val = os.getenv(name)
+    if val is None:
+        print('WARNING: environment variable %s is not defined' % (name))
+        return matchobj.group(0)
+    return val
 
 
 class Deps:
@@ -561,6 +566,7 @@ class Deps:
             package = ''
             match_type = ''
             last_group = ''
+            makestr = ''
             ret = None
 
             VARS = ['VERSION', 'LICENSE', 'LICFILE', 'HOMEPAGE', 'DESCRIPTION']
@@ -1652,8 +1658,8 @@ class Deps:
                     phony.append(item['target'] + '_status')
                     phony.append(item['target'] + '_setdev')
                     phony.append(item['target'] + '_unsetdev')
-                    fp.write('%s_dofetch %s_status %s_setdev %s_unsetdev:\n' % \
-                            (item['target'], item['target'], item['target'], item['target']))
+                    fp.write('%s_dofetch %s_printurl %s_status %s_setdev %s_unsetdev:\n' % \
+                        (item['target'], item['target'], item['target'], item['target'], item['target']))
                     fp.write('\t%s%s $(patsubst %s_%%,%%,$@)\n\n' % (MAKEC, makes, item['target']))
 
 
@@ -1733,6 +1739,7 @@ class Deps:
                     fp.write('ALL_CACHES   += %s\n' % (item['target']))
                 if 'url' in item['targets']:
                     fp.write('ALL_FETCHES  += %s_dofetch\n' % (item['target']))
+                    fp.write('ALL_PRINTURLS  += %s_printurl\n' % (item['target']))
                     fp.write('ALL_STATUSES += %s_status\n' % (item['target']))
                 if pkg_flags['release']:
                     fp.write('ALL_RELEASES += %s_release\n' % (item['target']))
@@ -1750,11 +1757,13 @@ class Deps:
             fp.write('%s: %s\n\n' % ('all_targets',  '$(ALL_TARGETS)'))
             fp.write('%s: %s\n\n' % ('all_caches',   '$(ALL_CACHES)'))
             fp.write('%s: %s\n\n' % ('all_fetches',  '$(ALL_FETCHES)'))
-            fp.write('%s: %s\n'   % ('all_statuses',  'export MFLAG ?= -s'))
-            fp.write('%s: %s\n\n' % ('all_statuses',  '$(ALL_STATUSES)'))
+            fp.write('%s: %s\n'   % ('all_printurls', 'export MFLAG ?= -s'))
+            fp.write('%s: %s\n\n' % ('all_printurls','$(ALL_PRINTURLS)'))
+            fp.write('%s: %s\n'   % ('all_statuses', 'export MFLAG ?= -s'))
+            fp.write('%s: %s\n\n' % ('all_statuses', '$(ALL_STATUSES)'))
             fp.write('%s: %s\n\n' % ('all_releases', '$(ALL_RELEASES)'))
             fp.write('%s: %s\n\n' % ('all_cleans',   '$(ALL_CLEANS)'))
-            fp.write('.PHONY: all_targets all_caches all_fetches all_releases all_cleans\n\n')
+            fp.write('.PHONY: all_targets all_caches all_fetches all_printurls all_releases all_cleans\n\n')
 
 
     def __replace_list(self, rlist, ori, rep):

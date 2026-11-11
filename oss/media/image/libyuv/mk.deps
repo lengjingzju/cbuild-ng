@@ -16,7 +16,7 @@ DESCRIPTION      = libyuv is an open source project that includes YUV scaling an
 include $(ENV_MAKE_DIR)/inc.env.mk
 
 FETCH_METHOD     = git
-VERSION          = 0f320a03f7ec918258be53d8d5040326c5420b23
+VERSION          = b9906befd6abc3fe3596f6c3a33630f9c3b22af2
 SRC_DIR          = $(PACKAGE_NAME)
 SRC_NAME         = $(SRC_DIR)
 SRC_URL          = https://github.com/lemenkov/libyuv.git

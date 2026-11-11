@@ -25,11 +25,11 @@ DESCRIPTION      = The GNU Multiple Precision Arithmetic Library. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 4.4.1
+VERSION          = 4.5.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
-SRC_URL          = https://pilotfiber.dl.sourceforge.net/project/swig/swig/$(SRC_DIR)/$(SRC_NAME)
-SRC_MD5          = 775105851d39ab2fbf093ad743cb1e0a
+SRC_URL          = https://downloads.sourceforge.net/project/swig/swig/$(SRC_DIR)/$(SRC_NAME)
+SRC_MD5          = ab1a64cd634c5a21115c862e987c4094
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

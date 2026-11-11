@@ -1,21 +1,24 @@
-From 8754578160b3200b6bff98410efb003f502c053b Mon Sep 17 00:00:00 2001
+From 110d227a0e9bf95739028bf886cc9683b9b272c3 Mon Sep 17 00:00:00 2001
 From: Jing Leng <3090101217@zju.edu.cn>
-Date: Mon, 11 May 2026 09:26:43 +0800
+Date: Wed, 11 Nov 2026 13:39:55 +0800
 Subject: [PATCH] zltoolkit: add installation rules
 
 ---
- CMakeLists.txt | 31 +++++++++++++++++++++++++++++--
- 1 file changed, 29 insertions(+), 2 deletions(-)
+ CMakeLists.txt | 34 +++++++++++++++++++++++++++++-----
+ 1 file changed, 29 insertions(+), 5 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 169cece..93c5fe3 100644
+index 13ce84b..93c5fe3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -140,6 +140,33 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJ
+@@ -140,9 +140,33 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJ
                                                   ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
  
  if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
--    #本工程为root工程，则添加测试程序
+-    #本工程为root工程，则添加测试程序，并启用ctest以便执行门禁用例
+-    #This project is the root project, add the test programs and enable ctest so that
+-    #the gating cases can be run
+-    enable_testing()
 +    #本工程为root工程，则默认添加测试程序
 +    set(default_BUILD_TESTS ON)
 +else()

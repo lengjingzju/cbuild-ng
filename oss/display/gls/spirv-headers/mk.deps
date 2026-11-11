@@ -17,11 +17,11 @@ DESCRIPTION      = Machine-readable files for the SPIR-V Registry. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.4.341.0
+VERSION          = 1.4.363.0
 SRC_DIR          = SPIRV-Headers-vulkan-sdk-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/KhronosGroup/SPIRV-Headers/archive/refs/tags/$(subst SPIRV-Headers-,,$(SRC_NAME))
-SRC_MD5          = 38bcd69036ec1443ac19b417bef8685e
+SRC_MD5          = 67fec63779cccdc562338d316da46678
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

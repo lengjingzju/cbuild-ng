@@ -17,11 +17,11 @@ DESCRIPTION      = Library of Optimized Inner Loops Runtime Compiler. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 0.4.42
+VERSION          = 0.4.44
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://gstreamer.freedesktop.org/data/src/orc/$(SRC_NAME)
-SRC_MD5          = b8b4e43d46a62b32150ed5e9833f1d55
+SRC_MD5          = f5c83f0fb164fc8bc2cb19ee2e139d62
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

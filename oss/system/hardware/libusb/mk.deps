@@ -15,11 +15,11 @@ DESCRIPTION      = libusb is a C library that provides generic access to USB dev
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.0.29
+VERSION          = 1.0.30
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://github.com/libusb/libusb/releases/download/v$(VERSION)/$(SRC_NAME)
-SRC_MD5          = 12d4a782ce606a0582fb5038c16d0f75
+SRC_MD5          = b0b0bacc2c6919515db8e863f0517db8
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

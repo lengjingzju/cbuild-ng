@@ -17,11 +17,11 @@ DESCRIPTION      = An open source project to develop and maintain the reference 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.6.58
+VERSION          = 1.6.59
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
-SRC_URL          = https://phoenixnap.dl.sourceforge.net/project/libpng/libpng16/$(VERSION)/$(SRC_NAME)
-SRC_MD5          = c6c372a9d7754c66e0b77a8d34987a3b
+SRC_URL          = https://downloads.sourceforge.net/project/libpng/libpng16/$(VERSION)/$(SRC_NAME)
+SRC_MD5          = fce35ac83494252c178249c3aad9621e
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

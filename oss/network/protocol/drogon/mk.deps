@@ -17,11 +17,11 @@ DESCRIPTION      = Drogon is a C++17/20 based HTTP application framework. Drogon
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 1.9.13
+VERSION          = 1.9.14
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/drogonframework/drogon/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = f7f838f5f5e3204a764df0ec8d5b886c
+SRC_MD5          = add877293c73a0e296bd85105862f3cb
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

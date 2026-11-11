@@ -16,11 +16,11 @@ DESCRIPTION      = log4cplus is a simple to use C++23 logging API providing thre
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.1.2
+VERSION          = 2.2.1
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://github.com/log4cplus/log4cplus/releases/download/REL_$(subst .,_,$(VERSION))/$(SRC_NAME)
-SRC_MD5          = 9b07ce88a3130673848a26e7e983aa5b
+SRC_MD5          = 8e0502ec67e8fd0b140dd664b5e7958e
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

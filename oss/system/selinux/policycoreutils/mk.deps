@@ -18,12 +18,11 @@ DESCRIPTION      = The policycoreutils packages contain the core utilities that 
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = tar
-VERSION          = 3.10
+VERSION          = 3.11
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/SELinuxProject/selinux/releases/download/$(VERSION)/$(SRC_NAME)
-SRC_REV          = d0c059dd33aa0a687f280875315b1418
+SRC_MD5          = 8b3ed0d1959a4070b991dac6c56befb6
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

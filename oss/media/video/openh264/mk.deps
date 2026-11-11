@@ -16,11 +16,11 @@ DESCRIPTION      = OpenH264 is a codec library which supports H.264 encoding and
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2.6.0
+VERSION          = 2.7.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/cisco/openh264/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 0b01f0279eca1c7bb65395ea350fa85c 
+SRC_MD5          = 1514a475e1843b10d24f74b02ad4eaed
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    = none

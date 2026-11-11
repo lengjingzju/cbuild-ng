@@ -22,11 +22,11 @@ DESCRIPTION      = A free implementation of the OpenGL API. \
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 26.0.6
+VERSION          = 26.3.0
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://archive.mesa3d.org/$(SRC_NAME)
-SRC_MD5          = 7c2058b9a440c4d4c01a67a6612044d0
+SRC_MD5          = ae1c3ef9c6a42eeafc04d969a43fd2cc
 INS_FULLER       = y
 
 CACHE_BUILD      = y

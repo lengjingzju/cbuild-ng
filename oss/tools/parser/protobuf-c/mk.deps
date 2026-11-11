@@ -24,7 +24,7 @@ SRC_URL          = https://github.com/protobuf-c/protobuf-c/archive/refs/tags/v$
 SRC_MD5          = 2409f0ab8a81b49d3dc92877115c0c63
 
 CACHE_BUILD      = y
-CACHE_DEPENDS    = 
+CACHE_DEPENDS    =
 
 COMPILE_TOOL     = autotools
 AUTOTOOLS_FLAGS  = PROTOC=$(PATH_PREFIX)$(bindir)/protoc

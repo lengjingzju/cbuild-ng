@@ -15,11 +15,11 @@ DESCRIPTION      = A robust, commercial-grade, full-featured toolkit for general
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 3.5.6
+VERSION          = 3.5.9
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://www.openssl.org/source/$(SRC_NAME)
-SRC_MD5          = 1bb3506c580865a0a464e09288ac157e
+SRC_MD5          = 382c33039018809e6351539e9bdcd509
 
 # config for openssl-1.1.1, "--libdir=lib" should be removed in "prepend".
 #VERSION          = 1.1.1w

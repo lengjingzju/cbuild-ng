@@ -15,11 +15,11 @@ DESCRIPTION      = The project includes an assembler, binary module parser, disa
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2026.1
+VERSION          = 2026.4
 SRC_DIR          = SPIRV-Tools-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.gz
 SRC_URL          = https://github.com/KhronosGroup/SPIRV-Tools/archive/refs/tags/v$(VERSION).tar.gz
-SRC_MD5          = 4143cbe9f5394173df13273f1f41d539
+SRC_MD5          = f74500cd1a16d6c06fbedf84a8c23ee3
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

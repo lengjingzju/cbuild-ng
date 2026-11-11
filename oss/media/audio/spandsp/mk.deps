@@ -20,13 +20,11 @@ DESCRIPTION      = SpanDSP is a library of DSP functions for telephony, in the 8
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-FETCH_METHOD     = git
-VERSION          = 797760168945c96e91af55bde9d4edaea2e654f9
-SRC_DIR          = $(PACKAGE_NAME)
-SRC_NAME         = $(SRC_DIR)
-SRC_URL          = https://github.com/freeswitch/spandsp.git
-SRC_REV          = $(VERSION)
-SRC_SHARED       = n
+VERSION          = 3.1.1
+SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
+SRC_NAME         = $(SRC_DIR).tar.gz
+SRC_URL          = https://github.com/freeswitch/spandsp/archive/refs/tags/v$(VERSION).tar.gz
+SRC_MD5          = e88e92543d626af2a4bf42746f33cfac
 
 CACHE_BUILD      = y
 CACHE_DEPENDS    =

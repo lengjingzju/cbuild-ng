@@ -1,17 +1,60 @@
-From e673e988e571e0c093508e5da27c4d11b5371fac Mon Sep 17 00:00:00 2001
+From 516dabb8aac5178be89ba6722c542476a79dd4bb Mon Sep 17 00:00:00 2001
 From: Jing Leng <3090101217@zju.edu.cn>
-Date: Wed, 6 May 2026 15:04:24 +0800
+Date: Wed, 11 Nov 2026 10:10:11 +0800
 Subject: [PATCH] Compatible with Python below 3.9
 
 ---
+ bin/drm-shim.py                               | 16 +++++++++--
  bin/nir-test-runner.py                        | 14 +++++++++-
+ .../vulkan/layers/radv_annotate_layer_gen.py  | 14 +++++++++-
  src/compiler/nir/nir_algebraic.py             | 15 +++++++++--
+ src/nouveau/compiler/latencies/lat_rs_gen.py  | 16 +++++++++--
  src/nouveau/headers/class_parser.py           | 27 +++++++++++++------
+ src/nouveau/headers/lib_rs_gen.py             | 13 ++++++++-
  src/nouveau/headers/nv_push_class_dump_h.py   | 14 +++++++++-
+ src/nouveau/headers/struct_parser.py          | 13 ++++++++-
+ src/panfrost/perf/mali_gen_perf.py            | 13 ++++++++-
  .../util/vk_physical_device_features_gen.py   | 20 +++++++++++---
  .../util/vk_physical_device_properties_gen.py | 14 +++++++++-
- 6 files changed, 87 insertions(+), 17 deletions(-)
+ .../util/vk_physical_device_spirv_caps_gen.py | 16 +++++++++--
+ 13 files changed, 178 insertions(+), 27 deletions(-)
 
+diff --git a/bin/drm-shim.py b/bin/drm-shim.py
+index 7558c0a..5052e6b 100755
+--- a/bin/drm-shim.py
++++ b/bin/drm-shim.py
+@@ -8,6 +8,18 @@ import os
+ import sys
+ import subprocess
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ ALIASES = {
+     "amd": "gfx1201",
+     "asahi": "m1",
+@@ -184,10 +196,10 @@ if __name__ == "__main__":
+                 "-vk", "-piglit", "-glcts", "-vkcts"]
+ 
+     for prefix in prefixes:
+-        args.gpu = args.gpu.removeprefix(prefix)
++        args.gpu = str_removeprefix(args.gpu, prefix)
+ 
+     for suffix in suffixes:
+-        args.gpu = args.gpu.removesuffix(suffix)
++        args.gpu = str_removesuffix(args.gpu, suffix)
+ 
+     if args.gpu in ALIASES:
+         args.gpu = ALIASES[args.gpu]
 diff --git a/bin/nir-test-runner.py b/bin/nir-test-runner.py
 index 750115e..f8b4d5f 100755
 --- a/bin/nir-test-runner.py
@@ -44,8 +87,40 @@ index 750115e..f8b4d5f 100755
              inside_expected = True
              current_expected = ''
              continue
+diff --git a/src/amd/vulkan/layers/radv_annotate_layer_gen.py b/src/amd/vulkan/layers/radv_annotate_layer_gen.py
+index fee4d11..bc28583 100644
+--- a/src/amd/vulkan/layers/radv_annotate_layer_gen.py
++++ b/src/amd/vulkan/layers/radv_annotate_layer_gen.py
+@@ -18,6 +18,18 @@ sys.path.append(os.path.join(sys.path[0], '../../../vulkan/util/'))
+ 
+ from vk_entrypoints import get_entrypoints_from_xml
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ EXCLUDED_COMMANDS = [
+     'CmdBeginRenderPass',
+     'CmdEndRenderPass',
+@@ -68,7 +80,7 @@ def main():
+         if not e.name.startswith('Cmd') or e.alias or e.return_type != "void":
+             continue
+ 
+-        stripped_name = e.name.removesuffix('EXT').removesuffix('KHR').removesuffix('2')
++        stripped_name = str_removesuffix(str_removesuffix(str_removesuffix(e.name, 'EXT'), 'KHR'), '2')
+         if stripped_name in commands_names or stripped_name in EXCLUDED_COMMANDS:
+             continue
+ 
 diff --git a/src/compiler/nir/nir_algebraic.py b/src/compiler/nir/nir_algebraic.py
-index 13bb980..9c9efb4 100644
+index 5668b60..74101d5 100644
 --- a/src/compiler/nir/nir_algebraic.py
 +++ b/src/compiler/nir/nir_algebraic.py
 @@ -32,6 +32,17 @@ import traceback
@@ -66,9 +141,9 @@ index 13bb980..9c9efb4 100644
  
  class TestStatus(Enum):
      PASS = 0,
-@@ -432,8 +443,8 @@ class Expression(Value):
-         self.ninf = cond.pop('ninf', False)
-         self.contract = cond.pop('contract', False)
+@@ -392,8 +403,8 @@ class Expression(Value):
+         # Single component index of the swizzle of the output of this
+         # expression, or -1 if no swizzle (all components)
          self.swizzle = - \
 -            1 if m.group('swizzle') is None else swizzles[m.group(
 -                'swizzle').removeprefix('.')]
@@ -77,8 +152,49 @@ index 13bb980..9c9efb4 100644
  
          assert len(cond) <= 1
          self.cond = cond.popitem()[0] if cond else None
+diff --git a/src/nouveau/compiler/latencies/lat_rs_gen.py b/src/nouveau/compiler/latencies/lat_rs_gen.py
+index 8b35e1b..a19e3c0 100644
+--- a/src/nouveau/compiler/latencies/lat_rs_gen.py
++++ b/src/nouveau/compiler/latencies/lat_rs_gen.py
+@@ -13,6 +13,18 @@ import sys
+ 
+ from mako import template
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ TEMPLATE_RS = template.Template(text="""\
+ // Copyright 2024 Red Hat Inc.
+ // SPDX-License-Identifier: MIT
+@@ -106,7 +118,7 @@ class Fld(object):
+             self.pred_val = part[1]
+         elif " & sb" in line:
+             self.scoreboard = True
+-            self.value = line.removesuffix(" & sb");
++            self.value = str_removesuffix(line, " & sb");
+         else:
+             self.scoreboard = False
+             self.value = line.strip()
+@@ -186,7 +198,7 @@ def main():
+ 
+     file_cats = {}
+     for csv_file in args.csv_files[0]:
+-        split = os.path.basename(csv_file).removesuffix('.csv').split('_')
++        split = str_removesuffix(os.path.basename(csv_file), '.csv').split('_')
+         assert len(split) == 2
+         reg_file = split[0]
+         latcat = split[1]
 diff --git a/src/nouveau/headers/class_parser.py b/src/nouveau/headers/class_parser.py
-index 9172589..06b0868 100644
+index 36a50b7..37c7d36 100644
 --- a/src/nouveau/headers/class_parser.py
 +++ b/src/nouveau/headers/class_parser.py
 @@ -13,6 +13,17 @@ from mako.template import Template
@@ -99,7 +215,7 @@ index 9172589..06b0868 100644
  
  METHOD_ARRAY_SIZES = {
      'BIND_GROUP_CONSTANT_BUFFER'                            : 16,
-@@ -560,7 +571,7 @@ def parse_header(nvcl, f):
+@@ -586,7 +597,7 @@ def parse_header(nvcl, f):
                      state = 1
                  elif teststr in list[1]:
                      if not SKIP_FIELD[0] in list[1]:
@@ -108,7 +224,7 @@ index 9172589..06b0868 100644
                  else:
                      state = 1
  
-@@ -570,7 +581,7 @@ def parse_header(nvcl, f):
+@@ -596,7 +607,7 @@ def parse_header(nvcl, f):
                      if ("0x" in list[2]):
                          state = 1
                      else:
@@ -117,24 +233,24 @@ index 9172589..06b0868 100644
                          bitfield = list[2].split(":")
                          f = Field(field, bitfield[1], bitfield[0])
                          curmthd.fields.append(f)
-@@ -590,13 +601,13 @@ def parse_header(nvcl, f):
-                 is_array = 0
+@@ -616,13 +627,13 @@ def parse_header(nvcl, f):
+                 is_array = False
                  if (':' in list[2]):
                      continue
 -                name = list[1].removeprefix(teststr)
 +                name = str_removeprefix(list[1], teststr)
                  if name.endswith("(i)"):
-                     is_array = 1
+                     is_array = True
 -                    name = name.removesuffix("(i)")
 +                    name = str_removesuffix(name, "(i)")
                  if name.endswith("(j)"):
-                     is_array = 1
+                     is_array = True
 -                    name = name.removesuffix("(j)")
 +                    name = str_removesuffix(name, "(j)")
  
                  curmthd = Method(name, list[2], is_array)
                  methods[name] = curmthd
-@@ -605,8 +616,8 @@ def parse_header(nvcl, f):
+@@ -654,8 +665,8 @@ def parse_header(nvcl, f):
      return (version, methods)
  
  def nvcl_for_filename(name):
@@ -145,7 +261,7 @@ index 9172589..06b0868 100644
      return "NV" + name.upper()
  
  def main():
-@@ -636,7 +647,7 @@ def main():
+@@ -685,7 +696,7 @@ def main():
      if args.prev_in_h is not None:
          prev_clheader = os.path.basename(args.prev_in_h)
          prev_nvcl = nvcl_for_filename(prev_clheader)
@@ -154,6 +270,37 @@ index 9172589..06b0868 100644
          with open(args.prev_in_h, 'r', encoding='utf-8') as f:
              (prev_version, prev_methods) = parse_header(prev_nvcl, f)
  
+diff --git a/src/nouveau/headers/lib_rs_gen.py b/src/nouveau/headers/lib_rs_gen.py
+index 71a40c3..c8d8a1d 100644
+--- a/src/nouveau/headers/lib_rs_gen.py
++++ b/src/nouveau/headers/lib_rs_gen.py
+@@ -16,6 +16,17 @@ from mako.template import Template
+ 
+ import util
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
+ 
+ TEMPLATE_RS = Template("""\
+ // Copyright © 2024 Collabora Ltd. and Red Hat Inc.
+@@ -103,7 +114,7 @@ def main():
+     for f in args.class_files[0]:
+         f = os.path.basename(f)
+         assert f.endswith('.rs')
+-        f = f.removesuffix('.rs')
++        f = str_removesuffix(f, '.rs')
+ 
+         mod_path = f.split('_')
+         assert mod_path[0] == 'nvh'
 diff --git a/src/nouveau/headers/nv_push_class_dump_h.py b/src/nouveau/headers/nv_push_class_dump_h.py
 index 0435f3a..f543ba3 100644
 --- a/src/nouveau/headers/nv_push_class_dump_h.py
@@ -186,8 +333,70 @@ index 0435f3a..f543ba3 100644
          engine_id = class_id_to_engine_id(class_id)
  
          classes_per_eng[engine_id].append(class_id)
+diff --git a/src/nouveau/headers/struct_parser.py b/src/nouveau/headers/struct_parser.py
+index 06e3da1..a7fab87 100644
+--- a/src/nouveau/headers/struct_parser.py
++++ b/src/nouveau/headers/struct_parser.py
+@@ -13,6 +13,17 @@ from mako.template import Template
+ 
+ import util
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
+ 
+ TEMPLATE_RS = Template("""\
+ // Copyright © 2024 Collabora Ltd. and Red Hat Inc.
+@@ -144,7 +155,7 @@ def parse_header(nvcl, file):
+             hi = int(mw_arr.group('hi'))
+             stride = int(mw_arr.group('stride'))
+             assert name.endswith('(i)')
+-            struct.add_field(name.removesuffix('(i)'), lo, hi, stride)
++            struct.add_field(str_removesuffix(name, '(i)'), lo, hi, stride)
+         else:
+             for f in struct.fields:
+                 if name.startswith(f.name + '_'):
+diff --git a/src/panfrost/perf/mali_gen_perf.py b/src/panfrost/perf/mali_gen_perf.py
+index 7f0e8d2..a1cbd85 100644
+--- a/src/panfrost/perf/mali_gen_perf.py
++++ b/src/panfrost/perf/mali_gen_perf.py
+@@ -11,6 +11,17 @@ from dataclasses import dataclass,field
+ from pathlib import Path
+ import xml.etree.ElementTree as et
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
+ 
+ TAB_SIZE = 3
+ COUNTERINFO_RELPATH = "database/counterinfo"
+@@ -458,7 +469,7 @@ def main():
+ 
+    c.write("\n")
+ 
+-   gpu_name = hwlayout.gpu_name.removeprefix("Mali-").removeprefix("Mali ").lower()
++   gpu_name = str_removeprefix(str_removeprefix(hwlayout.gpu_name, "Mali-"), "Mali ").lower()
+    c.write("const struct mali_perf_gpu_info mali_perf_{} = {{".format(gpu_name))
+    c.write("   .counters = counters,")
+    c.write("};")
 diff --git a/src/vulkan/util/vk_physical_device_features_gen.py b/src/vulkan/util/vk_physical_device_features_gen.py
-index aaa5b43..0546fa9 100644
+index c6f58bf..e4bbc74 100644
 --- a/src/vulkan/util/vk_physical_device_features_gen.py
 +++ b/src/vulkan/util/vk_physical_device_features_gen.py
 @@ -34,6 +34,18 @@ import mako
@@ -209,7 +418,7 @@ index aaa5b43..0546fa9 100644
  RENAMED_FEATURES = {
      # See https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/17272#note_1446477 for details
      ('BufferDeviceAddressFeaturesEXT', 'bufferDeviceAddressCaptureReplay'): 'bufferDeviceAddressCaptureReplayEXT',
-@@ -151,7 +163,7 @@ for (feature_structs, features) in KNOWN_ALIASES:
+@@ -160,7 +172,7 @@ for (feature_structs, features) in KNOWN_ALIASES:
              RENAMED_FEATURES[rename] = flag
  
  def get_renamed_feature(c_type, feature):
@@ -218,7 +427,7 @@ index aaa5b43..0546fa9 100644
  
  @dataclass
  class FeatureStruct:
-@@ -514,12 +526,12 @@ def get_feature_structs_from_xml(xml_files, beta, api='vulkan'):
+@@ -524,12 +536,12 @@ def get_feature_structs_from_xml(xml_files, beta, api='vulkan'):
              if renamed_flag not in features:
                  features[renamed_flag] = f.c_type
              else:
@@ -235,7 +444,7 @@ index aaa5b43..0546fa9 100644
      for rename in unused_renames:
          diagnostics.append(f'unused rename {rename}')
 diff --git a/src/vulkan/util/vk_physical_device_properties_gen.py b/src/vulkan/util/vk_physical_device_properties_gen.py
-index 3ffffbf..cae03e3 100644
+index 0bc4c58..4b1d018 100644
 --- a/src/vulkan/util/vk_physical_device_properties_gen.py
 +++ b/src/vulkan/util/vk_physical_device_properties_gen.py
 @@ -36,6 +36,18 @@ from mako.template import Template
@@ -257,7 +466,7 @@ index 3ffffbf..cae03e3 100644
  # Some extensions have been promoted to core, their properties are renamed
  # in the following hashtable.
  # The hashtable takes the form:
-@@ -297,7 +309,7 @@ def get_property_structs(doc, api, beta):
+@@ -299,7 +311,7 @@ def get_property_structs(doc, api, beta):
              if "STRUCTURE_TYPE" in str(elem.attrib):
                  s_type = elem.attrib.get("values")
  
@@ -266,6 +475,45 @@ index 3ffffbf..cae03e3 100644
  
          # collect a list of properties
          properties = []
+diff --git a/src/vulkan/util/vk_physical_device_spirv_caps_gen.py b/src/vulkan/util/vk_physical_device_spirv_caps_gen.py
+index b83c445..ae34c47 100644
+--- a/src/vulkan/util/vk_physical_device_spirv_caps_gen.py
++++ b/src/vulkan/util/vk_physical_device_spirv_caps_gen.py
+@@ -14,6 +14,18 @@ import xml.etree.ElementTree as et
+ import mako
+ from mako.template import Template
+ 
++def str_removeprefix(s, x):
++    if s.startswith(x):
++        return s[len(x):]
++    else:
++        return s
++
++def str_removesuffix(s, x):
++    if s.endswith(x):
++        return s[:-len(x)]
++    else:
++        return s
++
+ TEMPLATE_C = Template(COPYRIGHT + """
+ /* This file generated from ${filename}, don't edit directly. */
+ 
+@@ -75,13 +87,13 @@ def process_enable(enab):
+         else:
+             return f"(p->{attrib['member']} & {attrib['value']})"
+     elif 'extension' in attrib:
+-        return f"e->{attrib['extension'].removeprefix('VK_')}"
++        return f"e->{str_removeprefix(attrib['extension'], 'VK_')}"
+     elif 'feature' in attrib:
+         feat = get_renamed_feature(attrib['struct'], attrib['feature'])
+         return f"f->{feat}"
+     else:
+         version = attrib['version']
+-        return f"(api_version >= VK_API_{version.removeprefix('VK_')})"
++        return f"(api_version >= VK_API_{str_removeprefix(version, 'VK_')})"
+ 
+ def get_capabilities(doc, beta):
+     caps = {}
 -- 
 2.47.3
 

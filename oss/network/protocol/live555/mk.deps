@@ -16,11 +16,11 @@ DESCRIPTION      = This code forms a set of C++ libraries for multimedia streami
 
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-VERSION          = 2026.04.22
+VERSION          = 2026.11.08
 SRC_DIR          = live
 SRC_NAME         = $(SRC_DIR).$(VERSION).tar.gz
 SRC_URL          = https://download.live555.com/$(SRC_NAME)
-SRC_MD5          = 86736114c7b5f1bbcf46dc61246f8e0b
+SRC_MD5          = 1c4dd8499afd66718a1a9aaccd9d5c00
 OBJ_PREFIX       = $(SRC_PATH)
 
 GENMAKE          = $(shell pwd)/genmake
