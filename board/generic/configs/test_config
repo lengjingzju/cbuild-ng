@@ -102,12 +102,22 @@ CONFIG_NCURSES_NATIVE=y
 #
 # video
 #
+# CONFIG_DAV1D is not set
+# CONFIG_DAV1D_NATIVE is not set
+# CONFIG_DAV2D is not set
+# CONFIG_DAV2D_NATIVE is not set
 # CONFIG_OPENH264 is not set
 # CONFIG_OPENH264_NATIVE is not set
+# CONFIG_VVDEC is not set
+# CONFIG_VVDEC_NATIVE is not set
+# CONFIG_VVENC is not set
+# CONFIG_VVENC_NATIVE is not set
 # CONFIG_X264 is not set
 # CONFIG_X264_NATIVE is not set
 # CONFIG_X265 is not set
 # CONFIG_X265_NATIVE is not set
+# CONFIG_XVIDCORE is not set
+# CONFIG_XVIDCORE_NATIVE is not set
 # end of video
 # end of media
 
@@ -141,6 +151,8 @@ CONFIG_TCPDUMP=y
 # CONFIG_C_ARES_NATIVE is not set
 # CONFIG_LIBUV is not set
 # CONFIG_LIBUV_NATIVE is not set
+# CONFIG_LIBWEBSOCKETS is not set
+# CONFIG_LIBWEBSOCKETS_NATIVE is not set
 # CONFIG_MEDIA_SERVER is not set
 # CONFIG_MEDIA_SERVER_NATIVE is not set
 # CONFIG_PJPROJECT is not set
@@ -171,7 +183,7 @@ CONFIG_TCPDUMP=y
 #
 # CONFIG_ALSA_LIB is not set
 # CONFIG_ALSA_LIB_NATIVE is not set
-# CONFIG_TINYALSA is not set
+CONFIG_TINYALSA=y
 # CONFIG_TINYALSA_NATIVE is not set
 # end of audio
 
