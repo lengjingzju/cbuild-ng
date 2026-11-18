@@ -14,6 +14,7 @@ HOMEPAGE         = https://github.com/lengjingzju/cbuild-ng
 DESCRIPTION      = execld is a Linux utility designed to execute a target program using a custom dynamic linker (ld.so) \
                    and custom library search paths when available. It behaves similarly to the system dynamic loader, \
                    but with directory‑local overrides and configuration rules.
+SRC_PATH         = src
 
 BIN_NAME         = $(PACKAGE_NAME)
 LDFLAGS         += -static

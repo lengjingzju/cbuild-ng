@@ -1,0 +1,27 @@
+############################################
+# SPDX-License-Identifier: MIT             #
+# Copyright (C) 2021-.... Jing Leng        #
+# Contact: Jing Leng <lengjingzju@163.com> #
+############################################
+
+#DEPS(mk.deps) jprogress(native psysroot): unselect
+
+PACKAGE_NAME     = jprogress
+
+LICENSE          = MIT
+LICFILE          = common://MIT-LENGJING
+DESCRIPTION      = The jprogress is a progress refresh and log collector tool.
+
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.0.1
+SRC_PATH         = $(ENV_TOP_DIR)/scripts/progress
+
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+# refer to README 6.6.1 and 7.8
+CACHE_CHECKSUM  += $(SRC_PATH):*.c|*.h|Makefile|inc.makes
+
+COMPILE_TOOL     = imake
+
+include $(ENV_MAKE_DIR)/inc.rule.mk

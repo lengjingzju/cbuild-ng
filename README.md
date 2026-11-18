@@ -4652,6 +4652,7 @@ Tokens in dependency statements can be combined. When `gen_build_chain.py` parse
 | `dep@xxx` | Explicit subtarget dependency; split at `@` and handled separately by the script |
 | `KEY=VALUE` | Environment-variable-based dependency; the package is selectable only when the variable's value matches |
 | `nokconfig` | Do not generate a Kconfig entry for this package |
+| `kconfig` | Indicates that multiple packages share the same Kconfig; typically used when a cross-compiled package and its native-compiled counterpart of the same software share one configuration. |
 | `versioncfg` | This package's version is switched in the configuration menu |
 | `featurecfg` | Handle `ft-config` conditional dependencies and options |
 | `unselect` / `selected` | Not selected by default / selected by default in the menu |
@@ -6051,14 +6052,14 @@ The default verification items are appended by `inc.rule.mk`: the current direct
 `CACHE_CHECKSUM` can also contain directory entries. `process_cache.sh` splits a directory entry into four segments at colons, with several values inside a segment separated by bars:
 
 ```
-search-dir : filename patterns to verify : ignored directory names : ignored filename patterns
+search-dir:filename patterns to verify:ignored directory names:ignored filename patterns
 ```
 
 For example:
 
 ```makefile
-CACHE_CHECKSUM += "srca|srcb:*.c|*.h|Makefile:test:*.o|*.d"
-CACHE_CHECKSUM += "src:*.c|*.h|*.cpp|*.hpp"
+CACHE_CHECKSUM += srca|srcb:*.c|*.h|Makefile:test:*.o|*.d
+CACHE_CHECKSUM += $(SRC_PATH):*.c|*.h|*.cpp|*.hpp|Makefile|inc.makes
 ```
 
 The first entry verifies files matching `*.c`, `*.h`, and `Makefile` in the `srca` and `srcb` directories, ignoring the `test` directory and `*.o` / `*.d`; the second verifies C/C++ sources and headers under `src`. Directory entries let "local source trees without a separate archive" enter the cache key without listing the whole tree file by file.
@@ -6307,6 +6308,8 @@ Defaults for `SRC_PATH`:
 | git / svn download (`SRC_SHARED=y`) | `$(ENV_DOWN_DIR)/$(SRC_DIR)` |
 | tar / zip download (`SRC_SHARED=n`) | `$(WORKDIR)/$(SRC_DIR)` |
 | Local sources (`SRC_URL` empty) | Current directory |
+
+`SRC_PATH` can also be set manually; see [system/jprogress/mk.deps](./system/jprogress/mk.deps) and [oss/media/i18n/icu/mk.deps](./oss/media/i18n/icu/mk.deps) for reference.
 
 When `SRC_URL` is set, `PATCH_FOLDER` is detected automatically: if `patch/*.patch` exists in the current directory, `patch` is used.
 
@@ -6642,9 +6645,9 @@ Not a single line in this declaration describes "how to compile"—it is all "wh
 
 Once dependency rules and `inc.rule.mk`'s variables are covered, the place people get stuck is not "which variables exist" but "how is a real package actually written". Abstract rules can list twenty variables, yet cannot answer whether `CACHE_DEPENDS` should be left empty or set to `none`, why the path in `append` is `INS_TOPDIR`, or how one switch in the menu becomes both a configure parameter and a dependency relationship. These questions can only be explained by taking packages apart.
 
-This section dissects nine real packages from the project. They are not nine parallel examples, but a spectrum arranged by "how much the platform does for you": at the far right is `libhv`, where hardly anything needs writing and the platform handles configure, compilation, installation, and the dependency sysroot entirely; at the far left are `ffmpeg`, `bzip2`, and `boost`, which take over the whole compilation process, leaving the templates with only the download, patch, cache, and installation skeleton. In the middle are `tcpdump`, `glib`, and `lz4`, which use one hook to fix upstream artifacts, `ljson`, which drives versions from configuration, and `busybox`, which connects in-package configuration targets to the top-level make. After reading this spectrum, you can judge where the package you want to onboard belongs.
+This section dissects ten real packages from the project. They are not ten parallel examples, but a spectrum arranged by "how much the platform does for you": at the far right is `libhv`, where hardly anything needs writing and the platform handles configure, compilation, installation, and the dependency sysroot entirely; at the far left are `ffmpeg`, `bzip2`, and `boost`, which take over the whole compilation process, leaving the templates with only the download, patch, cache, and installation skeleton. In the middle are `tcpdump`, `glib`, and `lz4`, which use one hook to fix upstream artifacts, `ljson`, which drives versions from configuration, and `busybox`, which connects in-package configuration targets to the top-level make. After reading this spectrum, you can judge where the package you want to onboard belongs.
 
-All nine carry `native psysroot` (busybox carries only `psysroot`), so they build under private sysroots and the dependencies they can see are entirely determined by their `#DEPS` declarations. Their `mk.deps` files are all under `oss/` and can be opened for comparison at any time; only the key lines are quoted below, not the whole files:
+All ten carry `native psysroot` (busybox carries only `psysroot`), so they build under private sysroots and the dependencies they can see are entirely determined by their `#DEPS` declarations. Their `mk.deps` files are all under `oss/` and can be opened for comparison at any time; only the key lines are quoted below, not the whole files:
 
 | Package | Path |
 | --- | --- |
@@ -6657,6 +6660,7 @@ All nine carry `native psysroot` (busybox carries only `psysroot`), so they buil
 | bzip2 | [oss/tools/compress/bzip2/mk.deps](./oss/tools/compress/bzip2/mk.deps) |
 | boost | [oss/tools/toolchain/boost/mk.deps](./oss/tools/toolchain/boost/mk.deps) |
 | busybox | [oss/system/base/busybox/mk.deps](./oss/system/base/busybox/mk.deps) |
+| jprogress | [system/jprogress/mk.deps](./system/jprogress/mk.deps) |
 
 ### 7.10.1 ffmpeg: One ft-config Generates Menu Items, Conditional Dependencies, and Compiler Flags
 
@@ -7057,7 +7061,7 @@ Boost.Build reads the toolset declaration from `project-config.jam`; the default
 
 ### 7.10.9 busybox: Connecting In-Package Configuration Targets to Top-Level make and Forcing Rebuilds on Configuration Changes
 
-`busybox` is the only one of the nine packages that writes configuration targets into `#DEPS`:
+`busybox` is the only one of the ten packages that writes configuration targets into `#DEPS`:
 
 ```makefile
 #DEPS(mk.deps) busybox(psysroot defconfig menuconfig): unselect
@@ -7091,15 +7095,47 @@ The `do_setforce` at the end calls `process_cache.sh -m setforce` to mark this p
 
 `append` deletes `$(INS_TOPDIR)/linuxrc` and `$(INS_TOPDIR)/sbin/init`, because in rootfs scenarios those two entry points are arranged uniformly by the system and installing them from the package would conflict. `CACHE_CHECKSUM` appends the preset configuration path, and `CACHE_DEPENDS = none` says busybox has no dependency packages—it is a base system package that is depended on rather than depending on others. `O=$(OBJ_PREFIX)` follows the kernel's output separation, and `CONFIG_PREFIX=$(INS_TOPDIR)` makes `make install` land in the private installation tree.
 
-### 7.10.10 Writing Rules Distilled from the Nine Packages
+### 7.10.10 jprogress: A Local-Source Package, and Its Cache Key When Declaration and Source Are Separate
 
-Put the nine packages together and the dual semantics of `CUSTOM_TARGETS` become clear. For the four targets `build`, `clean`, `distclean`, and `install`, the template's test is "generate the default implementation only if it is *not* in `CUSTOM_TARGETS`"—declaring one means "I will write it myself, do not generate it". For the three hooks `prepend`, `compile`, and `append`, the test is reversed: "insert the call only if it *is* in `CUSTOM_TARGETS`"—no declaration, no execution. One variable, two meanings, distinguished by target name; it is easy to read `inc.rule.mk` backwards at first: `ffmpeg` writing `CUSTOM_TARGETS = compile` does not mean "customize an extra target named compile" but "replace the template's default compilation"; `glib` writing `CUSTOM_TARGETS = prepend` means "insert a step before configure". None of the nine packages declares `build`, which shows that the default pipeline itself is reliable enough and the only things needing changes are the compilation segment and the two pinch points around it.
+The previous nine packages all take their source from downloads or Git checkouts; `jprogress` is the reverse — the package directory holds only a `mk.deps`, and the source lives in `scripts/progress/`. It fills the missing case in the spectrum: **what builds the cache key when there is no downloaded artifact to validate**.
+
+```makefile
+#DEPS(mk.deps) jprogress(native psysroot): unselect
+PACKAGE_NAME     = jprogress
+LICENSE          = MIT
+LICFILE          = common://MIT-LENGJING
+DESCRIPTION      = The jprogress is a progress refresh and log collector tool.
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.0.1
+SRC_PATH         = $(ENV_TOP_DIR)/scripts/progress
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+# refer to README 6.6.1 and 7.8
+CACHE_CHECKSUM  += $(SRC_PATH):*.c|*.h|Makefile|inc.makes
+COMPILE_TOOL     = imake
+include $(ENV_MAKE_DIR)/inc.rule.mk
+```
+
+The name in `#DEPS(mk.deps)` is a filename (set by `gen_build_chain.py -d`), not a source directory. So `mk.deps` carries the package identity and `make -f mk.deps` runs standalone; `LICENSE`/`DESCRIPTION` still go into `info.txt`, so moving the source away loses no compliance metadata. `SRC_PATH` pins the in-tree source via the absolute anchor `$(ENV_TOP_DIR)`, and `COMPILE_TOOL = imake` makes the template call that shipped Makefile with `-C $(SRC_PATH)` — one source tree can be managed under different identities just by swapping the `mk.deps`.
+
+The cache is the point. With `CACHE_BUILD = y` only `mk.deps` and the patch directory are validated by default; this package has no `SRC_URL`/`SRC_MD5`/`SRC_REV`, so the cache never sees `scripts/progress/`. Without the line below, changing a `.c` file still prints Cache Match and reuses the old binary — the edit "does not take effect". Compare `ljson` in 7.10.5: fetched over Git, its `SRC_REV` is auto-appended to `CACHE_APPENDS`, so `none` is safe; here neither a download attribute exists nor does `none` cover anything but the dependency chain, so every source change slips through. `VERSION` gives a cache name, not a source fingerprint. A local-source package must therefore declare its own source —
+
+`CACHE_CHECKSUM += $(SRC_PATH):*.c|*.h|Makefile|inc.makes` uses the 6.6.1 directory-entry syntax `dir:patterns`, with `|` separating values. Only the first two fields are used: `*.c`/`*.h` globs plus the exact names `Makefile` and `inc.makes` (the build rules themselves, so a template change triggers a rebuild). A whitelist rather than an ignore list keeps locally produced `.o`/binaries out of the input set, avoiding the "output changes → checksum changes → cache never hits" loop. Details are sorted before the final md5 for cross-machine consistency, and `<package>-cache.log` records every item.
+
+Pitfalls: `SRC_PATH` must be an absolute anchor; assign all variables before `include inc.rule.mk`; do not fake a `SRC_MD5` to drag local source into the download path; `CACHE_DEPENDS = none` does not mean the cache never invalidates — it skips only the dependency chain, and source validation always rests on this `CACHE_CHECKSUM` line.
+
+In one line: a downloaded package's source fingerprint comes from the locked value automatically; a local-source package must declare it itself.
+
+### 7.10.11 Writing Rules Distilled from the Ten Packages
+
+Put the ten packages together and the dual semantics of `CUSTOM_TARGETS` become clear. For the four targets `build`, `clean`, `distclean`, and `install`, the template's test is "generate the default implementation only if it is *not* in `CUSTOM_TARGETS`"—declaring one means "I will write it myself, do not generate it". For the three hooks `prepend`, `compile`, and `append`, the test is reversed: "insert the call only if it *is* in `CUSTOM_TARGETS`"—no declaration, no execution. One variable, two meanings, distinguished by target name; it is easy to read `inc.rule.mk` backwards at first: `ffmpeg` writing `CUSTOM_TARGETS = compile` does not mean "customize an extra target named compile" but "replace the template's default compilation"; `glib` writing `CUSTOM_TARGETS = prepend` means "insert a step before configure". None of the ten packages declares `build`, which shows that the default pipeline itself is reliable enough and the only things needing changes are the compilation segment and the two pinch points around it.
 
 There are now criteria for the two forms of `CACHE_DEPENDS` as well. Leaving it empty means "compute dependency-chain checksums automatically from `#DEPS` and `.config`"; `ffmpeg`, `tcpdump`, `glib`, `libhv`, and `boost` all leave it empty—the first four really have dependencies, and the last does so for consistency within the project. `none` means "I have no dependency packages, skip that whole segment"; `ljson`, `lz4`, `bzip2`, and `busybox` use it. Note that `none` only disables the dependency chain: the version enters the cache name via `-v $(VERSION)`, `SRC_MD5` / `SRC_TAG` / `SRC_REV` are appended by `CACHE_APPENDS`, feature switches by `ft-config`, and preset configurations by `CACHE_CHECKSUM`. Understanding `none` as "the cache never invalidates" is wrong; conversely, writing `none` on a package that does have dependencies is what is truly dangerous.
 
-Path choices run through all nine packages. `$(INS_TOPDIR)` is the package's own installation tree, and all fixes in `prepend` / `compile` / `append` land there; `$(INS_PREFIX)` is the delivery destination, used only by the template's `install` target through `process_sysroot.sh $(INSTALL_OPTION)`. There is also an intermediate step, `process_sysroot.sh replace $(INS_TOPDIR)`, which specifically scans `.pc` files in the installation tree and replaces hardcoded `INS_TOPDIR` absolute paths with `${pcfiledir}/` plus a relative path, so pkg-config files keep working after the package is moved. `$(DEP_PREFIX)` is the private sysroot, pointed at by `link_hdrs` / `link_libs` / `PKG_CONFIG_LIBDIR` / `CMAKE_PREFIX_PATH`; `$(OBJ_PREFIX)` is the compilation output directory. Each of the four directories owns one segment; mixing them does not produce an immediate error, but artifacts go wrong at packaging or cross-machine deployment—`lz4` changing `.pc` and `tcpdump` changing symlinks are both about holding that boundary.
+Path choices run through all ten packages. `$(INS_TOPDIR)` is the package's own installation tree, and all fixes in `prepend` / `compile` / `append` land there; `$(INS_PREFIX)` is the delivery destination, used only by the template's `install` target through `process_sysroot.sh $(INSTALL_OPTION)`. There is also an intermediate step, `process_sysroot.sh replace $(INS_TOPDIR)`, which specifically scans `.pc` files in the installation tree and replaces hardcoded `INS_TOPDIR` absolute paths with `${pcfiledir}/` plus a relative path, so pkg-config files keep working after the package is moved. `$(DEP_PREFIX)` is the private sysroot, pointed at by `link_hdrs` / `link_libs` / `PKG_CONFIG_LIBDIR` / `CMAKE_PREFIX_PATH`; `$(OBJ_PREFIX)` is the compilation output directory. Each of the four directories owns one segment; mixing them does not produce an immediate error, but artifacts go wrong at packaging or cross-machine deployment—`lz4` changing `.pc` and `tcpdump` changing symlinks are both about holding that boundary.
 
-The last rule is about the order of judgment in "how much the platform does for you". When onboarding a new package, first see which category upstream belongs to—Autotools / CMake / Meson / its own Makefile / its own build tool; if it maps to `COMPILE_TOOL`, let it map and write only `*_FLAGS` in the package. If it does not map, consider leaving `COMPILE_TOOL` empty and translating with `MAKE_FLAGS`. Only when upstream needs multiple rounds of building, special toolset declarations, or source fixes should you touch `CUSTOM_TARGETS = compile`. Once `compile` takes over, `REL_CONFIG` is no longer generated and dependency paths must be filled in yourself with `link_hdrs` / `link_libs`—the most costly tier among the nine packages. The whole spectrum has one principle from end to end: **let the platform own the reusable parts, and let the package describe only where it differs from everyone else**.
+The last rule is about the order of judgment in "how much the platform does for you". When onboarding a new package, first see which category upstream belongs to—Autotools / CMake / Meson / its own Makefile / its own build tool; if it maps to `COMPILE_TOOL`, let it map and write only `*_FLAGS` in the package. If it does not map, consider leaving `COMPILE_TOOL` empty and translating with `MAKE_FLAGS`. Only when upstream needs multiple rounds of building, special toolset declarations, or source fixes should you touch `CUSTOM_TARGETS = compile`. Once `compile` takes over, `REL_CONFIG` is no longer generated and dependency paths must be filled in yourself with `link_hdrs` / `link_libs`—the most costly tier among the ten packages. The whole spectrum has one principle from end to end: **let the platform own the reusable parts, and let the package describe only where it differs from everyone else**.
 
 
 # 8. Comparison and Selection

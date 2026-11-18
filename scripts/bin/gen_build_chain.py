@@ -19,12 +19,22 @@ def escape_toupper(var):
 def escape_tolower(var):
     return var.lower().replace('__dot__', '.').replace('__plus__', '+').replace('_', '-')
 
+def remove_prefix(var, f):
+    if var.startswith(f):
+        return var[len(f):]
+    return var
+
+def remove_suffix(var, f):
+    if var.endswith(f):
+        return var[:-len(f)]
+    return var
 
 def re_replace_env(matchobj):
     name = matchobj.group(0)[2:-1]
     val = os.getenv(name)
     if val is None:
-        print('WARNING: environment variable %s is not defined' % (name))
+        if debug_mode:
+            print('WARNING: environment variable %s is not defined' % (name))
         return matchobj.group(0)
     return val
 
@@ -79,6 +89,7 @@ class Deps:
         item['features'] = [] # Kconfig configuration feature
         item['default'] = True
         item['conf'] = ''
+        item['conftype'] = ''
 
 
     def get_env_vars(self, local_config):
@@ -109,21 +120,13 @@ class Deps:
 
     def remove_config_prefix(self, expr):
         def repl(m):
-            name = m.group(0)
-            if name.startswith("CONFIG_"):
-                return name[7:]   # len("CONFIG_") == 7
-            return name
-
+            return remove_prefix(m.group(0), 'CONFIG_')
         return self.RegexDict['CFGTOKEN'].sub(repl, expr)
 
 
     def ensure_native_suffix(self, expr):
         def repl(m):
-            name = m.group(0)
-            if not name.endswith("_NATIVE"):
-                return name + "_NATIVE"
-            return name
-
+            return remove_suffix(m.group(0), '_NATIVE')
         return self.RegexDict['CFGTOKEN'].sub(repl, expr)
 
 
@@ -151,12 +154,14 @@ class Deps:
                     if item['conf'] not in self.KconfigDict.keys():
                         self.KconfigDict[item['conf']] = []
                     self.KconfigDict[item['conf']].append(item['target'])
-                    item['conf'] = 'kconfig'
+                    item['conftype'] = 'kconfig'
+
                 elif dep == 'nokconfig':
                     item['conf'] = ''
+                    item['conftype'] = 'nokconfig'
                 elif dep == 'versioncfg':
                     item['versioncfg'] = True
-                    self.VerCfgSet.add(item['target'].replace('-native', '').replace('prebuild-', ''))
+                    self.VerCfgSet.add(remove_prefix(remove_suffix(item['target'], '-native'), 'prebuild-'))
                 elif dep == 'featurecfg':
                     item['featurecfg'] = True
                 elif dep == 'unselect':
@@ -264,7 +269,7 @@ class Deps:
                 dep = dep + '-native'
             if dep != nitem['target'] and dep not in ideps:
                 ideps.append(dep)
-                if nitem['conf'] == 'kconfig':
+                if nitem['conftype'] == 'kconfig':
                     nitem['ideps'].append(dep + split_str + '%s' % (cond))
                 else:
                     nitem['ideps'].append(dep + split_str + '%s_NATIVE' % (cond))
@@ -303,11 +308,8 @@ class Deps:
                 nitem['wrule'].append(ndeps)
 
         if nitem['conf']:
-            if nitem['conf'] == 'kconfig':
-                for kconf_path in self.KconfigDict.keys():
-                    if item['target'] in self.KconfigDict[kconf_path]:
-                        self.KconfigDict[kconf_path].append(nitem['target'])
-                        break
+            if nitem['conftype'] == 'kconfig':
+                self.KconfigDict[nitem['conf']].append(nitem['target'])
             else:
                 baseconf = os.path.basename(item['conf'])
                 if item['target'] in baseconf:
@@ -362,7 +364,7 @@ class Deps:
                     self.__init_item(item)
 
                     item['path'] = root
-                    item['spath'] = root.replace(rootdir, '', 1)
+                    item['spath'] = remove_prefix(root, rootdir)
                     if self.yocto_flag:
                         item['make'] = vir_name
 
@@ -392,7 +394,7 @@ class Deps:
                     target_list.append(item['target'])
                     self.__set_item_deps(last_group.strip().split(), item, False)
                     self.VirtualList.append(item)
-                    self.PathList.append((item['path'], item['spath'], item['target']))
+                    self.PathList.append((item['path'], item['spath'], item))
 
                     if 'native' in item['targets']:
                         item['targets'].remove('native')
@@ -400,7 +402,7 @@ class Deps:
                             nitem = self.__get_native_deps(item)
                             target_list.append(nitem['target'])
                             self.VirtualList.append(nitem)
-                            self.PathList.append((nitem['path'], nitem['spath'], nitem['target']))
+                            self.PathList.append((nitem['path'], nitem['spath'], nitem))
 
 
     def search_normal_depends(self, dep_name, vir_name, search_dirs, ignore_dirs = [], go_on_dirs = []):
@@ -432,7 +434,7 @@ class Deps:
                     self.__add_virtual_deps(vir_name, root, root_dir)
 
                 if dep_name in files:
-                    self.PathList.append((root, root.replace(root_dir, '', 1), ''))
+                    self.PathList.append((root, remove_prefix(root, root_dir), {}))
                     if 'continue' not in files:
                         if not go_on_dirs or root not in go_on_dirs:
                             dirs.clear() # don't continue to search sub dirs.
@@ -471,7 +473,7 @@ class Deps:
 
                         fullname = os.path.join(root, fname)
                         item['path'] = os.path.dirname(fullname)
-                        item['spath'] = os.path.dirname(fullname.replace(root_dir, '', 1))
+                        item['spath'] = os.path.dirname(remove_prefix(fullname, root_dir))
                         item['make'] = fname
                         item['target'] = fname[0:fname.rindex('_') if '_' in fname else fname.rindex('.')]
 
@@ -481,7 +483,7 @@ class Deps:
                                 self.PokyList.append(item)
                                 poky_targets.append(item['target'])
                         else:
-                            self.PathList.append((item['path'], item['spath'], '', item['make']))
+                            self.PathList.append((item['path'], item['spath'], {}, item['make']))
 
 
     def __add_item_to_list(self, item, refs):
@@ -545,13 +547,31 @@ class Deps:
             refs.append([item])
 
 
+    def add_normal_item_finish(self, item):
+        if not item:
+            return
+        if 'unified' not in item['targets']:
+            item['src'] = ''
+        if item['src'] and os.path.exists(item['src']) and item['conftype'] != 'nokconfig':
+            conf_paths = []
+            conf_paths.append(os.path.join(item['src'], '%s.%s' % (item['target'], self.conf_name.split('.')[-1])))
+            conf_paths.append(os.path.join(item['src'], self.conf_name))
+
+            for conf_path in conf_paths:
+                if conf_path == item['conf']:
+                    break
+                if os.path.exists(conf_path):
+                    if item['conftype'] == 'kconfig':
+                        self.KconfigDict[conf_path] = self.KconfigDict.pop(item['conf'])
+                    item['conf'] = conf_path
+                    break
+
+
     def add_normal_item(self, pathpair, dep_name, refs):
         if pathpair[2]:
-            for item in self.VirtualList:
-                if pathpair[2] == item['target']:
-                    if self.__get_append_flag(item, True):
-                        self.__add_item_to_list(item, refs)
-                    break
+            item = pathpair[2]
+            if self.__get_append_flag(item, True):
+                self.__add_item_to_list(item, refs)
             return
 
         dep_path = os.path.join(pathpair[0], dep_name)
@@ -569,7 +589,7 @@ class Deps:
             makestr = ''
             ret = None
 
-            VARS = ['VERSION', 'LICENSE', 'LICFILE', 'HOMEPAGE', 'DESCRIPTION']
+            VARS = ['VERSION', 'LICENSE', 'LICFILE', 'HOMEPAGE', 'DESCRIPTION', 'SRC_PATH']
             LINE_MATCHES = ['DESCRIPTION']
 
             for per_line in fp.read().splitlines():
@@ -609,6 +629,7 @@ class Deps:
                     if not ret:
                         ret = self.RegexDict['URL'].match(per_line)
                         if ret:
+                            item['src'] = ''
                             attrs.add('url')
                             continue
                     if not ret:
@@ -653,6 +674,7 @@ class Deps:
                     match_type = ''
                     dep_flag = True
 
+                    self.add_normal_item_finish(item)
                     if native_flag:
                         native_flag = False
                         nitem = self.__get_native_deps(item)
@@ -764,6 +786,17 @@ class Deps:
                         version = subprocess.getoutput('bash %s %s' % (os.path.join(os.getenv('ENV_TOOL_DIR'), 'process_machine.sh'), vname))
                     self.InfoDict[package]['VERSION'] = version
 
+                elif match_type == 'SRC_PATH':
+                    match_type = ''
+                    src_path = last_group.strip('"').strip()
+                    if 'url' not in attrs:
+                        if src_path and '${' in src_path:
+                            src_path = re.sub(r'(\$\{[\w\-]+\})', re_replace_env, src_path)
+                        if src_path and '$(' in src_path:
+                            src_path = re.sub(r'(\$\([\w\-]+\))', re_replace_env, src_path)
+                        item['src'] = src_path
+                    self.InfoDict[package]['SRC_PATH'] = src_path
+
                 elif match_type == 'FTHEAD':
                     match_type = ''
                     feature = self.RegexDict['FTCFG'].match(last_group)
@@ -797,6 +830,7 @@ class Deps:
                     self.InfoDict[package][match_type] = last_group.strip('"').strip()
                     match_type = ''
 
+            self.add_normal_item_finish(item)
             if native_flag:
                 native_flag = False
                 nitem = self.__get_native_deps(item)
@@ -815,7 +849,12 @@ class Deps:
                     self.__add_item_to_list(ItemDict[key], refs)
             if items:
                 if package and 'HOMEPAGE' not in self.InfoDict[package].keys():
-                    self.InfoDict[package]['LOCATION'] = items[0]['mpath'].replace(os.getenv('ENV_TOP_DIR'), 'TOPDIR', 1)
+                    location = items[0]['src'] if items[0]['src'] else items[0]['mpath']
+                    ENV_TOP_DIR = os.getenv('ENV_TOP_DIR')
+                    if location.startswith(ENV_TOP_DIR):
+                        self.InfoDict[package]['LOCATION'] = 'TOPDIR' + location[len(ENV_TOP_DIR):]
+                    else:
+                        self.InfoDict[package]['LOCATION'] = location
 
                 for item in items:
                     if 'empty' in item['targets']:
@@ -847,11 +886,9 @@ class Deps:
 
     def add_yocto_item(self, pathpair, refs):
         if pathpair[2]:
-            for item in self.VirtualList:
-                if pathpair[2] == item['target']:
-                    if self.__get_append_flag(item, True):
-                        self.__add_item_to_list(item, refs)
-                    break
+            item = pathpair[2];
+            if self.__get_append_flag(item, True):
+                self.__add_item_to_list(item, refs)
             return
 
         extra_deps = []
@@ -1045,13 +1082,6 @@ class Deps:
         return 0
 
 
-    def __check_shared_kconfig(self, target):
-        for kconf_path in self.KconfigDict.keys():
-            if target in self.KconfigDict[kconf_path]:
-                return kconf_path,self.KconfigDict[kconf_path]
-        return '',[]
-
-
     def __write_feature_kconfig(self, item):
         if not item['features']:
             return ''
@@ -1079,7 +1109,7 @@ class Deps:
         if self.prepend_flag:
             config_prepend = 'CONFIG_'
         target = '%s%s' % (config_prepend, escape_toupper(item['target']))
-        package = item['target'].replace('-native', '').replace('prebuild-', '')
+        package = remove_prefix(remove_suffix(item['target'], '-native'), 'prebuild-')
 
         if 'choice' in item['vtype']:
             fp.write('choice\n')
@@ -1098,7 +1128,7 @@ class Deps:
                 else:
                     fp.write('\tbool "[v]-%s"\n' % (item['target']))
         else:
-            if not choice_flag and (item['conf'] or item['features']) and item['conf'] != 'kconfig':
+            if not choice_flag and (item['conf'] or item['features']) and item['conftype'] != 'kconfig':
                 fp.write('menuconfig %s\n' % (target))
             else:
                 fp.write('config %s\n' % (target))
@@ -1180,12 +1210,12 @@ class Deps:
         ft_cfg_str = self.__write_feature_kconfig(item)
 
         if item['conf'] or ft_cfg_str:
-            if item['conf'] == 'kconfig':
-                kconf_path,shared_targets = self.__check_shared_kconfig(item['target'])
+            if item['conftype'] == 'kconfig':
+                shared_targets = self.KconfigDict[item['conf']]
                 if shared_targets and shared_targets[-1] == item['target']:
                     conf_str = 'if %s\nmenu "%s configuration (%s)"\nsource "%s"\n%sendmenu\nendif\n\n' % (
                             ' || '.join(['%s%s' % (config_prepend, escape_toupper(v)) for v in shared_targets]),
-                            shared_targets[0], item['spath'], kconf_path, ft_cfg_str)
+                            shared_targets[0], item['spath'], item['conf'], ft_cfg_str)
                     if choice_flag:
                         self.conf_str += conf_str
                     else:
@@ -1233,7 +1263,7 @@ class Deps:
             dirs = []
 
             if prefix_str:
-                spath = spath.replace(prefix_str + '/', '', 1)
+                spath = remove_prefix(spath, prefix_str + '/')
             else:
                 spath = item['spath']
             if self.keywords:
@@ -1331,7 +1361,7 @@ class Deps:
                     awdeps = item['awdeps'][:]
                     for dep in item['awdeps']:
                         if 'prebuild-' in dep:
-                            if dep.replace('prebuild-', '', 1) in item['awdeps']:
+                            if remove_prefix(dep, 'prebuild-') in item['awdeps']:
                                 awdeps.remove(dep)
                             elif dep in rules:
                                 self.__replace_list(awdeps, dep, '+' + dep)
@@ -1467,9 +1497,7 @@ class Deps:
                 unionstr = '%s-' % (item['target']) if 'union' in item['targets'] else ''
 
                 psysroot_target = '%s_psysroot'  % (item['target'])
-                package_name = item['target']
-                if package_name.endswith('-native'):
-                    package_name = package_name[:-len('-native')]
+                package_name = remove_suffix(item['target'], '-native')
                 psys_make = '$(PREAT)%s -s INSTALL_OPTION=$(INSTALL_OPTION) CROSS_DESTDIR=$(ENV_CROSS_ROOT)/objects/%s/sysroot NATIVE_DESTDIR=$(ENV_NATIVE_ROOT)/objects/%s/sysroot-native' \
                             % ('$(MAKE)', package_name, package_name)
 
@@ -1478,7 +1506,7 @@ class Deps:
                 isys_cmd = ''
                 if pkg_flags['native'] :
                     gsys_dir = '$(ENV_NATIVE_ROOT)/sysroot'
-                    isys_dir = '$(ENV_NATIVE_ROOT)/objects/%s/image' % (item['target'].replace('-native', ''))
+                    isys_dir = '$(ENV_NATIVE_ROOT)/objects/%s/image' % (remove_suffix(item['target'], '-native'))
                     isys_cmd = '$(PREAT)$(SYSROOT_SCRIPT) $(INSTALL_OPTION) %s $(NATIVE_DESTDIR)' % (isys_dir)
                 else:
                     gsys_dir = '$(ENV_CROSS_ROOT)/sysroot'

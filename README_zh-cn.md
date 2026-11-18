@@ -4320,7 +4320,7 @@ $(PATCH_PACKAGE)-unpatch-%-all:
 | --- | --- |
 | `unselect` | 该包默认不选中（生成 `default n`）；不写则默认选中 |
 | `nokconfig` | 该包不含 Kconfig 配置。同目录只有一个包时无需设置；同目录有多个包时，若其他包也有配置，可把配置文件命名为 `<包名>.<配置后缀>` 来区分，否则需要设置本记号 |
-| `kconfig` | 多个包共享同一份 Kconfig，典型用法是同一软件的交叉包与 native 包共享 |
+| `kconfig` | 多个包共享同一份 Kconfig，典型用法是同一软件的 cross 包与 native 包共享 |
 | `versioncfg` | 自动生成版本相关的三个 Kconfig 条目 |
 | `featurecfg` | 自动解析 Makefile 中的 `$(eval $(call ft-config,CONFIG_` 语句，添加条件依赖变量 `depname@@condition` 并生成对应的 Kconfig 条目 |
 
@@ -4665,6 +4665,7 @@ rankdir=LR
 | `dep@xxx` | 显式子目标依赖，由脚本按 `@` 切分后单独处理 |
 | `KEY=VALUE` | 基于环境变量的依赖，只有变量取值匹配时本包才可选中 |
 | `nokconfig` | 不为本包生成 Kconfig 条目 |
+| `kconfig` | 表示多个包共享相同的 Kconfig，一般是同一个软件的交叉编译包和本地编译包共享 |
 | `versioncfg` | 本包版本由配置菜单切换 |
 | `featurecfg` | 处理 `ft-config` 的条件依赖与选项 |
 | `unselect` / `selected` | 菜单中默认不选中 / 默认选中 |
@@ -6064,14 +6065,14 @@ $ execld /myapp/bin/myapp
 `CACHE_CHECKSUM` 还可以写目录项。`process_cache.sh` 按冒号把目录项切成四段，段内多个值用竖线分隔：
 
 ```
-搜索目录 : 参与校验的文件名模式 : 忽略的目录名 : 忽略的文件名模式
+搜索目录:参与校验的文件名模式:忽略的目录名:忽略的文件名模式
 ```
 
 例如：
 
 ```makefile
-CACHE_CHECKSUM += "srca|srcb:*.c|*.h|Makefile:test:*.o|*.d"
-CACHE_CHECKSUM += "src:*.c|*.h|*.cpp|*.hpp"
+CACHE_CHECKSUM += srca|srcb:*.c|*.h|Makefile:test:*.o|*.d
+CACHE_CHECKSUM += $(SRC_PATH):*.c|*.h|*.cpp|*.hpp|Makefile|inc.makes
 ```
 
 第一项表示在 `srca`、`srcb` 两个目录里校验匹配 `*.c`、`*.h`、`Makefile` 的文件，忽略 `test` 目录与 `*.o`、`*.d`；第二项表示校验 `src` 下的 C/C++ 源与头文件。目录项让「没有独立压缩包的本地源码树」也能进入缓存键，且不需要把整个目录树逐文件列出。
@@ -6320,6 +6321,8 @@ $ python3 scripts/bin/convert_recipe.py <recipe文件路径>
 | git / svn 下载（`SRC_SHARED=y`） | `$(ENV_DOWN_DIR)/$(SRC_DIR)` |
 | tar / zip 下载（`SRC_SHARED=n`） | `$(WORKDIR)/$(SRC_DIR)` |
 | 本地源码（`SRC_URL` 为空） | 当前目录 |
+
+`SRC_PATH` 也可以手动设置，具体可参考 [system/jprogress/mk.deps](./system/jprogress/mk.deps) 和 [oss/media/i18n/icu/mk.deps](./oss/media/i18n/icu/mk.deps)
 
 设置了 `SRC_URL` 时，`PATCH_FOLDER` 会自动探测：若当前目录下存在 `patch/*.patch`，则取 `patch`。
 
@@ -6655,9 +6658,9 @@ append:
 
 依赖规则和 `inc.rule.mk` 的变量讲完，最容易卡住的地方不是「有哪些变量」，而是「一个真实的包到底该怎么写」。抽象规则能列出二十个变量，却回答不了 `CACHE_DEPENDS` 该留空还是写 `none`、`append` 里的路径为什么是 `INS_TOPDIR`、菜单里一个开关怎么变成 configure 参数同时又变成依赖关系。这些问题只有把包拆开看才能讲清楚。
 
-本节剖析工程里九个真实包。它们不是九个并列示例，而是按「平台替你做了多少」排成的一条谱系：最右边是 `libhv`，几乎什么都不用写，平台把 configure、编译、安装、依赖 sysroot 全包了；最左边是 `ffmpeg`、`bzip2`、`boost`，把编译过程整段接管过来，模板只剩下载、补丁、缓存与安装骨架。中间是 `tcpdump`、`glib`、`lz4` 借一个钩子修正上游产物，`ljson` 用配置驱动版本，`busybox` 把包内配置目标接到顶层 make 上。读完这条谱系，就能判断自己要接的包该落在哪个位置。
+本节剖析工程里十个真实包。它们不是十个并列示例，而是按「平台替你做了多少」排成的一条谱系：最右边是 `libhv`，几乎什么都不用写，平台把 configure、编译、安装、依赖 sysroot 全包了；最左边是 `ffmpeg`、`bzip2`、`boost`，把编译过程整段接管过来，模板只剩下载、补丁、缓存与安装骨架。中间是 `tcpdump`、`glib`、`lz4` 借一个钩子修正上游产物，`ljson` 用配置驱动版本，`busybox` 把包内配置目标接到顶层 make 上。读完这条谱系，就能判断自己要接的包该落在哪个位置。
 
-九个包都带 `native psysroot`（`busybox` 只带 `psysroot`），因此在私有 sysroot 下构建，能看见的依赖完全由 `#DEPS` 声明决定。它们的 `mk.deps` 都在 `oss/` 下，可随时打开对照；以下只引关键几行，不复述整份文件：
+十个包都带 `native psysroot`（`busybox` 只带 `psysroot`），因此在私有 sysroot 下构建，能看见的依赖完全由 `#DEPS` 声明决定。它们的 `mk.deps` 都在 `oss/` 下，可随时打开对照；以下只引关键几行，不复述整份文件：
 
 | 包 | 路径 |
 | --- | --- |
@@ -6670,6 +6673,7 @@ append:
 | bzip2 | [oss/tools/compress/bzip2/mk.deps](./oss/tools/compress/bzip2/mk.deps) |
 | boost | [oss/tools/toolchain/boost/mk.deps](./oss/tools/toolchain/boost/mk.deps) |
 | busybox | [oss/system/base/busybox/mk.deps](./oss/system/base/busybox/mk.deps) |
+| jprogress | [system/jprogress/mk.deps](./system/jprogress/mk.deps) |
 
 ### 7.10.1 ffmpeg：一条 `ft-config` 同时生成菜单项、条件依赖和编译参数
 
@@ -7070,7 +7074,7 @@ Boost.Build 从 `project-config.jam` 里读工具集声明，默认那行 `using
 
 ### 7.10.9 busybox：包内配置目标接到顶层 make，并让配置变更强制重编
 
-`busybox` 是九个包里唯一把配置目标写进 `#DEPS` 的：
+`busybox` 是十个包里唯一把配置目标写进 `#DEPS` 的：
 
 ```makefile
 #DEPS(mk.deps) busybox(psysroot defconfig menuconfig): unselect
@@ -7104,15 +7108,48 @@ menuconfig:
 
 `append` 删掉 `$(INS_TOPDIR)/linuxrc` 与 `$(INS_TOPDIR)/sbin/init`，因为 rootfs 场景里这两个入口由系统统一安排，包自己装会冲突。`CACHE_CHECKSUM` 追加预置配置路径，`CACHE_DEPENDS = none` 表示 busybox 没有依赖包——它是基础系统包，被别人依赖而不是依赖别人。`O=$(OBJ_PREFIX)` 沿用内核那套输出分离，`CONFIG_PREFIX=$(INS_TOPDIR)` 让 `make install` 落进私有安装树。
 
-### 7.10.10 从九个包里提炼出的编写规则
 
-把九个包放在一起，`CUSTOM_TARGETS` 的双重语义就清楚了。对 `build`、`clean`、`distclean`、`install` 这四个目标，模板的判断是「不在 `CUSTOM_TARGETS` 里才生成默认实现」——声明了就等于说「我自己写，别生成」。对 `prepend`、`compile`、`append` 这三个钩子，判断反过来，是「在 `CUSTOM_TARGETS` 里才插入调用」——不声明就不执行。同一个变量两种含义，靠目标名区分，初读 `inc.rule.mk` 很容易看反：`ffmpeg` 写 `CUSTOM_TARGETS = compile` 不是「自定义一个叫 compile 的额外目标」，而是「替换掉模板的默认编译」；`glib` 写 `CUSTOM_TARGETS = prepend` 则是「在 configure 前插一步」。九个包里没有一个声明 `build`，说明默认流水线本身足够可靠，需要改的只是编译段与前后两个夹点。
+### 7.10.10 jprogress：本地源码包，声明与源码分离时的缓存键
+
+前面九个包源码都来自下载或 Git 检出，`jprogress` 反过来——包目录只有一份 `mk.deps`，源码在工程的 `scripts/progress/`。它补上谱系里缺的一种情形：**没有下载物可校验时，缓存键靠什么构成**。
+
+```makefile
+#DEPS(mk.deps) jprogress(native psysroot): unselect
+PACKAGE_NAME     = jprogress
+LICENSE          = MIT
+LICFILE          = common://MIT-LENGJING
+DESCRIPTION      = The jprogress is a progress refresh and log collector tool.
+include $(ENV_MAKE_DIR)/inc.env.mk
+
+VERSION          = 0.0.1
+SRC_PATH         = $(ENV_TOP_DIR)/scripts/progress
+CACHE_BUILD      = y
+CACHE_DEPENDS    = none
+# refer to README 6.6.1 and 7.8
+CACHE_CHECKSUM  += $(SRC_PATH):*.c|*.h|Makefile|inc.makes
+COMPILE_TOOL     = imake
+include $(ENV_MAKE_DIR)/inc.rule.mk
+```
+
+`#DEPS(mk.deps)` 括号里是文件名（由 `gen_build_chain.py -d` 指定），不是源码目录。所以 `mk.deps` 就是包的身份载体，`make -f mk.deps` 也能独立跑；`LICENSE`/`DESCRIPTION` 照常进 `info.txt`，源码挪走不丢合规信息。`SRC_PATH` 用 `$(ENV_TOP_DIR)` 绝对锚点定位到工程内源码，`COMPILE_TOOL = imake` 让模板 `-C $(SRC_PATH)` 调用那份自带 Makefile——同一份源码换一份 `mk.deps` 就能以不同身份被纳管。
+
+关键是缓存。`CACHE_BUILD = y` 后默认只把 `mk.deps` 和补丁目录算进校验；本包没有 `SRC_URL`/`SRC_MD5`/`SRC_REV`，缓存根本看不到 `scripts/progress/`。若不加下面这行，改一个 `.c` 下次照样 Cache Match，旧二进制被复用——改动不生效。对照 7.10.5 的 `ljson`：它走 Git，`SRC_REV` 被自动追加进 `CACHE_APPENDS`，所以 `none` 安全；这里既无下载校验属性、`none` 又只跳过依赖链，两处叠加把源码变化全漏掉。`VERSION` 只提供缓存名，不是源码指纹。所以本地源码包必须自己登记源码——
+
+`CACHE_CHECKSUM += $(SRC_PATH):*.c|*.h|Makefile|inc.makes` 用 6.6.1 的目录项语法：`目录:白名单模式`，`|` 分隔多个值。这里只写前两段，`*.c`/`*.h` 通配、`Makefile`/`inc.makes` 精确名；`inc.makes` 就是编译规则本身，模板变了应重编。用白名单而非忽略表，是为了不把目录里就地产生的 `.o`、可执行文件算进输入，避免「输出变→校验变→缓存永不命中」的死循环。校验明细排序后再算 md5，跨机器一致；`<包名>-cache.log` 记录逐项明细。
+
+易错点：`SRC_PATH` 必须绝对锚点；变量都在 `include inc.rule.mk` 之前赋值；别造假 `SRC_MD5` 把本地源码绕进下载流程；`CACHE_DEPENDS = none` 不等于缓存永不失效，它只跳依赖链，源码校验始终靠这行 `CACHE_CHECKSUM`。
+
+一句话：下载类包的源码指纹由锁定值自动提供，本地源码包必须由包自己声明。
+
+### 7.10.11 从十个包里提炼出的编写规则
+
+把十个包放在一起，`CUSTOM_TARGETS` 的双重语义就清楚了。对 `build`、`clean`、`distclean`、`install` 这四个目标，模板的判断是「不在 `CUSTOM_TARGETS` 里才生成默认实现」——声明了就等于说「我自己写，别生成」。对 `prepend`、`compile`、`append` 这三个钩子，判断反过来，是「在 `CUSTOM_TARGETS` 里才插入调用」——不声明就不执行。同一个变量两种含义，靠目标名区分，初读 `inc.rule.mk` 很容易看反：`ffmpeg` 写 `CUSTOM_TARGETS = compile` 不是「自定义一个叫 compile 的额外目标」，而是「替换掉模板的默认编译」；`glib` 写 `CUSTOM_TARGETS = prepend` 则是「在 configure 前插一步」。十个包里没有一个声明 `build`，说明默认流水线本身足够可靠，需要改的只是编译段与前后两个夹点。
 
 `CACHE_DEPENDS` 的两种写法也有了判据。留空表示「按 `#DEPS` 与 `.config` 自动算依赖链校验」，`ffmpeg`、`tcpdump`、`glib`、`libhv`、`boost` 都留空——前四个确有依赖，最后一个是工程内保持一致。`none` 表示「我没有任何依赖包，整段跳过」，`ljson`、`lz4`、`bzip2`、`busybox` 用它。要留意 `none` 关掉的只是依赖链：版本由 `-v $(VERSION)` 进缓存名，`SRC_MD5` / `SRC_TAG` / `SRC_REV` 由 `CACHE_APPENDS` 追加，特性开关由 `ft-config` 追加，预置配置由 `CACHE_CHECKSUM` 追加。把 `none` 理解成「缓存永不失效」是错的，反过来在有依赖的包上写 `none` 才是真的危险。
 
-路径的选择贯穿九个包。`$(INS_TOPDIR)` 是包自己的安装树，所有 `prepend` / `compile` / `append` 里的修正都落在这里；`$(INS_PREFIX)` 是投递目标，只有模板的 `install` 目标经 `process_sysroot.sh $(INSTALL_OPTION)` 才会用到它。中间还有一步 `process_sysroot.sh replace $(INS_TOPDIR)`，它专门扫描安装树里的 `.pc` 文件，把写死在里面的 `INS_TOPDIR` 绝对路径换成 `${pcfiledir}/` 加相对路径，让 pkg-config 文件随包搬走后仍能工作。`$(DEP_PREFIX)` 是私有 sysroot，`link_hdrs` / `link_libs` / `PKG_CONFIG_LIBDIR` / `CMAKE_PREFIX_PATH` 都指向它；`$(OBJ_PREFIX)` 是编译输出目录。四个目录各管一段，混用不会立刻报错，但产物会在打包或跨机器部署时才出问题——`lz4` 改 `.pc` 和 `tcpdump` 改符号链接，都是因为这个边界必须守住。
+路径的选择贯穿十个包。`$(INS_TOPDIR)` 是包自己的安装树，所有 `prepend` / `compile` / `append` 里的修正都落在这里；`$(INS_PREFIX)` 是投递目标，只有模板的 `install` 目标经 `process_sysroot.sh $(INSTALL_OPTION)` 才会用到它。中间还有一步 `process_sysroot.sh replace $(INS_TOPDIR)`，它专门扫描安装树里的 `.pc` 文件，把写死在里面的 `INS_TOPDIR` 绝对路径换成 `${pcfiledir}/` 加相对路径，让 pkg-config 文件随包搬走后仍能工作。`$(DEP_PREFIX)` 是私有 sysroot，`link_hdrs` / `link_libs` / `PKG_CONFIG_LIBDIR` / `CMAKE_PREFIX_PATH` 都指向它；`$(OBJ_PREFIX)` 是编译输出目录。四个目录各管一段，混用不会立刻报错，但产物会在打包或跨机器部署时才出问题——`lz4` 改 `.pc` 和 `tcpdump` 改符号链接，都是因为这个边界必须守住。
 
-最后一条是关于「平台替你做了多少」的判断顺序。接一个新包，先看上游属于 Autotools / CMake / Meson / 自带 Makefile / 自有构建工具中的哪一类，能映射到 `COMPILE_TOOL` 就让它映射，包里只写 `*_FLAGS`；映射不了再考虑 `COMPILE_TOOL` 留空加 `MAKE_FLAGS` 翻译；只有当上游需要多轮构建、特殊工具集声明或修上游源码时，才动 `CUSTOM_TARGETS = compile`。`compile` 一接管，`REL_CONFIG` 就不会生成，依赖路径要自己用 `link_hdrs` / `link_libs` 补上，这是九个包里代价最高的一档。整条谱系从头到尾只有一个原则：**让平台负责可复用的部分，包只描述自己和别人不一样的地方**。
+最后一条是关于「平台替你做了多少」的判断顺序。接一个新包，先看上游属于 Autotools / CMake / Meson / 自带 Makefile / 自有构建工具中的哪一类，能映射到 `COMPILE_TOOL` 就让它映射，包里只写 `*_FLAGS`；映射不了再考虑 `COMPILE_TOOL` 留空加 `MAKE_FLAGS` 翻译；只有当上游需要多轮构建、特殊工具集声明或修上游源码时，才动 `CUSTOM_TARGETS = compile`。`compile` 一接管，`REL_CONFIG` 就不会生成，依赖路径要自己用 `link_hdrs` / `link_libs` 补上，这是十个包里代价最高的一档。整条谱系从头到尾只有一个原则：**让平台负责可复用的部分，包只描述自己和别人不一样的地方**。
 
 
 # 8. 横向对比与选型
