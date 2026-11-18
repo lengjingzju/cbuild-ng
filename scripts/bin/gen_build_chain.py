@@ -51,14 +51,14 @@ class Deps:
         self.ItemList = []
         self.ActualList = []
         self.VirtualList = []
-        self.FinallyList = []
+        self.FinallySet = set()
         self.VerCfgSet = set()
 
         self.conf_name = ''
         self.conf_str = ''
-        self.uni_packages = []
-        self.user_metas = []
-        self.keywords = []
+        self.uni_packages = set()
+        self.user_metas = set()
+        self.keywords = set()
         self.prepend_flag = 0
         self.yocto_flag = False
 
@@ -331,7 +331,7 @@ class Deps:
 
 
     def __add_virtual_deps(self, vir_name, root, rootdir):
-        target_list = []
+        target_set = set()
         vir_path = os.path.join(root, vir_name)
         match_type = ''
         last_group = ''
@@ -376,7 +376,7 @@ class Deps:
                         sys.exit(1)
 
                     item['target'] = ret.groups()[1]
-                    if item['target'] in target_list:
+                    if item['target'] in target_set:
                         print('ERROR: Repeated virtual dep %s:%s' % (item['target'], item['path']))
                         sys.exit(1)
 
@@ -391,7 +391,7 @@ class Deps:
                                 if debug_mode:
                                     print('WARNING: Only menuchoice and choice have groups[2] field in %s:%s' % (item['target'], item['path']))
 
-                    target_list.append(item['target'])
+                    target_set.add(item['target'])
                     self.__set_item_deps(last_group.strip().split(), item, False)
                     self.VirtualList.append(item)
                     self.PathList.append((item['path'], item['spath'], item))
@@ -400,12 +400,12 @@ class Deps:
                         item['targets'].remove('native')
                         if 'menu' not in item['vtype']:
                             nitem = self.__get_native_deps(item)
-                            target_list.append(nitem['target'])
+                            target_set.add(nitem['target'])
                             self.VirtualList.append(nitem)
                             self.PathList.append((nitem['path'], nitem['spath'], nitem))
 
 
-    def search_normal_depends(self, dep_name, vir_name, search_dirs, ignore_dirs = [], go_on_dirs = []):
+    def search_normal_depends(self, dep_name, vir_name, search_dirs, ignore_dirs = set(), go_on_dirs = set()):
         root_change = False if len(search_dirs) == 1 else True
         for rootdir in search_dirs:
             if rootdir[-1] == '/':
@@ -440,7 +440,7 @@ class Deps:
                             dirs.clear() # don't continue to search sub dirs.
 
 
-    def search_yocto_depends(self, vir_name, search_dirs, ignore_dirs = []):
+    def search_yocto_depends(self, vir_name, search_dirs, ignore_dirs = set()):
         poky_targets = []
         for rootdir in search_dirs:
             if rootdir[-1] == '/':
@@ -723,7 +723,7 @@ class Deps:
                         item['targets'] = targets.split()
                         if 'finally' in item['targets']:
                             item['acount'] = 1
-                            self.FinallyList.append(item['target'])
+                            self.FinallySet.add(item['target'])
 
                     depends = last_group.strip().split()
 
@@ -952,14 +952,14 @@ class Deps:
         self.ActualList.append(item)
 
 
-    def check_item(self, item_list, target_list, poky_list = []):
+    def check_item(self, item_list, target_set, poky_set = set()):
         for item in item_list[:]:
             if item['wrule']:
                 for rule in item['wrule'][:]:
                     deps = []
                     for dep in rule[:]:
                         deps.append(dep)
-                        if dep not in target_list:
+                        if dep not in target_set:
                             rule.remove(dep)
                     if not rule:
                         item['wrule'].remove(rule)
@@ -970,14 +970,14 @@ class Deps:
 
             if item['ideps']:
                 deps = item['ideps']
-                item['ideps'] = [dep for dep in deps if re.split(r'@+', dep)[0] in target_list]
+                item['ideps'] = [dep for dep in deps if re.split(r'@+', dep)[0] in target_set]
 
             for depid in ['asdeps', 'vsdeps', 'awdeps', 'vwdeps', 'cdeps', 'select', 'imply']:
                 if not debug_mode and not self.yocto_flag and 'asdeps' == depid:
                     continue
                 if item[depid]:
                     deps = item[depid]
-                    item[depid] = [dep for dep in deps if dep in target_list]
+                    item[depid] = [dep for dep in deps if dep in target_set]
                     if 'select' == depid or 'imply' == depid:
                         for dep in deps:
                             if '|' in dep:
@@ -985,7 +985,7 @@ class Deps:
                                 for subdep in subdeps:
                                     if subdep[0] == '*':
                                         subdep = subdep[1:]
-                                    if subdep in target_list:
+                                    if subdep in target_set:
                                         item[depid].append(subdep)
                                         break
                     if debug_mode and not self.yocto_flag:
@@ -1001,9 +1001,9 @@ class Deps:
                     deps = item[depid]
                     item[depid] = []
                     for dep in deps:
-                        if dep in target_list:
+                        if dep in target_set:
                             item[depid].append(dep)
-                        elif dep in poky_list:
+                        elif dep in poky_set:
                             for poky_item in self.PokyList:
                                 if dep == poky_item['target']:
                                     item[depid].append(dep)
@@ -1022,12 +1022,12 @@ class Deps:
                         print('WARNING: choice item in %s:%s has "imply" attr' % (item['target'], item['path']))
 
             if item['member']:
-                self.check_item(item['member'], target_list, poky_list)
+                self.check_item(item['member'], target_set, poky_set)
             else:
                 if 'choice' in item['vtype'] or 'menu' in item['vtype']:
                     item_list.remove(item)
-                    if item['target'] in target_list:
-                        target_list.remove(item['target'])
+                    if item['target'] in target_set:
+                        target_set.remove(item['target'])
                     self.VirtualList.remove(item)
                     if debug_mode:
                         print('WARNING: There is no members in virtual choice dep %s:%s' % (item['target'], item['path']))
@@ -1042,7 +1042,7 @@ class Deps:
                 print('WARNING: repeated package: %s:%s' % (item['target'], item['path']))
 
 
-    def check_circular_dep(self, target_list):
+    def check_circular_dep(self):
         temp = self.ActualList
         self.ActualList = []
         finally_flag = True
@@ -1069,7 +1069,7 @@ class Deps:
             elif finally_flag:
                 finally_flag = False
                 for itemb in listb:
-                    if itemb['target'] in self.FinallyList:
+                    if itemb['target'] in self.FinallySet:
                         itemb['acount'] -= 1
                 temp = listb
             else:
@@ -1431,9 +1431,9 @@ class Deps:
             fp.write('PREAT          ?= @\n')
             fp.write('\n')
 
-            if self.FinallyList:
+            if self.FinallySet:
                 for dep in target_list:
-                    if dep not in self.FinallyList and not dep.endswith('-native'):
+                    if dep not in self.FinallySet and not dep.endswith('-native'):
                         fp.write('ifeq ($(CONFIG_%s), y)\n' % (escape_toupper(dep)))
                         fp.write('finaldeps: %s\n' % (dep))
                         fp.write('endif\n')
@@ -1481,7 +1481,7 @@ class Deps:
                             break
 
                 pkg_flags = {}
-                pkg_flags['finally']  = False if item['target'] not in self.FinallyList else True
+                pkg_flags['finally']  = False if item['target'] not in self.FinallySet else True
                 pkg_flags['unified']  = False if 'unified' not in item['targets'] else True
                 pkg_flags['empty']    = False if 'empty' not in item['targets'] else True
                 pkg_flags['psysroot'] = False if 'psysroot' not in item['targets'] else True
@@ -1905,24 +1905,24 @@ def do_normal_analysis(args):
         vir_name = args.vir_name
 
     search_dirs = [s.strip() for s in args.search_dirs.split(':')]
-    ignore_dirs = []
+    ignore_dirs = set()
     if args.ignore_dirs:
-        ignore_dirs = [s.strip() for s in args.ignore_dirs.split(':')]
-    go_on_dirs = []
+        ignore_dirs = {s.strip() for s in args.ignore_dirs.split(':')}
+    go_on_dirs = set()
     if args.go_on_dirs:
-        go_on_dirs = [s.strip() for s in args.go_on_dirs.split(':')]
+        go_on_dirs = {s.strip() for s in args.go_on_dirs.split(':')}
 
-    uni_packages = []
+    uni_packages = set()
     if args.user_metas:
-        uni_packages = [s.strip() for s in args.user_metas.split(':')]
+        uni_packages = {s.strip() for s in args.user_metas.split(':')}
 
     max_depth = 0
     if args.max_depth:
         max_depth = int(args.max_depth)
 
-    keywords = []
+    keywords = set()
     if args.keywords:
-        keywords = [s.strip() for s in args.keywords.split(':')]
+        keywords = {s.strip() for s in args.keywords.split(':')}
 
     prepend_flag = 0
     if args.prepend_flag:
@@ -1967,9 +1967,9 @@ def do_normal_analysis(args):
         print('ERROR: can not find any targets in %s in %s.' % (dep_name, ':'.join(search_dirs)))
         sys.exit(1)
 
-    target_list = [item['target'] for item in deps.ActualList] \
-                + [item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']]
-    deps.check_item(deps.ItemList, target_list)
+    target_set = {item['target'] for item in deps.ActualList} \
+               | {item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']}
+    deps.check_item(deps.ItemList, target_set)
     if debug_mode:
         deps.check_repeat_package()
 
@@ -1985,7 +1985,7 @@ def do_normal_analysis(args):
         print('\033[32mGenerate %s OK.\033[0m' % target_out)
 
     if debug_mode:
-        if deps.check_circular_dep(target_list) == -1:
+        if deps.check_circular_dep() == -1:
             print('ERROR: check_circular_dep() failed.')
             sys.exit(1)
 
@@ -2004,21 +2004,21 @@ def do_yocto_analysis(args):
     if args.vir_name:
         vir_name = args.vir_name
 
-    ignore_dirs = []
+    ignore_dirs = set()
     if args.ignore_dirs:
-        ignore_dirs = [s.strip() for s in args.ignore_dirs.split(':')]
+        ignore_dirs = {s.strip() for s in args.ignore_dirs.split(':')}
 
-    user_metas = []
+    user_metas = set()
     if args.user_metas:
-        user_metas = [s.strip() for s in args.user_metas.split(':')]
+        user_metas = {s.strip() for s in args.user_metas.split(':')}
 
     max_depth = 0
     if args.max_depth:
         max_depth = int(args.max_depth)
 
-    keywords = []
+    keywords = set()
     if args.keywords:
-        keywords = [s.strip() for s in args.keywords.split(':')]
+        keywords = {s.strip() for s in args.keywords.split(':')}
 
     prepend_flag = 0
     if args.prepend_flag:
@@ -2050,10 +2050,10 @@ def do_yocto_analysis(args):
     refs = []
     for pathpair in deps.PathList:
         deps.add_yocto_item(pathpair, refs)
-    target_list = [item['target'] for item in deps.ActualList] \
-                + [item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']]
-    poky_list = [item['target'] for item in deps.PokyList]
-    deps.check_item(deps.ItemList, target_list, poky_list)
+    target_set = {item['target'] for item in deps.ActualList} \
+               | {item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']}
+    poky_set = {item['target'] for item in deps.PokyList}
+    deps.check_item(deps.ItemList, target_set, poky_set)
 
     with open(kconfig_out, 'w') as fp:
         fp.write('mainmenu "Build Configuration"\n\n')
@@ -2071,25 +2071,25 @@ def do_image_analysis(args):
     conf_name = args.conf_name
     image_out = args.image_out
     patch_out = args.prepend_flag
-    ignore_recipes = []
+    ignore_recipes = {}
     if args.ignore_dirs:
-        ignore_recipes = [s.strip() for s in args.ignore_dirs.split(':')]
+        ignore_recipes = {s.strip() for s in args.ignore_dirs.split(':')}
 
     regex = re.compile(r'CONFIG_(.*)=y')
-    recipe_list = []
+    recipe_set = []
     config_list = []
 
     with open(target_out, 'r') as rfp:
         for per_line in rfp.read().splitlines():
             recipe = per_line.split('=')[0].strip()
-            recipe_list.append(recipe)
+            recipe_set.add(recipe)
 
     with open(conf_name, 'r') as rfp:
         for per_line in rfp.read().splitlines():
             ret = regex.match(per_line)
             if ret:
                 item = escape_tolower(ret.groups()[0])
-                if item in recipe_list:
+                if item in recipe_set:
                     config_list.append(item)
 
     with open(image_out, 'w') as wfp:
