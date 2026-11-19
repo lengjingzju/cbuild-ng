@@ -90,6 +90,7 @@ class Deps:
         item['default'] = True
         item['conf'] = ''
         item['conftype'] = ''
+        item['disabled'] = ''
 
 
     def get_env_vars(self, local_config):
@@ -155,7 +156,6 @@ class Deps:
                         self.KconfigDict[item['conf']] = []
                     self.KconfigDict[item['conf']].append(item['target'])
                     item['conftype'] = 'kconfig'
-
                 elif dep == 'nokconfig':
                     item['conf'] = ''
                     item['conftype'] = 'nokconfig'
@@ -164,14 +164,22 @@ class Deps:
                     self.VerCfgSet.add(remove_prefix(remove_suffix(item['target'], '-native'), 'prebuild-'))
                 elif dep == 'featurecfg':
                     item['featurecfg'] = True
+
                 elif dep == 'unselect':
                     item['default'] = False
                 elif dep == 'selected':
                     item['default'] = True
+
                 elif dep[0] == '!':
-                    item['cdeps'].append(dep[1:])
+                    dep = dep[1:]
+                    if dep[0] == '*':
+                        dep = dep[1:]
+                    item['cdeps'].append(dep)
                 elif '@' in dep:
                     item['ideps'].append(dep)
+                elif '=' in dep:
+                    item['edeps'].append(dep)
+
                 elif dep[0] == '&' or dep[0] == '?':
                     amp_num = 0
                     que_num = 0
@@ -184,33 +192,53 @@ class Deps:
                             break
 
                     dep = dep[amp_num + que_num:]
-                    if amp_num == 2 or amp_num == 1:
-                        if '|' in dep:
-                            split_str = '||' if '||' in dep else '|'
-                            subdeps = dep.split(split_str)
+                    if '|' in dep:
+                        if amp_num and que_num:
+                            print('ERROR: Invalid special syntax (use use &, ?, and | jointly) in %s' % (item['path']))
+                            sys.exit(1)
+
+                        subdeps = dep.split('||' if '||' in dep else '|')
+                        if amp_num:
                             if not subdeps[0]:
                                 subdep = subdeps[1]
                                 subdeps[0] = '*build-%s' % (subdep)
                                 subdeps[1] = 'prebuild-%s' % (subdep)
                                 subdeps.append(subdep)
-                                dep = split_str.join(subdeps)
 
                             for subdep in subdeps:
                                 if subdep[0] == '*':
-                                    item['vwdeps'].append(dep[1:])
+                                    item['vwdeps'].append(subdep[1:])
                                 else:
-                                    item['awdeps'].append(dep)
-                        item['select' if amp_num == 2 else 'imply'].append(dep)
-                    if que_num:
-                        item[wdeps].append(dep)
-                elif '=' in dep:
-                    item['edeps'].append(dep)
+                                    item['awdeps'].append(subdep)
+
+                            dep0 = subdeps[0]
+                            if dep0[0] == '*':
+                                item['imply' if amp_num == 1 else 'select'].append(dep0[1:])
+                            else:
+                                item['imply' if amp_num == 1 else 'select'].append(dep0)
+                        else:
+                            if not subdeps[0]:
+                                subdeps[0] = 'prebuild-' + subdeps[1]
+                            if subdeps[0] == '*':
+                                subdeps = subdeps[1:]
+                                wdeps = 'vwdeps'
+                            item[wdeps] += subdeps
+                            item['wrule'].append([True, subdeps])
+                    else:
+                        if dep[0] == '*':
+                            dep = dep[1:]
+                            wdeps = 'vwdeps'
+                        if amp_num:
+                            item['imply' if amp_num == 1 else 'select'].append(dep)
+                        if que_num:
+                            item[wdeps].append(dep)
+
                 elif '|' in dep:
-                    subdeps = dep.split('||') if '||' in dep else dep.split('|')
+                    subdeps = dep.split('||' if '||' in dep else '|')
                     if not subdeps[0]:
                         subdeps[0] = 'prebuild-' + subdeps[1]
                     item[wdeps] += subdeps
-                    item['wrule'].append(subdeps)
+                    item['wrule'].append([False, subdeps])
                 else:
                     item[sdeps].append(dep)
 
@@ -299,13 +327,13 @@ class Deps:
         nitem['wrule'] = []
         for wrule in item['wrule']:
             ndeps = []
-            for dep in wrule:
+            for dep in wrule[1]:
                 if not dep.endswith('-native') and dep not in self.uni_packages:
                     dep = dep + '-native'
                 if dep != nitem['target'] and dep not in ndeps:
                     ndeps.append(dep)
             if ndeps:
-                nitem['wrule'].append(ndeps)
+                nitem['wrule'].append([wrule[0], ndeps])
 
         if nitem['conf']:
             if nitem['conftype'] == 'kconfig':
@@ -547,10 +575,10 @@ class Deps:
             refs.append([item])
 
 
-    def add_normal_item_finish(self, item):
+    def add_normal_item_finish(self, item, attrs):
         if not item:
             return
-        if 'unified' not in item['targets']:
+        if 'unified' not in attrs:
             item['src'] = ''
         if item['src'] and os.path.exists(item['src']) and item['conftype'] != 'nokconfig':
             conf_paths = []
@@ -674,7 +702,7 @@ class Deps:
                     match_type = ''
                     dep_flag = True
 
-                    self.add_normal_item_finish(item)
+                    self.add_normal_item_finish(item, attrs)
                     if native_flag:
                         native_flag = False
                         nitem = self.__get_native_deps(item)
@@ -830,7 +858,7 @@ class Deps:
                     self.InfoDict[package][match_type] = last_group.strip('"').strip()
                     match_type = ''
 
-            self.add_normal_item_finish(item)
+            self.add_normal_item_finish(item, attrs)
             if native_flag:
                 native_flag = False
                 nitem = self.__get_native_deps(item)
@@ -954,19 +982,26 @@ class Deps:
 
     def check_item(self, item_list, target_set, poky_set = set()):
         for item in item_list[:]:
+            if item['src'] and not os.path.exists(item['src']):
+                item['disabled'] = 'src-path-existed'
+                if debug_mode:
+                    print('WARNING: src_path (%s) in %s:%s is not existed' \
+                        % (item['src'], item['target'], item['path']))
+
             if item['wrule']:
-                for rule in item['wrule'][:]:
+                for rule in item['wrule']:
                     deps = []
-                    for dep in rule[:]:
+                    rule1 = rule[1][:]
+                    for dep in rule[1]:
                         deps.append(dep)
                         if dep not in target_set:
-                            rule.remove(dep)
-                    if not rule:
-                        item['wrule'].remove(rule)
-                        if not item['vtype'] and deps[0] in item['awdeps']:
-                            print('ERROR: All weak rule deps (%s) in %s:%s are not found' % ( \
-                                ' '.join(deps), item['target'], item['path']))
-                            sys.exit(1)
+                            rule1.remove(dep)
+                    if not rule1:
+                        if not item['disabled']:
+                            item['disabled'] = 'depends-of-or-rule-existed'
+                        if debug_mode:
+                            print('WARNING: All deps (%s) of or_rule in %s:%s are not found' \
+                                % (' '.join(deps), item['target'], item['path']))
 
             if item['ideps']:
                 deps = item['ideps']
@@ -978,16 +1013,6 @@ class Deps:
                 if item[depid]:
                     deps = item[depid]
                     item[depid] = [dep for dep in deps if dep in target_set]
-                    if 'select' == depid or 'imply' == depid:
-                        for dep in deps:
-                            if '|' in dep:
-                                subdeps = dep.split('||' if '||' in dep else '|')
-                                for subdep in subdeps:
-                                    if subdep[0] == '*':
-                                        subdep = subdep[1:]
-                                    if subdep in target_set:
-                                        item[depid].append(subdep)
-                                        break
                     if debug_mode and not self.yocto_flag:
                         rmdeps = [dep for dep in deps if dep not in item[depid]]
                         if rmdeps:
@@ -1147,8 +1172,9 @@ class Deps:
             deps += ['!%s%s' % (config_prepend, escape_toupper(t)) for t in item['cdeps']]
 
         if item['wrule']:
-            bracket_flag = True if deps or len(item['wrule']) > 1 or item['edeps'] else False
-            for rule in item['wrule']:
+            wrules = [rule[1] for rule in item['wrule'] if not rule[0]]
+            bracket_flag = True if deps or len(wrules) > 1 or item['edeps'] else False
+            for rule in wrules:
                 if len(rule) == 1:
                     deps.append('%s%s' % (config_prepend, escape_toupper(rule[0])))
                 elif bracket_flag:
@@ -1173,10 +1199,10 @@ class Deps:
                     else:
                         deps.append('%s' % (' || '.join(['"$(%s)"="%s"' % (env_name, t) for t in env_vals])))
 
-        if item['src'] and not os.path.exists(item['src']):
-            deps.append('%s%s' % (config_prepend, escape_toupper("src-path-existed")))
+        if item['disabled']:
+            deps.append('%s%s' % (config_prepend, escape_toupper(item['disabled'])))
             if debug_mode:
-                print('WARNING: %s: Invalid src path %s' % (item['target'], item['src']))
+                print('WARNING: %s: disabled due to not meet %s' % (item['target'], item['disabled']))
 
         if deps:
             fp.write('\tdepends on %s\n' % (' && '.join(deps)))
@@ -1354,7 +1380,8 @@ class Deps:
 
                 if item['wrule']:
                     for rule in item['wrule']:
-                        rules += rule
+                        if not rule[0]:
+                            rules += rule[1]
                 rules += item['select']
 
                 if item['awdeps']:
@@ -1401,6 +1428,9 @@ class Deps:
 
                 if item['asdeps']:
                     dvars += item['asdeps']
+
+                if item['disabled']:
+                    dvars.append(item['disabled'])
 
                 if dvars:
                     fp.write('%s="%s" # %s\n' % (item['target'], ' '.join(dvars), item['path']))
@@ -1529,6 +1559,13 @@ class Deps:
                 fp.write('%s-deps :=\n' % (item['target']))
                 fp.write('%s-reldeps :=\n' % (item['target']))
                 fp.write('\n')
+
+                if item['wrule']:
+                    for rule in item['wrule']:
+                        if rule[0]:
+                            fp.write('ifeq (%s,)\n' % ( ''.join(['$(CONFIG_' +escape_toupper(dep) + ')' for dep in rule[1]])))
+                            fp.write('$(warning warning: "%s" cannot be enabled because none of [%s] is enabled)\n' % (item['target'], ', '.join(rule[1])))
+                            fp.write('endif\n\n')
 
                 if item['awdeps'] or item['ideps']:
                     pkg_flags['deps'] = True

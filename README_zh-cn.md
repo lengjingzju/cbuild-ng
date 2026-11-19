@@ -4249,12 +4249,17 @@ inherit weakdep
 
 ```
 qt/
-├── mk.vdeps        # #VDEPS(choice) qt(*build-qt qt5 qt6):
+├── mk.deps         # #DEPS(mk.deps) qt(native empty): unselect ??qt5||qt6
+├                   # #INCDEPS: qt5 qt6
+├── mk.vdeps        # #VDEPS(choice) qt-choice(native qt5 qt6): qt
 ├── qt5/mk.deps     # #DEPS(mk.deps) qt5(native psysroot): ...
 └── qt6/mk.deps     # #DEPS(mk.deps) qt6(native psysroot): ...
 ```
 
-`Target` 清单里 `qt` 这一行是 `qt="?qt5 ?qt6"`，即 qt 是一个虚包，弱依赖 qt5 或 qt6，由用户在菜单里选择用哪个大版本。依赖 qt 的上层包（例如某个 GUI 应用）只需要写 `qt`，不必关心当前选的是 qt5 还是 qt6。
+- mk.vdeps 的是 `choice` 虚包，`Other_Infos` 清单里是 `qt5 qt6`，即 qt-choice 是一个虚包，生成 qt5 和 qt6 多选一框，由用户在菜单里选择用哪个大版本。
+- mk.deps 定义一个空包（`empty`），弱或依赖 qt5 或 qt6，依赖 qt 的上层包（例如某个 GUI 应用）只需要写 `qt`，不必关心当前选的是 qt5 还是 qt6。
+    - 定义弱或依赖 `??||` 而不是或依赖 `||` 的原因是：qt 依赖 qt5||qt6，qt-choice 依赖 qt，qt5 和 qt6 又依赖 qt-choice，Kconfig 中形成循环依赖；而弱或依赖不会自动在 Kconfig 中生成或条目。
+    - 不直接定义成弱依赖 `??` 的原因是：如果 qt5 或 qt6 都不存在，qt 还是可以选中但无法编译；而弱或依赖此种情形下会在 Kconfig 中生成一个虚拟不存在的包依赖，保证不会选中。
 
 #### 6.1.3.4 例子：补丁可选的完整模式
 
@@ -4314,6 +4319,9 @@ $(PATCH_PACKAGE)-unpatch-%-all:
 | --- | --- |
 | `*depname` | 表示 depname 是虚包。去掉 `*` 后 depname 还可以带其他符号，会继续解析，例如 `*&&depname` |
 
+- 对于有或 `|` 的依赖，`*` 只能放在该条目开头，表示全局是虚包，不放表示全局是实包（ `&&||` 例外，无法放在最前方）。
+- 对于其他特殊依赖，`*` 放在该条目开头或包名前均可。
+
 #### 6.1.4.2 关键字记号
 
 | 记号 | 含义 |
@@ -4363,6 +4371,14 @@ CONFIG_LJSON_CHECKSUM="d2f329c504e01f44e3c2b127db25e8440d4bb5e7"
 - `&&??depname` 或 `??&&depname`：强选中 + 弱依赖（运行期）
 - `&??depname` 或 `??&depname`：弱选中 + 弱依赖（运行期）
 
+**`？` 与 `|` 的组合** 用于「弱或选择」的场景，最典型的用途是定义一个统一包名用于选择同样功能的包之一，后续就可以直接依赖这个包：
+
+```makefile
+??qt5||qt6
+```
+
+和不加 `??` 的区别是：加了 `??` 不会自动在 Kconfig 中生成“或条目”（防止和 `xxx-choice` 循环引用），而不加 `??` 会生成，例子见 [oss/display/qt/mk.deps](./oss/display/qt/mk.deps) 。
+
 **`&` 与 `|` 的组合**用于「从多个候选中选一个并弱依赖全部实包」的场景，最典型的用途是预编译包与源码包二选一：
 
 ```makefile
@@ -4377,7 +4393,7 @@ CONFIG_LJSON_CHECKSUM="d2f329c504e01f44e3c2b127db25e8440d4bb5e7"
 
 含义是：强选中 `*build-libtest`（虚包，代表这个选择组）、`prebuild-libtest`、`libtest` 三者中第一个存在的，并弱依赖后两个实包。
 
-类似地，省略 `|` 或 `||` 前面的第一项时会自动推导为预编译包与源码包的二选一：
+**类似地，省略 `|` 或 `||` 前面的第一项时**会自动推导为预编译包与源码包的二选一：
 
 ```makefile
 ||libtest     # 等价于 prebuild-libtest||libtest
@@ -4625,6 +4641,10 @@ rankdir=LR
 | 绿色节点框 | 用户层的包，且被选中 |
 | 红色节点框 | 用户层的包，未被选中 |
 | 蓝色节点框 | 社区层（Yocto 等）的包，即不在 `-u` 指定的层中 |
+
+- 有几个包是虚拟不存在的包，表示特殊意义：
+    - `src-path-existed` : 依赖此包的包的源码不存在
+    - `depends-of-or-rule-existed` : 依赖此包的包定义的或 `|` 规则的包都不存在
 
 #### 6.1.5.5 依赖图的实际用途
 

@@ -4236,12 +4236,17 @@ How the `oss/display/qt` directory is organized in the project:
 
 ```
 qt/
-├── mk.vdeps        # #VDEPS(choice) qt(*build-qt qt5 qt6):
+├── mk.deps         # #DEPS(mk.deps) qt(native empty): unselect ??qt5||qt6
+├                   # #INCDEPS: qt5 qt6
+├── mk.vdeps        # #VDEPS(choice) qt-choice(native qt5 qt6): qt
 ├── qt5/mk.deps     # #DEPS(mk.deps) qt5(native psysroot): ...
 └── qt6/mk.deps     # #DEPS(mk.deps) qt6(native psysroot): ...
 ```
 
-In the `Target` list, the `qt` line is `qt="?qt5 ?qt6"`, i.e. qt is a virtual package weakly depending on either qt5 or qt6, and the user chooses which major version to use in the menu. An upper-layer package depending on qt (for example a GUI application) only needs to write `qt` and does not care whether qt5 or qt6 is currently selected.
+- In `mk.vdeps` this is a `choice` virtual package; the `Other_Infos` list holds `qt5 qt6`. That is, `qt-choice` is a virtual package that produces a mutually-exclusive picker between qt5 and qt6, and the user selects in the menu which major version to use.
+- `mk.deps` defines an empty package (`empty`) with a weak-OR dependency on qt5 or qt6. An upper-layer package that depends on qt (for example, some GUI application) only needs to write `qt`, without caring whether qt5 or qt6 is currently selected.
+    - The reason for using the weak-OR dependency `??||` rather than the OR dependency `||`: `qt` depends on `qt5||qt6`, `qt-choice` depends on `qt`, and qt5 and qt6 in turn depend on `qt-choice`, which would form a cyclic dependency in Kconfig. A weak-OR dependency, by contrast, does not automatically generate an OR entry in Kconfig.
+    - The reason for not using a plain weak dependency `??`: if neither qt5 nor qt6 exists, `qt` could still be selected but would fail to build. A weak-OR dependency, in that situation, generates a dependency on a virtual, non-existent package in Kconfig, which guarantees the package cannot be selected.
 
 #### 6.1.3.4 Example: The Complete Pattern for Selectable Patches
 
@@ -4301,6 +4306,9 @@ Besides ordinary package names, `Depend_Names` can use a set of special tokens t
 | --- | --- |
 | `*depname` | Indicates depname is a virtual package. After removing `*`, depname may carry other symbols and parsing continues, e.g. `*&&depname` |
 
+- For a dependency with OR `|`, `*` may only be placed at the beginning of that entry, indicating that the whole thing is a virtual package; omitting it means the whole thing is a real package (the exception is `&&||`, where it cannot be placed at the front).
+- For other special dependencies, `*` may be placed either at the beginning of the entry or before the package name.
+
 #### 6.1.4.2 Keyword Tokens
 
 | Token | Meaning |
@@ -4349,6 +4357,14 @@ This way the same declaration yields correct semantics in both modes.
 
 - `&&??depname` or `??&&depname`: strong select + weak dependency (runtime)
 - `&??depname` or `??&depname`: weak select + weak dependency (runtime)
+
+**Combinations of `?` and `|`** are for the "weak-OR selection" scenario. Its most typical use is to define a unified package name for selecting one among several packages that provide the same functionality, so that later one can depend on this package directly:
+
+```makefile
+??qt5||qt6
+```
+
+The difference from omitting `??` is that, with `??`, no "OR entry" is automatically generated in Kconfig (preventing a circular reference with `xxx-choice`), whereas without `??` one is generated. See ./oss/display/qt/mk.deps for an example.
 
 **Combinations of `&` and `|`** are for "choose one of several candidates and weakly depend on all real packages", most typically choosing between a prebuilt package and a source package:
 
@@ -4612,6 +4628,10 @@ The rendered dependency graph looks like this:
 | Green node border | A package in user layers, and selected |
 | Red node border | A package in user layers, not selected |
 | Blue node border | A package in community layers (Yocto, etc.), i.e. not in a layer given by `-u` |
+
+- Several packages are virtual, non-existent packages that carry special meaning:
+    - `src-path-existed`: the source of the package that depends on this one does not exist.
+    - `depends-of-or-rule-existed`: none of the packages in the OR `|` rule defined by the package that depends on this one exist.
 
 #### 6.1.5.5 Practical Uses of Dependency Graphs
 
