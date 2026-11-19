@@ -58,8 +58,7 @@ LDFLAGS         += $(clang_ldflags)
 endif
 
 ifeq ($(COMPILE_TOOL),imake)
-MAKE_FLAGS      += -C $(SRC_PATH) $(REL_CONFIG)
-
+MAKE_FLAGS      += -C $(SRC_PATH) $(FT_CONFIG) ENV_BUILD_TYPE=$(ENV_BUILD_TYPE)
 else ifeq ($(COMPILE_TOOL),autotools)
 AUTOTOOLS_CROSS ?= $(shell $(MACHINE_SCRIPT) autotools_cross)
 ifeq ($(INS_FULLER),y)

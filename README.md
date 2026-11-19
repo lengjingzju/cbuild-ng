@@ -4203,24 +4203,51 @@ At parse time, `weakdep` reads `.config` and adds only the currently selected it
 #VDEPS(Virtual_Type) Target_Name(Other_Infos): Depend_Names
 ```
 
-A virtual package is not a real package: it does not take part in the build and exists only to organize and manage real packages. The syntax and usage rules are identical in Classic and Yocto modes.
+A virtual package is not a real package: it does not take part in the build and exists only to organize and manage real packages. The syntax and usage rules are exactly the same in Classic mode and Yocto mode.
 
 | Virtual_Type | Generated Kconfig structure | Scope |
 | --- | --- | --- |
-| `menuconfig` | A `menuconfig` entry | All packages in the current directory (including subdirectories) hard-depend on this virtual package and are grouped under its menu |
-| `config` | A `config` entry | An ordinary organizing node |
-| `menuchoice` | A `choice` structure | All packages in the current directory (including subdirectories) become child options of the choice |
-| `choice` | A `choice` structure | The packages listed in `Other_Infos` become child options of the choice |
+| `menuconfig` | A `menuconfig` entry | All packages in the current directory (including subdirectories) strongly depend on this virtual package and are placed under its menu |
+| `config` | A `config` entry | An ordinary organizational node |
+| `menuchoice` | A `choice` structure | All packages in the current directory (including subdirectories) become sub-options of the choice |
+| `choice` | A `choice` structure | The packages listed in `Other_Infos` become sub-options of the choice |
+| `srcbuild` / `prebuild` | Only for Classic Build. Derives an empty real package and a `choice` virtual package | An inference mechanism that automatically selects between the prebuilt package and the source-built package |
 
 Field descriptions:
 
-- **`Target_Name`**: virtual package name, required.
+- **`Target_Name`**: the virtual package name; required.
 - **`Other_Infos`**: required for the `choice` type, optional for the others.
-  - Every type may include one path item starting with `/`, meaning it applies to a specified subdirectory rather than the current directory;
-  - For `config` and `choice` types, the path item may also be a virtual path (e.g. `/virtual`, any word), in which case the virtual item is shown in the current directory rather than the parent directory;
-  - For the `choice` type, the space-separated package list becomes child options, with the first as the default selection;
-  - For the `menuchoice` type, the default selected package can be specified.
-- **`Depend_Names`**: optional, used much like `#DEPS` (for example, you can write `unselect`); `select` and `imply` are not supported for `choice` and `menuchoice` types. A trailing `\` continues the line.
+  - All types may include a path item starting with `/`, indicating that the rule applies to the given subdirectory instead of the current directory;
+  - Virtual packages of non-`menu` types may include the `native` keyword to automatically derive the native-package rules;
+  - For `config` and `choice`, the path item may also be a virtual path (e.g. `/virtual`; any word works), in which case the virtual item is shown in the current directory rather than in the parent directory;
+  - For `choice`, the space-separated package list becomes the sub-options, with the first one selected by default;
+  - For `menuchoice`, the default-selected package can be specified.
+- **`Depend_Names`**: optional; largely the same syntax as `#DEPS` (for example, `unselect` may be used). `choice` and `menuchoice` do not support `select` or `imply`. A trailing `\` continues the line.
+
+`srcbuild` / `prebuild` behavior:
+
+- They derive an empty real package and a `choice` virtual package. For example, `#VDEPS(prebuild) pkg(native): unselect depa depb` derives four rules:
+    - Even when neither `prebuild-pkg` nor `pkg` is selected in Kconfig, `build-pkg` can still be selected; in that case the generated Makefile emits a warning.
+    ```
+    #DEPS() build-pkg(empty): unselect ??prebuild-pkg||pkg depa depb
+    #VDEPS(choice) pkg-choice(prebuild-pkg pkg): build-pkg
+
+    #DEPS() build-pkg-native(empty): unselect ??prebuild-pkg-native||pkg-native depa-native depb-native
+    #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): build-pkg-native
+    ```
+- If `gen_build_chain.py` is given the `-e` option, six rules are derived.
+    - If neither `prebuild-pkg` nor `pkg` is selected in Kconfig, `build-pkg` cannot be selected either.
+    ```
+    #VDEPS(config) pkg-enable(): unselect &build-pkg
+    #DEPS() build-pkg(empty): unselect prebuild-pkg||pkg depa depb
+    #VDEPS(choice) pkg-choice(prebuild-pkg pkg): *pkg-enable
+
+    #VDEPS(config) pkg-enable-native(): unselect &build-pkg-native
+    #DEPS() build-pkg-native(empty): unselect prebuild-pkg-native||pkg-native depa-native depb-native
+    #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): *pkg-enable-native
+    ```
+- Every relevant actual dependency on `prebuild-pkg` or `pkg` in the project is rewritten to `build-pkg`, so packages depending on it no longer need an OR `|` rule.
+- `srcbuild` and `prebuild` are functionally identical except for which variant — the source-built package or the prebuilt package — is selected by default.
 
 #### 6.1.3.2 Typical Uses
 
@@ -4379,6 +4406,8 @@ It is implicitly expanded to:
 ```
 
 Meaning: strongly select the first existing one among `*build-libtest` (a virtual package representing this choice group), `prebuild-libtest`, and `libtest`, and weakly depend on the latter two real packages.
+
+It is recommended to use a more versatile method. Please refer to the `prebuild` virtual package in section "6.1.3.1".
 
 Similarly, omitting the first item before `|` or `||` automatically infers a choice between the prebuilt and source packages:
 
@@ -4632,6 +4661,7 @@ The rendered dependency graph looks like this:
 - Several packages are virtual, non-existent packages that carry special meaning:
     - `src-path-existed`: the source of the package that depends on this one does not exist.
     - `depends-of-or-rule-existed`: none of the packages in the OR `|` rule defined by the package that depends on this one exist.
+    - `packages-of-prebuild-vdeps-existed` : : none of the packages in the `prebuild` rule defined by the package that depends on this one exist.
 
 #### 6.1.5.5 Practical Uses of Dependency Graphs
 
@@ -4853,7 +4883,7 @@ The script has three mutually exclusive working modes, determined by the combina
 # Classic Build: generate Kconfig and Makefile in one step
 gen_build_chain.py -m MAKEFILE_OUT -k KCONFIG_OUT [-t TARGET_OUT] -d DEP_NAME [-v VIR_NAME] \
     [-c CONF_NAME] -s SEARCH_DIRS [-i IGNORE_DIRS] [-g GO_ON_DIRS] [-l MAX_DEPTH] \
-    [-w KEYWORDS] [-p PREPEND_FLAG] [-u UNIQUE_PACKAGES]
+    [-w KEYWORDS] [-p PREPEND_FLAG] [-u UNIQUE_PACKAGES] [-e]
 
 # Yocto Build step 1: generate Kconfig and the Target list
 gen_build_chain.py -k KCONFIG_OUT -t TARGET_OUT [-v VIR_NAME] [-c CONF_NAME] \
@@ -4866,7 +4896,7 @@ gen_build_chain.py -t TARGET_PATH -c DOT_CONFIG_NAME -o RECIPE_IMAGE_NAME \
 
 The help text states the required/optional arguments for each of the three modes clearly:
 
-- `do_normal_analysis` (Classic mode) requires `-m -k -d -s`, with optional `-v -c -t -i -g -l -w -p -u`;
+- `do_normal_analysis` (Classic mode) requires `-m -k -d -s`, with optional `-v -c -t -i -g -l -w -p -u -e`;
 - `do_yocto_analysis` (Yocto step 1) requires `-t -k`, with optional `-v -c -i -l -w -p -u`;
 - `do_image_analysis` (Yocto step 2) requires `-o -t -c`, with optional `-i -p`.
 
@@ -4890,6 +4920,7 @@ Yocto mode needs two steps because: the first scans recipe files and recipe appe
 | `-w <dir name list>` | `--keyword` | Menu-level ignore names: if a directory in the path matches one of these names, that path's level count is reduced by one. Used to remove meaningless intermediate levels |
 | `-p <flag or path>` | `--prepend` | In Classic mode, the Kconfig item prefix flag (if you set prefix-free `CONFIG_=""` when running `conf`/`mconf`, set this to 1); in Yocto step 2, the output path of the patch package list |
 | `-u <list>` | `--usermeta` | In Yocto mode, the user layer list; in Classic mode, the unique package list |
+| `-e` | `--envircfg` | In Classic mode, whether a `prebuild` virtual package automatically derives a `config` virtual package to serve as the dependency of the `choice` virtual package (otherwise the dependency is the real `build-pkg` package). |
 
 `-u` has different semantics in the two modes and must be understood separately:
 

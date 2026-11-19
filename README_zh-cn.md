@@ -4224,16 +4224,43 @@ inherit weakdep
 | `config` | `config` 条目 | 一个普通的组织节点 |
 | `menuchoice` | `choice` 结构 | 当前目录（含子目录）下的所有包成为 choice 的子选项 |
 | `choice` | `choice` 结构 | `Other_Infos` 里列出的包成为 choice 的子选项 |
+| `srcbuild` / `prebuild` | 推导出空实包和 choice 虚拟包 | 只仅经典模式下有效，一个推导方法，用于预编译包和编译包自动选择 |
 
 字段说明：
 
 - **`Target_Name`**：虚包名，必选。
 - **`Other_Infos`**：对 `choice` 类型必选，其他类型可选。
   - 所有类型都可以出现一个以 `/` 开头的路径项，表示作用于指定子目录而非当前目录；
+  - 非 `menu` 类型的包可以加关键字 `native`，自动推导出本地包规则
   - 对 `config` 与 `choice` 类型，路径项还可以是一个虚拟路径（例如 `/virtual`，单词任意），此时虚拟项显示在当前目录而不是上层目录；
   - 对 `choice` 类型，空格分隔的包列表成为子选项，其中第一个是默认选中项；
   - 对 `menuchoice` 类型，可以指定默认选中的包。
 - **`Depend_Names`**：可选，用法与 `#DEPS` 基本相同（例如可以写 `unselect`）；`choice` 与 `menuchoice` 类型不支持 `select` 与 `imply`。支持行尾 `\` 续行。
+
+`srcbuild` / `prebuild` 功能说明：
+
+- 推导出空实包和 choice 虚拟包，例如  `#VDEPS(prebuild) pkg(native): unselect depa depb` 推导出4条规则：
+    - 即使 Kconfig 中未选中任何一个 `prebuild-pkg` `pkg` 包，还是可以选中 `build-pkg` 包，此时 Makefile 会报警告
+    ```
+    #DEPS() build-pkg(empty): unselect ??prebuild-pkg||pkg depa depb
+    #VDEPS(choice) pkg-choice(prebuild-pkg pkg): build-pkg
+
+    #DEPS() build-pkg-native(empty): unselect ??prebuild-pkg-native||pkg-native depa-native depb-native
+    #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): build-pkg-native
+    ```
+- 如果 `gen_build_chain.py` 指定了 `-e` 参数，则推导出6条规则
+    - Kconfig 中未选中任何一个 `prebuild-pkg` `pkg` 包，`build-pkg` 也无法选中
+    ```
+    #VDEPS(config) pkg-enable(): unselect &build-pkg
+    #DEPS() build-pkg(empty): unselect prebuild-pkg||pkg depa depb
+    #VDEPS(choice) pkg-choice(prebuild-pkg pkg): *pkg-enable
+
+    #VDEPS(config) pkg-enable-native(): unselect &build-pkg-native
+    #DEPS() build-pkg-native(empty): unselect prebuild-pkg-native||pkg-native depa-native depb-native
+    #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): *pkg-enable-native
+    ```
+- 将工程中设计到的相关实依赖 `prebuild-pkg` `pkg` 都改成 `build-pkg`，这样依赖他的包就不用使用或 `|` 规则了
+- `srcbuild` / `prebuild` 除了默认选择是源码编译包还是预编译包外，功能完全相同
 
 #### 6.1.3.2 典型用途
 
@@ -4392,6 +4419,8 @@ CONFIG_LJSON_CHECKSUM="d2f329c504e01f44e3c2b127db25e8440d4bb5e7"
 ```
 
 含义是：强选中 `*build-libtest`（虚包，代表这个选择组）、`prebuild-libtest`、`libtest` 三者中第一个存在的，并弱依赖后两个实包。
+
+推荐使用更通用的方法，见 “6.1.3.1” 章节的 `prebuild` 虚拟包。
 
 **类似地，省略 `|` 或 `||` 前面的第一项时**会自动推导为预编译包与源码包的二选一：
 
@@ -4645,6 +4674,7 @@ rankdir=LR
 - 有几个包是虚拟不存在的包，表示特殊意义：
     - `src-path-existed` : 依赖此包的包的源码不存在
     - `depends-of-or-rule-existed` : 依赖此包的包定义的或 `|` 规则的包都不存在
+    - `packages-of-prebuild-vdeps-existed` : 依赖此包的包定义的 prebuild 规则的包都不存在
 
 #### 6.1.5.5 依赖图的实际用途
 
@@ -4866,7 +4896,7 @@ rankdir=LR
 # Classic Build：一步生成 Kconfig 和 Makefile
 gen_build_chain.py -m MAKEFILE_OUT -k KCONFIG_OUT [-t TARGET_OUT] -d DEP_NAME [-v VIR_NAME] \
     [-c CONF_NAME] -s SEARCH_DIRS [-i IGNORE_DIRS] [-g GO_ON_DIRS] [-l MAX_DEPTH] \
-    [-w KEYWORDS] [-p PREPEND_FLAG] [-u UNIQUE_PACKAGES]
+    [-w KEYWORDS] [-p PREPEND_FLAG] [-u UNIQUE_PACKAGES] [-e]
 
 # Yocto Build 第一步：生成 Kconfig 与 Target 清单
 gen_build_chain.py -k KCONFIG_OUT -t TARGET_OUT [-v VIR_NAME] [-c CONF_NAME] \
@@ -4879,7 +4909,7 @@ gen_build_chain.py -t TARGET_PATH -c DOT_CONFIG_NAME -o RECIPE_IMAGE_NAME \
 
 帮助信息中对三种模式的必选/可选参数有明确说明：
 
-- `do_normal_analysis`（经典模式）必选 `-m -k -d -s`，可选 `-v -c -t -i -g -l -w -p -u`；
+- `do_normal_analysis`（经典模式）必选 `-m -k -d -s`，可选 `-v -c -t -i -g -l -w -p -u -e`；
 - `do_yocto_analysis`（Yocto 第一步）必选 `-t -k`，可选 `-v -c -i -l -w -p -u`；
 - `do_image_analysis`（Yocto 第二步）必选 `-o -t -c`，可选 `-i -p`。
 
@@ -4903,6 +4933,7 @@ Yocto 模式需要两步的原因：第一步要扫描各层的配方文件与�
 | `-w <目录名列表>` | `--keyword` | 菜单层级的忽略名：路径中的目录若匹配这些名字，该路径的层数减一。用于消除无意义的中间层级 |
 | `-p <标志或路径>` | `--prepend` | 经典模式下是 Kconfig 配置项的前缀标志（若运行 `conf`/`mconf` 时设置了无前缀 `CONFIG_=""`，此处需设为 1）；Yocto 第二步下是补丁包列表的输出路径 |
 | `-u <列表>` | `--usermeta` | Yocto 模式下是用户层列表；经典模式下是唯一包列表 |
+| `-e` | `--envircfg` | 经典模式下 prebuild 虚包是否自动推导 config 虚包作为 choice 虚包的依赖（否则依赖是 build 实包） |
 
 `-u` 在两种模式下语义不同，需要分别理解：
 
