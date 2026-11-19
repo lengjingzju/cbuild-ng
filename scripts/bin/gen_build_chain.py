@@ -52,6 +52,7 @@ class Deps:
         self.ActualList = []
         self.VirtualList = []
         self.FinallySet = set()
+        self.PrebuildSet = set()
         self.VerCfgSet = set()
 
         self.conf_name = ''
@@ -61,6 +62,7 @@ class Deps:
         self.keywords = set()
         self.prepend_flag = 0
         self.yocto_flag = False
+        self.enable_vircfg = False
 
 
     def __init_item(self, item):
@@ -86,11 +88,12 @@ class Deps:
         item['imply'] = []
         item['versioncfg'] = False # Kconfig configuration version
         item['featurecfg'] = False # Kconfig configuration feature
-        item['features'] = [] # Kconfig configuration feature
+        item['features'] = []   # Kconfig configuration feature
         item['default'] = True
         item['conf'] = ''
         item['conftype'] = ''
         item['disabled'] = ''
+        item['prebuild'] = 0    # Only for VDEPS of prebuild, bit0: flag, bit1: prebuild, bit2: srcbuild
 
 
     def get_env_vars(self, local_config):
@@ -387,6 +390,7 @@ class Deps:
                         continue
 
                 if match_type == 'VDEPS':
+                    valid_vdeps = ('menuconfig', 'config', 'menuchoice', 'choice', 'prebuild', 'srcbuild')
                     match_type = ''
                     item = {}
                     self.__init_item(item)
@@ -396,41 +400,129 @@ class Deps:
                     if self.yocto_flag:
                         item['make'] = vir_name
 
-                    item['vtype'] = ret.groups()[0]
-                    if item['vtype'] != 'menuconfig' and item['vtype'] != 'config' and \
-                            item['vtype'] != 'menuchoice' and item['vtype'] != 'choice':
-                        print('ERROR: Invalid virtual dep type (%s) in %s' % (item['vtype'], item['path']))
-                        print('       Only support menuconfig config menuchoice choice')
+                    vtype = ret.groups()[0]
+                    if vtype not in valid_vdeps:
+                        print('ERROR: Invalid virtual dep type (%s) in %s' % (vtype, item['path']))
+                        print('       Only support: %s' % (' '.join(valid_vdeps)))
                         sys.exit(1)
 
-                    item['target'] = ret.groups()[1]
+                    target = ret.groups()[1]
+                    bitem = {}
+                    citem = {}
+                    if vtype == 'prebuild' or vtype == 'srcbuild':
+                        if not self.enable_vircfg:
+                            # Add choice item
+                            item['vtype'] = 'choice'
+                            item['target'] = target + '-choice'
+                            item['asdeps'] = ['build-' + target]
+                            if vtype == 'prebuild':
+                                item['targets'] = ['prebuild-' + target, target]
+                            else:
+                                item['targets'] = [target, 'prebuild-' + target]
+                            item['prebuild'] = 1
+                            # Add build item
+                            self.__init_item(bitem)
+                            bitem['path'] = item['path']
+                            bitem['spath'] = item['spath']
+                            bitem['target'] = 'build-' + target
+                            bitem['targets'].append('empty');
+                            bitem['prebuild'] = 1
+                            if bitem['target'] in target_set:
+                                print('ERROR: Repeated virtual dep %s:%s' % (target, bitem['path']))
+                                sys.exit(1)
+                            target_set.add(bitem['target'])
+                        else:
+                            # Add choice item
+                            item['vtype'] = 'choice'
+                            item['target'] = target + '-choice'
+                            item['vsdeps'] = [target + '-enable']
+                            if vtype == 'prebuild':
+                                item['targets'] = ['prebuild-' + target, target]
+                            else:
+                                item['targets'] = [target, 'prebuild-' + target]
+                            item['prebuild'] = 1
+                            # Add config item
+                            self.__init_item(citem)
+                            citem['vtype'] = 'config'
+                            citem['path'] = item['path']
+                            citem['spath'] = item['spath']
+                            citem['target'] = target + '-enable'
+                            citem['imply'].append('build-' + target)
+                            citem['prebuild'] = 1
+                            if citem['target'] in target_set:
+                                print('ERROR: Repeated virtual dep %s:%s' % (target, citem['path']))
+                                sys.exit(1)
+                            target_set.add(citem['target'])
+                            # Add build item
+                            self.__init_item(bitem)
+                            bitem['path'] = item['path']
+                            bitem['spath'] = item['spath']
+                            bitem['target'] = 'build-' + target
+                            bitem['targets'].append('empty');
+                            bitem['prebuild'] = 1
+                            if bitem['target'] in target_set:
+                                print('ERROR: Repeated virtual dep %s:%s' % (target, bitem['path']))
+                                sys.exit(1)
+                            target_set.add(bitem['target'])
+                    else:
+                        item['vtype'] = vtype
+                        item['target'] = target
                     if item['target'] in target_set:
-                        print('ERROR: Repeated virtual dep %s:%s' % (item['target'], item['path']))
+                        print('ERROR: Repeated virtual dep %s:%s' % (target, item['path']))
                         sys.exit(1)
+                    target_set.add(item['target'])
 
+                    native_flag = False
                     targets = ret.groups()[2].strip().split()
                     if targets:
                         for t in targets:
                             if t[0] == '/':
                                 item['spath'] += t
-                            elif 'choice' in item['vtype']:
+                                if bitem:
+                                    if citem:
+                                        citem['spath'] += t
+                                    bitem['spath'] += t
+                            elif t == 'native':
+                                native_flag = True
+                            elif 'choice' in vtype:
                                 item['targets'].append(t)
                             else:
                                 if debug_mode:
-                                    print('WARNING: Only menuchoice and choice have groups[2] field in %s:%s' % (item['target'], item['path']))
+                                    print('WARNING: Only menuchoice and choice have groups[2] field in %s:%s' % (target, item['path']))
 
-                    target_set.add(item['target'])
-                    self.__set_item_deps(last_group.strip().split(), item, False)
+                    if bitem:
+                        self.PrebuildSet.add(target)
+                        self.__set_item_deps(last_group.strip().split(), bitem, False)
+                        if citem:
+                            citem['default'] = bitem['default']
+                            self.VirtualList.append(citem)
+                            self.PathList.append((citem['path'], citem['spath'], citem))
+                        self.ActualList.append(bitem)
+                        self.PathList.append((bitem['path'], bitem['spath'], bitem))
+                    else:
+                        self.__set_item_deps(last_group.strip().split(), item, False)
                     self.VirtualList.append(item)
                     self.PathList.append((item['path'], item['spath'], item))
 
-                    if 'native' in item['targets']:
-                        item['targets'].remove('native')
-                        if 'menu' not in item['vtype']:
-                            nitem = self.__get_native_deps(item)
-                            target_set.add(nitem['target'])
-                            self.VirtualList.append(nitem)
-                            self.PathList.append((nitem['path'], nitem['spath'], nitem))
+                    if native_flag and 'menu' not in vtype:
+
+                        if bitem:
+                            self.PrebuildSet.add(target + '-native')
+                            if citem:
+                                ncitem = self.__get_native_deps(citem)
+                                target_set.add(ncitem['target'])
+                                self.VirtualList.append(ncitem)
+                                self.PathList.append((ncitem['path'], ncitem['spath'], ncitem))
+
+                            nbitem = self.__get_native_deps(bitem)
+                            target_set.add(nbitem['target'])
+                            self.ActualList.append(nbitem)
+                            self.PathList.append((nbitem['path'], nbitem['spath'], nbitem))
+
+                        nitem = self.__get_native_deps(item)
+                        target_set.add(nitem['target'])
+                        self.VirtualList.append(nitem)
+                        self.PathList.append((nitem['path'], nitem['spath'], nitem))
 
 
     def search_normal_depends(self, dep_name, vir_name, search_dirs, ignore_dirs = set(), go_on_dirs = set()):
@@ -839,6 +931,8 @@ class Deps:
                             for dep in var_deps:
                                 if dep == 'selected':
                                     var_default = 'y'
+                                elif dep == 'unselect':
+                                    var_default = 'n'
                                 else:
                                     var_depends.append(dep)
                                     item['ideps'].append('%s@@CONFIG_%s' % (dep, var_config))
@@ -980,6 +1074,124 @@ class Deps:
         self.ActualList.append(item)
 
 
+    def override_item_targets(self):
+        for item in self.VirtualList:
+            if not item['prebuild'] and 'choice' in item['vtype']:
+                if item['targets']:
+                    CntDict = {}
+                    for i, dep in enumerate(item['targets']):
+                        k = remove_prefix(dep, 'prebuild-')
+                        if k in self.PrebuildSet:
+                            CntDict[k] = CntDict.get(k, 0) + 1
+                            item['targets'][i] = 'build-' + k
+                    if CntDict:
+                        for k, v in CntDict.items():
+                            bk = 'build-' + k
+                            while v > 1:
+                                v -= 1
+                                item['targets'].remove(bk)
+
+
+    def override_item_vercfg(self, item_list):
+        for item in item_list:
+            if not item['versioncfg'] and remove_prefix(remove_suffix(item['target'], \
+                '-native'), 'prebuild-') in self.VerCfgSet:
+                item['versioncfg'] = True
+            if item['member']:
+                self.override_item_vercfg(item['member'])
+
+
+    def override_item_deps(self, item_list):
+        for item in item_list:
+            if item['prebuild'] and item['vtype']:
+                item['prebuild'] = 0
+                if item['member']:
+                    self.override_item_deps(item['member'])
+                continue
+
+            if item['wrule']:
+                for rule in item['wrule'][:]:
+                    CntDict = {}
+                    for i, dep in enumerate(rule[1]):
+                        k = remove_prefix(dep, 'prebuild-')
+                        if k in self.PrebuildSet:
+                            CntDict[k] = CntDict.get(k, 0) + 1
+                            rule[1][i] = 'build-' + k
+                    if CntDict:
+                        if len(CntDict) == 1 and not rule[0]:
+                            k, v = next(iter(CntDict.items()))
+                            if v == 2 and len(rule[1]) == 2:
+                                item['wrule'].remove(rule)
+                                if k in item['awdeps']:
+                                    item['awdeps'].remove(k)
+                                if 'prebuild-' + k in item['awdeps']:
+                                    item['awdeps'].remove('prebuild-' + k)
+                                item['asdeps'].append('build-' + k)
+                                continue
+                        for k, v in CntDict.items():
+                            bk = 'build-' + k
+                            while v > 1:
+                                v -= 1
+                                rule[1].remove(bk)
+
+            if item['ideps']:
+                for i, dep in enumerate(item['ideps']):
+                    at = '@@' if '@@' in dep else '@'
+                    dep, cond = re.split(r'@+', dep)
+                    k = remove_prefix(dep, 'prebuild-')
+                    if k in self.PrebuildSet:
+                        item['ideps'][i] = 'build-' + k + at + cond
+
+            if item['cdeps']:
+                CntDict = {}
+                raw = remove_prefix(item['target'], 'prebuild-')
+                for i, dep in enumerate(item['cdeps']):
+                    k = remove_prefix(dep, 'prebuild-')
+                    if k != raw and k in self.PrebuildSet:
+                        CntDict[k] = CntDict.get(k, 0) + 1
+                        item['cdeps'][i] = 'build-' + k
+                if CntDict:
+                    for k, v in CntDict.items():
+                        bk = 'build-' + k
+                        while v > 1:
+                            v -= 1
+                            item['cdeps'].remove(bk)
+
+            for depid in ['asdeps', 'awdeps', 'select', 'imply']:
+                if item[depid]:
+                    CntDict = {}
+                    for i, dep in enumerate(item[depid]):
+                        k = remove_prefix(dep, 'prebuild-')
+                        if k in self.PrebuildSet:
+                            CntDict[k] = CntDict.get(k, 0) + 1
+                            item[depid][i] = 'build-' + k
+                    if CntDict:
+                        for k, v in CntDict.items():
+                            bk = 'build-' + k
+                            while v > 1:
+                                v -= 1
+                                item[depid].remove(bk)
+
+            if item['features']:
+                for ft in item['features']:
+                    if ft['depends']:
+                        CntDict = {}
+                        for i, dep in enumerate(ft['depends']):
+                            k = remove_prefix(dep, 'prebuild-')
+                            if k in self.PrebuildSet:
+                                CntDict[k] = CntDict.get(k, 0) + 1
+                                ft['depends'][i] = 'build-' + k
+                        if CntDict:
+                            for k, v in CntDict.items():
+                                bk = 'build-' + k
+                                while v > 1:
+                                    v -= 1
+                                    ft['depends'].remove(bk)
+
+            if item['member']:
+                self.override_item_deps(item['member'])
+
+
     def check_item(self, item_list, target_set, poky_set = set()):
         for item in item_list[:]:
             if item['src'] and not os.path.exists(item['src']):
@@ -1002,6 +1214,21 @@ class Deps:
                         if debug_mode:
                             print('WARNING: All deps (%s) of or_rule in %s:%s are not found' \
                                 % (' '.join(deps), item['target'], item['path']))
+
+            if item['prebuild'] and not item['vtype']:
+                item['acount'] += 2
+                src_target = remove_prefix(item['target'], 'build-')
+                pre_target = 'prebuild-' + src_target
+                if pre_target in target_set:
+                    item['prebuild'] |= 2
+                if src_target in target_set:
+                    item['prebuild'] |= 4
+                if item['prebuild'] == 1:
+                    if not item['disabled']:
+                        item['disabled'] = 'packages-of-prebuild-vdeps-existed'
+                    if debug_mode:
+                        print('WARNING: All deps of prebuild vdeps in %s:%s are not found' % ( \
+                            item['target'], item['path']))
 
             if item['ideps']:
                 deps = item['ideps']
@@ -1164,12 +1391,25 @@ class Deps:
                 fp.write('\tbool "%s"\n' % (item['target']))
 
         deps = []
+        if item['disabled']:
+            deps.append('%s%s' % (config_prepend, escape_toupper(item['disabled'])))
+            if debug_mode:
+                print('WARNING: %s: disabled due to not meet %s' % (item['target'], item['disabled']))
         if item['asdeps']:
             deps += ['%s%s' % (config_prepend, escape_toupper(t)) for t in item['asdeps']]
         if item['vsdeps']:
             deps += ['%s%s' % (config_prepend, escape_toupper(t)) for t in item['vsdeps']]
         if item['cdeps']:
             deps += ['!%s%s' % (config_prepend, escape_toupper(t)) for t in item['cdeps']]
+
+        if self.enable_vircfg and item['prebuild']:
+            raw_target = remove_prefix(item['target'], 'build-')
+            prebuild_deps = [raw_target, 'prebuild-' + raw_target]
+            bracket_flag = True if deps or item['edeps'] or item['wrule'] else False
+            if bracket_flag:
+                deps.append('(%s)' % (' || '.join(['%s%s' % (config_prepend, escape_toupper(t)) for t in prebuild_deps])))
+            else:
+                deps.append('%s' % (' || '.join(['%s%s' % (config_prepend, escape_toupper(t)) for t in prebuild_deps])))
 
         if item['wrule']:
             wrules = [rule[1] for rule in item['wrule'] if not rule[0]]
@@ -1198,11 +1438,6 @@ class Deps:
                         deps.append('(%s)' % (' || '.join(['"$(%s)"="%s"' % (env_name, t) for t in env_vals])))
                     else:
                         deps.append('%s' % (' || '.join(['"$(%s)"="%s"' % (env_name, t) for t in env_vals])))
-
-        if item['disabled']:
-            deps.append('%s%s' % (config_prepend, escape_toupper(item['disabled'])))
-            if debug_mode:
-                print('WARNING: %s: disabled due to not meet %s' % (item['target'], item['disabled']))
 
         if deps:
             fp.write('\tdepends on %s\n' % (' && '.join(deps)))
@@ -1364,6 +1599,14 @@ class Deps:
             fp.write('\tstring "Checksum (md5/tag/revison)"\n')
             fp.write('\tdefault ""\n\n')
 
+            fp.write('config %s_BUILDFLAG\n' % (target))
+            fp.write('\tstring "BuildFlag"\n')
+            fp.write('\tdefault ""\n\n')
+
+            fp.write('config %s_NATIVE_BUILDFLAG\n' % (target))
+            fp.write('\tstring "BuildFlag (native)"\n')
+            fp.write('\tdefault ""\n\n')
+
             fp.write('endif\n\n')
         fp.write('endmenu\n\n')
 
@@ -1421,6 +1664,9 @@ class Deps:
                             dvars.append(dep[1:])
                         else:
                             dvars.append(dep)
+
+                if item['prebuild']:
+                    dvars.append('|' + remove_prefix(item['target'], 'build-'))
 
                 if item['ideps']:
                     for dep in item['ideps']:
@@ -1567,9 +1813,18 @@ class Deps:
                             fp.write('$(warning warning: "%s" cannot be enabled because none of [%s] is enabled)\n' % (item['target'], ', '.join(rule[1])))
                             fp.write('endif\n\n')
 
-                if item['awdeps'] or item['ideps']:
+                prebuild_deps = []
+                if item['prebuild']:
+                    raw_target = remove_prefix(item['target'], 'build-')
+                    prebuild_deps = [raw_target, 'prebuild-' + raw_target]
+                    if not self.enable_vircfg:
+                        fp.write('ifeq (%s,)\n' % ( ''.join(['$(CONFIG_' +escape_toupper(dep) + ')' for dep in prebuild_deps])))
+                        fp.write('$(warning warning: "%s" cannot be enabled because none of [%s] is enabled)\n' % (item['target'], ', '.join(prebuild_deps)))
+                        fp.write('endif\n\n')
+
+                if item['awdeps'] or item['ideps'] or prebuild_deps:
                     pkg_flags['deps'] = True
-                    for dep in item['awdeps'] + item['ideps']:
+                    for dep in item['awdeps'] + item['ideps'] + prebuild_deps:
                         if '@' in dep:
                             dep,cond = re.split(r'@+', dep)
                             fp.write('ifeq ($(CONFIG_%s)-$(%s), y-y)\n' % (escape_toupper(dep), cond))
@@ -1841,7 +2096,7 @@ class Deps:
 def parse_options():
     parser = ArgumentParser( description='''
             Tool to generate build chain.
-            do_normal_analysis must set options (-m -k -d -s) and can set options (-v -c -t -i -g -l -w -p -u).
+            do_normal_analysis must set options (-m -k -d -s) and can set options (-v -c -t -i -g -l -w -p -u -e).
             do_yocto_analysis must set options (-t -k) and can set options (-v -c -i -l -w -p -u).
             do_image_analysis must set options (-o -t -c) and can set options (-i -p).
             ''')
@@ -1903,6 +2158,10 @@ def parse_options():
             dest='prepend_flag',
             help='Specify the prepend CONFIG_ in items of kconfig_out or path to store patch/unpatch recipe list')
 
+    parser.add_argument('-e', '--envircfg',
+            action='store_true',
+            help='Specify whether the prebuild virtual package allows the generation of virtual enable config package')
+
     args = parser.parse_args()
     analysis_choice = ''
     success_flag = True
@@ -1940,6 +2199,7 @@ def do_normal_analysis(args):
     vir_name = ''
     if args.vir_name:
         vir_name = args.vir_name
+    envircfg = args.envircfg
 
     search_dirs = [s.strip() for s in args.search_dirs.split(':')]
     ignore_dirs = set()
@@ -1970,6 +2230,7 @@ def do_normal_analysis(args):
     deps.uni_packages = uni_packages
     deps.keywords = keywords
     deps.prepend_flag = prepend_flag
+    deps.enable_vircfg = envircfg
 
     deps.RegexDict['VDEPS'] = re.compile(r'#VDEPS\s*\(\s*(\w+)\s*\)\s*([\w\-]+)\s*\(([\s\w\-\./]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,]*)')
     deps.RegexDict['DEPS'] = re.compile(r'#DEPS\s*\(\s*([\w\-\./${}]*)\s*\)\s*([\w\-\.]+)\s*\(([\s\w\-\.%:]*)\)\s*:([\s\w\\\|\-\.\?\*&!=,@]*)')
@@ -1997,12 +2258,20 @@ def do_normal_analysis(args):
         print('ERROR: can not find any %s in %s.' % (dep_name, ':'.join(search_dirs)))
         sys.exit(1)
 
+    if deps.PrebuildSet:
+        deps.override_item_targets()
+
     refs = []
     for pathpair in deps.PathList:
         deps.add_normal_item(pathpair, dep_name, refs)
     if not deps.ItemList:
         print('ERROR: can not find any targets in %s in %s.' % (dep_name, ':'.join(search_dirs)))
         sys.exit(1)
+
+    if deps.VerCfgSet:
+        deps.override_item_vercfg(deps.ItemList)
+    if deps.PrebuildSet:
+        deps.override_item_deps(deps.ItemList)
 
     target_set = {item['target'] for item in deps.ActualList} \
                | {item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']}

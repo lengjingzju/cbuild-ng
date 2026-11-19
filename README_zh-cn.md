@@ -4224,16 +4224,43 @@ inherit weakdep
 | `config` | `config` 条目 | 一个普通的组织节点 |
 | `menuchoice` | `choice` 结构 | 当前目录（含子目录）下的所有包成为 choice 的子选项 |
 | `choice` | `choice` 结构 | `Other_Infos` 里列出的包成为 choice 的子选项 |
+| `srcbuild` / `prebuild` | 推导出空实包和 choice 虚拟包 | 只仅经典模式下有效，一个推导方法，用于预编译包和编译包自动选择 |
 
 字段说明：
 
 - **`Target_Name`**：虚包名，必选。
 - **`Other_Infos`**：对 `choice` 类型必选，其他类型可选。
   - 所有类型都可以出现一个以 `/` 开头的路径项，表示作用于指定子目录而非当前目录；
+  - 非 `menu` 类型的包可以加关键字 `native`，自动推导出本地包规则
   - 对 `config` 与 `choice` 类型，路径项还可以是一个虚拟路径（例如 `/virtual`，单词任意），此时虚拟项显示在当前目录而不是上层目录；
   - 对 `choice` 类型，空格分隔的包列表成为子选项，其中第一个是默认选中项；
   - 对 `menuchoice` 类型，可以指定默认选中的包。
 - **`Depend_Names`**：可选，用法与 `#DEPS` 基本相同（例如可以写 `unselect`）；`choice` 与 `menuchoice` 类型不支持 `select` 与 `imply`。支持行尾 `\` 续行。
+
+`srcbuild` / `prebuild` 功能说明：
+
+- 推导出空实包和 choice 虚拟包，例如  `#VDEPS(prebuild) pkg(native): unselect depa depb` 推导出4条规则：
+    - 即使 Kconfig 中未选中任何一个 `prebuild-pkg` `pkg` 包，还是可以选中 `build-pkg` 包，此时 Makefile 会报警告
+    ```
+    #DEPS() build-pkg(empty): unselect ??prebuild-pkg||pkg depa depb
+    #VDEPS(choice) pkg-choice(prebuild-pkg pkg): build-pkg
+
+    #DEPS() build-pkg-native(empty): unselect ??prebuild-pkg-native||pkg-native depa-native depb-native
+    #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): build-pkg-native
+    ```
+- 如果 `gen_build_chain.py` 指定了 `-e` 参数，则推导出6条规则
+    - Kconfig 中未选中任何一个 `prebuild-pkg` `pkg` 包，`build-pkg` 也无法选中
+    ```
+    #VDEPS(config) pkg-enable(): unselect &build-pkg
+    #DEPS() build-pkg(empty): unselect prebuild-pkg||pkg depa depb
+    #VDEPS(choice) pkg-choice(prebuild-pkg pkg): *pkg-enable
+
+    #VDEPS(config) pkg-enable-native(): unselect &build-pkg-native
+    #DEPS() build-pkg-native(empty): unselect prebuild-pkg-native||pkg-native depa-native depb-native
+    #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): *pkg-enable-native
+    ```
+- 将工程中设计到的相关实依赖 `prebuild-pkg` `pkg` 都改成 `build-pkg`，这样依赖他的包就不用使用或 `|` 规则了
+- `srcbuild` / `prebuild` 除了默认选择是源码编译包还是预编译包外，功能完全相同
 
 #### 6.1.3.2 典型用途
 
@@ -4329,16 +4356,18 @@ $(PATCH_PACKAGE)-unpatch-%-all:
 | `unselect` | 该包默认不选中（生成 `default n`）；不写则默认选中 |
 | `nokconfig` | 该包不含 Kconfig 配置。同目录只有一个包时无需设置；同目录有多个包时，若其他包也有配置，可把配置文件命名为 `<包名>.<配置后缀>` 来区分，否则需要设置本记号 |
 | `kconfig` | 多个包共享同一份 Kconfig，典型用法是同一软件的 cross 包与 native 包共享 |
-| `versioncfg` | 自动生成版本相关的三个 Kconfig 条目 |
+| `versioncfg` | 自动生成版本相关的五个 Kconfig 条目 |
 | `featurecfg` | 自动解析 Makefile 中的 `$(eval $(call ft-config,CONFIG_` 语句，添加条件依赖变量 `depname@@condition` 并生成对应的 Kconfig 条目 |
 
-`versioncfg` 生成的三个配置项是 `CONFIG_<PKG>_VERSION`、`CONFIG_<PKG>_BRANCH`、`CONFIG_<PKG>_CHECKSUM`，其中 `<PKG>` 是包名去掉 `prebuild-` 前缀与 `-native` 后缀并转大写。实际效果可以在配置文件里看到：
+`versioncfg` 生成的五个配置项是 `CONFIG_<PKG>_VERSION`、`CONFIG_<PKG>_BRANCH`、`CONFIG_<PKG>_CHECKSUM`、`CONFIG_<PKG>_BUILDFLAG`、`CONFIG_<PKG>_NATIVE_BUILDFLAG`，其中 `<PKG>` 是包名去掉 `prebuild-` 前缀与 `-native` 后缀并转大写。实际效果可以在配置文件里看到：
 
 ```
 CONFIG_LJSON_VERCFG=y
 CONFIG_LJSON_VERSION="5.0.6"
 CONFIG_LJSON_BRANCH=""
 CONFIG_LJSON_CHECKSUM="d2f329c504e01f44e3c2b127db25e8440d4bb5e7"
+CONFIG_LJSON_BUILDFLAG=""
+CONFIG_LJSON_NATIVE_BUILDFLAG=""
 ```
 
 这让「同一个包的不同版本」成为配置菜单里可切换的选项，而不是需要改代码的常量。
@@ -4392,6 +4421,8 @@ CONFIG_LJSON_CHECKSUM="d2f329c504e01f44e3c2b127db25e8440d4bb5e7"
 ```
 
 含义是：强选中 `*build-libtest`（虚包，代表这个选择组）、`prebuild-libtest`、`libtest` 三者中第一个存在的，并弱依赖后两个实包。
+
+推荐使用更通用的方法，见 “6.1.3.1” 章节的 `prebuild` 虚拟包。
 
 **类似地，省略 `|` 或 `||` 前面的第一项时**会自动推导为预编译包与源码包的二选一：
 
@@ -4645,6 +4676,7 @@ rankdir=LR
 - 有几个包是虚拟不存在的包，表示特殊意义：
     - `src-path-existed` : 依赖此包的包的源码不存在
     - `depends-of-or-rule-existed` : 依赖此包的包定义的或 `|` 规则的包都不存在
+    - `packages-of-prebuild-vdeps-existed` : 依赖此包的包定义的 prebuild 规则的包都不存在
 
 #### 6.1.5.5 依赖图的实际用途
 
@@ -4866,7 +4898,7 @@ rankdir=LR
 # Classic Build：一步生成 Kconfig 和 Makefile
 gen_build_chain.py -m MAKEFILE_OUT -k KCONFIG_OUT [-t TARGET_OUT] -d DEP_NAME [-v VIR_NAME] \
     [-c CONF_NAME] -s SEARCH_DIRS [-i IGNORE_DIRS] [-g GO_ON_DIRS] [-l MAX_DEPTH] \
-    [-w KEYWORDS] [-p PREPEND_FLAG] [-u UNIQUE_PACKAGES]
+    [-w KEYWORDS] [-p PREPEND_FLAG] [-u UNIQUE_PACKAGES] [-e]
 
 # Yocto Build 第一步：生成 Kconfig 与 Target 清单
 gen_build_chain.py -k KCONFIG_OUT -t TARGET_OUT [-v VIR_NAME] [-c CONF_NAME] \
@@ -4879,7 +4911,7 @@ gen_build_chain.py -t TARGET_PATH -c DOT_CONFIG_NAME -o RECIPE_IMAGE_NAME \
 
 帮助信息中对三种模式的必选/可选参数有明确说明：
 
-- `do_normal_analysis`（经典模式）必选 `-m -k -d -s`，可选 `-v -c -t -i -g -l -w -p -u`；
+- `do_normal_analysis`（经典模式）必选 `-m -k -d -s`，可选 `-v -c -t -i -g -l -w -p -u -e`；
 - `do_yocto_analysis`（Yocto 第一步）必选 `-t -k`，可选 `-v -c -i -l -w -p -u`；
 - `do_image_analysis`（Yocto 第二步）必选 `-o -t -c`，可选 `-i -p`。
 
@@ -4903,6 +4935,7 @@ Yocto 模式需要两步的原因：第一步要扫描各层的配方文件与�
 | `-w <目录名列表>` | `--keyword` | 菜单层级的忽略名：路径中的目录若匹配这些名字，该路径的层数减一。用于消除无意义的中间层级 |
 | `-p <标志或路径>` | `--prepend` | 经典模式下是 Kconfig 配置项的前缀标志（若运行 `conf`/`mconf` 时设置了无前缀 `CONFIG_=""`，此处需设为 1）；Yocto 第二步下是补丁包列表的输出路径 |
 | `-u <列表>` | `--usermeta` | Yocto 模式下是用户层列表；经典模式下是唯一包列表 |
+| `-e` | `--envircfg` | 经典模式下 prebuild 虚包是否自动推导 config 虚包作为 choice 虚包的依赖（否则依赖是 build 实包） |
 
 `-u` 在两种模式下语义不同，需要分别理解：
 
@@ -7010,7 +7043,14 @@ CACHE_DEPENDS    = none
 COMPILE_TOOL     = imake
 ```
 
-`versioncfg` 是依赖列表里的一个关键字。解析到它之后，`gen_build_chain.py` 在包的配置项里加 `select <包名>_VERCFG`，并在 Kconfig 末尾生成一组版本配置菜单：`<包名>_VERCFG` 是一个 `menuconfig`，其下有三个字符串项 `<包名>_VERSION`、`<包名>_BRANCH`、`<包名>_CHECKSUM`。于是「用哪个版本」不再靠改 Makefile 里的 `VERSION =`，而是在 `make menuconfig` 里填。包 Makefile 用 `-include .config` 把这三个值读成 Make 变量，再分别喂给 `VERSION` 与 `SRC_REV`。
+`versioncfg` 是依赖列表里的一个关键字。解析到它之后，`gen_build_chain.py` 在包的配置项里加 `select <包名>_VERCFG`，并在 Kconfig 末尾生成一组版本配置菜单：`<包名>_VERCFG` 是一个 `menuconfig`，其下有五个字符串项：
+- `CONFIG_<包名>_VERSION`   : 版本字符串配置
+- `CONFIG_<包名>_BRANCH`    : git分支字符串配置
+- `CONFIG_<包名>_CHECKSUM`  : 校验字符串配置，可以是 revison(git、svn)、tag (git)、md5 (tar、zip)
+- `CONFIG_<包名>_BUILDFLAG` : 自定义配置或编译选项字符串配置
+- `CONFIG_<包名>_NATIVE_BUILDFLAG` : 自定义配置或编译选项字符串配置（native）
+
+于是「用哪个版本」不再靠改 Makefile 里的 `VERSION =`，而是在 `make menuconfig` 里填。包 Makefile 用 `-include .config` 把这三个值读成 Make 变量，再分别喂给 `VERSION` 与 `SRC_REV`。
 
 Git 获取连带改变源码存放位置。`inc.rule.mk` 对 `git`/`svn` 默认 `SRC_SHARED ?= y`，因此 `SRC_PATH` 指向共享下载目录而不是每个包的 `WORKDIR`；`SRC_URLS` 会拼上 `;rev=<修订>`，`fetch_package.sh` 据此 checkout 到指定提交，多个包或多次构建共享同一份仓库。`COMPILE_TOOL = imake` 让模板把 `MAKE_FLAGS` 设为 `-C $(SRC_PATH) $(REL_CONFIG)`，调用该仓库自带的 Makefile——那个仓库用的是 IMake 模板，所以能直接接上。
 
