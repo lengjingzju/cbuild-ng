@@ -4259,6 +4259,7 @@ inherit weakdep
     #DEPS() build-pkg-native(empty): unselect prebuild-pkg-native||pkg-native depa-native depb-native
     #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): *pkg-enable-native
     ```
+- 将 pkg 的 `Kconfig` / `featurecfg` 配置移动到 build-pkg 挂载，这样配置只要定义一份，源码编译包还是预编译包都可以使用
 - 将工程中设计到的相关实依赖 `prebuild-pkg` `pkg` 都改成 `build-pkg`，这样依赖他的包就不用使用或 `|` 规则了
 - `srcbuild` / `prebuild` 除了默认选择是源码编译包还是预编译包外，功能完全相同
 
@@ -7046,7 +7047,7 @@ COMPILE_TOOL     = imake
 `versioncfg` 是依赖列表里的一个关键字。解析到它之后，`gen_build_chain.py` 在包的配置项里加 `select <包名>_VERCFG`，并在 Kconfig 末尾生成一组版本配置菜单：`<包名>_VERCFG` 是一个 `menuconfig`，其下有五个字符串项：
 - `CONFIG_<包名>_VERSION`   : 版本字符串配置
 - `CONFIG_<包名>_BRANCH`    : git分支字符串配置
-- `CONFIG_<包名>_CHECKSUM`  : 校验字符串配置，可以是 revison(git、svn)、tag (git)、md5 (tar、zip)
+- `CONFIG_<包名>_CHECKSUM`  : 校验字符串配置，可以是 revision(git、svn)、tag (git)、md5 (tar、zip)
 - `CONFIG_<包名>_BUILDFLAG` : 自定义配置或编译选项字符串配置
 - `CONFIG_<包名>_NATIVE_BUILDFLAG` : 自定义配置或编译选项字符串配置（native）
 

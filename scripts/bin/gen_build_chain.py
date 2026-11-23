@@ -45,6 +45,7 @@ class Deps:
         self.VarDict = {}
         self.InfoDict = {}
         self.KconfigDict = {}
+        self.KconfigList = []
         self.PathList = []
         self.PokyList = []
         self.PokyMoved = []
@@ -52,8 +53,9 @@ class Deps:
         self.ActualList = []
         self.VirtualList = []
         self.FinallySet = set()
-        self.PrebuildSet = set()
         self.VerCfgSet = set()
+        self.PrebuildSet = set()
+        self.PrebuildDict = {}
 
         self.conf_name = ''
         self.conf_str = ''
@@ -358,6 +360,9 @@ class Deps:
         nitem['acount'] = 0
         nitem['default'] = False
 
+        if nitem['conf'] or nitem['featurecfg']:
+            self.KconfigList.append(nitem)
+
         return nitem
 
 
@@ -499,6 +504,7 @@ class Deps:
                             self.PathList.append((citem['path'], citem['spath'], citem))
                         self.ActualList.append(bitem)
                         self.PathList.append((bitem['path'], bitem['spath'], bitem))
+                        self.PrebuildDict[target] = bitem
                     else:
                         self.__set_item_deps(last_group.strip().split(), item, False)
                     self.VirtualList.append(item)
@@ -518,6 +524,7 @@ class Deps:
                             target_set.add(nbitem['target'])
                             self.ActualList.append(nbitem)
                             self.PathList.append((nbitem['path'], nbitem['spath'], nbitem))
+                            self.PrebuildDict[target + '-native'] = nbitem
 
                         nitem = self.__get_native_deps(item)
                         target_set.add(nitem['target'])
@@ -685,6 +692,9 @@ class Deps:
                         self.KconfigDict[conf_path] = self.KconfigDict.pop(item['conf'])
                     item['conf'] = conf_path
                     break
+
+        if item['conf'] or item['featurecfg']:
+            self.KconfigList.append(item)
 
 
     def add_normal_item(self, pathpair, dep_name, refs):
@@ -1192,6 +1202,33 @@ class Deps:
                 self.override_item_deps(item['member'])
 
 
+    def override_item_configs(self):
+        for item in self.KconfigList:
+            target = remove_prefix(item['target'], 'prebuild-')
+            if target not in self.PrebuildDict:
+                continue
+            bitem = self.PrebuildDict[target]
+            if bitem['conf'] or bitem['featurecfg']:
+                print('\033[31mERROR: Duplicate configuration of %s.\033[0m\n' % (target))
+                sys.exit(1)
+
+            if item['conftype'] == 'kconfig':
+                if bitem['target'] not in self.KconfigDict[item['conf']]:
+                    self.KconfigDict[item['conf']].append(bitem['target'])
+                    bitem['conftype'] = item['conftype']
+                    bitem['conf'] = item['conf']
+            else:
+                if item['conf']:
+                    bitem['conf'] = item['conf']
+                    item['conf'] = ''
+
+            if item['featurecfg']:
+                bitem['featurecfg'] = item['featurecfg']
+                bitem['features'] = item['features']
+                item['featurecfg'] = False
+                item['features'] = []
+
+
     def check_item(self, item_list, target_set, poky_set = set()):
         for item in item_list[:]:
             if item['src'] and not os.path.exists(item['src']):
@@ -1596,7 +1633,7 @@ class Deps:
             fp.write('\tdefault ""\n\n')
 
             fp.write('config %s_CHECKSUM\n' % (target))
-            fp.write('\tstring "Checksum (md5/tag/revison)"\n')
+            fp.write('\tstring "Checksum (md5/tag/revision)"\n')
             fp.write('\tdefault ""\n\n')
 
             fp.write('config %s_BUILDFLAG\n' % (target))
@@ -2272,6 +2309,8 @@ def do_normal_analysis(args):
         deps.override_item_vercfg(deps.ItemList)
     if deps.PrebuildSet:
         deps.override_item_deps(deps.ItemList)
+        if deps.KconfigList:
+            deps.override_item_configs()
 
     target_set = {item['target'] for item in deps.ActualList} \
                | {item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']}

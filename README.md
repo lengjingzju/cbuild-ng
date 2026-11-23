@@ -4246,6 +4246,7 @@ Field descriptions:
     #DEPS() build-pkg-native(empty): unselect prebuild-pkg-native||pkg-native depa-native depb-native
     #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): *pkg-enable-native
     ```
+- Move the `Kconfig` / `featurecfg` configuration of `pkg` to the `build-pkg` mount point, so that the configuration only needs to be defined once and can be used by both the source-built package and the prebuilt package.
 - Every relevant actual dependency on `prebuild-pkg` or `pkg` in the project is rewritten to `build-pkg`, so packages depending on it no longer need an OR `|` rule.
 - `srcbuild` and `prebuild` are functionally identical except for which variant — the source-built package or the prebuilt package — is selected by default.
 
