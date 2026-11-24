@@ -184,7 +184,7 @@ case $choice in
         ;;
     linux_out)
         if [ -z "$linux_out" ]; then
-            echo "${ENV_TOP_OUT}/$soc/objects/linux-$linux_version/build"
+            echo "${ENV_TOP_OUT}/$soc/objects/linux/build"
         else
             echo "$linux_out"
         fi

@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) linux(singletask menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
+#DEPS(mk.deps) linux(menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
 
 PACKAGE_NAME     = linux
 
@@ -19,9 +19,8 @@ DESCRIPTION      = Linux is a clone of the operating system Unix, written from s
                    Although originally developed first for 32-bit x86-based PCs (386 or higher), today Linux also runs on \
                    a multitude of other processor architectures, in both 32- and 64-bit variants.
 
-MACHINE_SCRIPT  := $(ENV_TOOL_DIR)/process_machine.sh
-FETCH_SCRIPT    := $(ENV_TOOL_DIR)/fetch_package.sh
 VERSION          = $(shell $(MACHINE_SCRIPT) linux_version)
+SRC_DDIR         = $(shell dirname $(KERNEL_SRC))
 SRC_DIR          = $(PACKAGE_NAME)-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.xz
 SRC_URL          = https://www.kernel.org/pub/linux/kernel/v$(shell echo $(VERSION) | cut -d '.' -f 1).x/$(SRC_NAME)
@@ -30,111 +29,69 @@ SRC_MD5          = $(shell $(MACHINE_SCRIPT) linux_srchash)
 -include $(ENV_CFG_ROOT)/.config
 include $(ENV_MAKE_DIR)/inc.env.mk
 
-ifeq ($(KERNEL_SRC), )
-
-%:
-	$(PREAT)echo "KERNEL_SRC is not set, do nothing!"
-
-else
-
 LINUX_CONFIG    := $(shell echo $(CONFIG_LINUX_CONFIG))
 LINUX_CFGDIR    := $(ENV_TOP_DIR)/board/$(ENV_BUILD_SOC)/linux-configs
-LINUX_MAKES     := make $(ENV_BUILD_JOBS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_PREFIX)
+MAKE_FLAGS      := $(ENV_BUILD_JOBS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_PREFIX)
 
-.PHONY: all clean install menuconfig defconfig getlinux dofetch setdev unsetdev
+CUSTOM_TARGETS   = compile install clean
+include $(ENV_MAKE_DIR)/inc.rule.mk
 
-all: defconfig
-	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ] || [ ! -e $(KERNEL_SRC) ]; then \
-		make -s -f mk.deps defconfig; \
-	fi
-	$(PREAT)echo "Compiling linux-$(KERNEL_VER) to $(KERNEL_OUT) ..."
-	$(PREAT)$(LINUX_MAKES) all $(TOLOG)
-	$(PREAT)echo "Build $(PACKAGE_NAME) Done."
+.PHONY: loadconfig defconfig menuconfig
 
-clean:
-	$(PREAT)if [ -e $(KERNEL_SRC) ]; then \
-		$(LINUX_MAKES) clean $(TOLOG); \
-		$(LINUX_MAKES) mrproper $(TOLOG); \
-	fi
-	$(PREAT)echo "Clean $(PACKAGE_NAME) Done."
-
-install:
-	$(PREAT)echo "Install linux-$(KERNEL_VER) to $(INS_PREFIX) ..."
-	$(PREAT)mkdir -p $(INS_PREFIX)/boot
-	$(PREAT)cp -dfp $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/*Image* $(INS_PREFIX)/boot
-	$(PREAT)$(LINUX_MAKES) modules_install $(TOLOG)
-	$(PREAT)echo "Install $(PACKAGE_NAME) Done."
-
-menuconfig:
-	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ] || [ ! -e $(KERNEL_SRC) ]; then \
-		make -s -f mk.deps defconfig; \
-	fi
-	$(PREAT)$(LINUX_MAKES) menuconfig
-
+loadconfig:
 ifeq ($(LINUX_CONFIG), )
-
-defconfig: getlinux
 	$(PREAT)mkdir -p $(KERNEL_OUT)
-	$(PREAT)$(LINUX_MAKES) defconfig
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) defconfig
 else
-
-defconfig: getlinux
 	$(PREAT)mkdir -p $(KERNEL_OUT)
 	$(PREAT)if [ -f $(LINUX_CFGDIR)/$(LINUX_CONFIG) ]; then \
 		echo "Loading '$(LINUX_CFGDIR)/$(LINUX_CONFIG)' as linux config"; \
 		cp -f $(LINUX_CFGDIR)/$(LINUX_CONFIG) $(KERNEL_OUT)/.config; \
 	else \
 		echo "loaLoadingd '$(LINUX_CONFIG)' as linux config"; \
-		$(LINUX_MAKES) $(LINUX_CONFIG); \
+		$(MAKE) $(MAKE_FLAGS) $(LINUX_CONFIG); \
 	fi
 endif
 
-%_defconfig: getlinux
+defconfig:
+	$(PREAT)$(call do_fetch)
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) loadconfig
+
+menuconfig:
+	$(PREAT)$(call do_fetch)
+	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ]; then \
+		$(MAKE) -f $(MAKE_FNAME) loadconfig; \
+	fi
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) menuconfig
+
+%_defconfig:
+	$(PREAT)$(call do_fetch)
 	$(PREAT)mkdir -p $(KERNEL_OUT)
 	$(PREAT)if [ -f $(LINUX_CFGDIR)/$@ ]; then \
 		echo "Loading '$(LINUX_CFGDIR)/$@' as linux config"; \
 		cp -f $(LINUX_CFGDIR)/$@ $(KERNEL_OUT)/.config; \
 	else \
 		echo "Loading '$@' as linux config"; \
-		$(LINUX_MAKES) $@; \
+		$$(MAKE) (MAKE_FLAGS) $@; \
 	fi
 
-BUILD_DEVF      ?= $(WORKDIR)/$(PACKAGE_NAME)-dev
-getlinux:
-	$(PREAT)if [ -e $(BUILD_DEVF) ]; then \
-		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
-	fi; \
-	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(shell dirname $(KERNEL_SRC))/$(SRC_DIR) ]; then \
-		mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock; \
-		flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) tar \"$(SRC_URL);md5=$(SRC_MD5)\" $(SRC_NAME) $(shell dirname $(KERNEL_SRC)) $(SRC_DIR)"; \
+compile:
+	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ]; then \
+		$(MAKE) -f $(MAKE_FNAME) loadconfig; \
 	fi
+	$(PREAT)echo "Compiling linux-$(KERNEL_VER) to $(KERNEL_OUT) ..."
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) all $(TOLOG)
+	$(PREAT)echo "Build $(PACKAGE_NAME) Done."
 
-dofetch:
-	$(PREAT)mkdir -p $(ENV_DOWN_DIR)/lock && echo > $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock
-	$(PREAT)flock $(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock -c "bash $(FETCH_SCRIPT) tar \"$(SRC_URL);md5=$(SRC_MD5)\" $(SRC_NAME)"
-
-setdev:
-	$(PREAT)mkdir -p $(shell dirname $(BUILD_DEVF))
-	$(PREAT)echo > $(BUILD_DEVF)
-	$(PREAT)$(COLORECHO) "\033[33mSet $(PACKAGE_ID) Development Mode.\033[0m"
-
-unsetdev:
-	$(PREAT)rm -f $(BUILD_DEVF)
-	$(PREAT)$(COLORECHO) "\033[33mUnset $(PACKAGE_ID) Development Mode.\033[0m"
-
-status:
-	$(PREAT)status=""; \
-		if [ -e $(BUILD_DEVF) ]; then \
-			status=" dev"; \
-		fi; \
-		if [ -e $(CACHE_OUTPATH)/$(PACKAGE_NAME)-force ]; then \
-			status="$${status} force"; \
-		fi; \
-		if [ ! -z "$${status}" ]; then \
-			$(COLORECHO) "\033[31mSTATUS ($(PACKAGE_ID)):$${status}\033[0m"; \
-		fi
-
-printurl:
-	$(PREAT)echo "$(SRC_URL);md5=$(SRC_MD5)"
-
-endif
+install:
+	$(PREAT)echo "Install linux-$(KERNEL_VER) to $(INS_PREFIX) ..."
+	$(PREAT)mkdir -p $(INS_PREFIX)/boot
+	$(PREAT)cp -dfp $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/*Image* $(INS_PREFIX)/boot
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) modules_install $(TOLOG)
+	$(PREAT)echo "Install $(PACKAGE_NAME) Done."
+clean:
+	$(PREAT)if [ -e $(KERNEL_SRC) ]; then \
+		$(MAKE) $(MAKE_FLAGS) clean $(TOLOG); \
+		$(MAKE) $(MAKE_FLAGS) mrproper $(TOLOG); \
+	fi
+	$(PREAT)echo "Clean $(PACKAGE_NAME) Done."

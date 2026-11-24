@@ -23,10 +23,11 @@ SRC_SHARED      := n
 endif
 SRC_URLS        ?= $(SRC_URL)$(if $(SRC_MD5),;md5=$(SRC_MD5))$(if $(SRC_BRANCH),;branch=$(SRC_BRANCH))$(if $(SRC_TAG),;tag=$(SRC_TAG))$(if $(SRC_REV),;rev=$(SRC_REV))
 ifneq ($(SRC_SHARED),y)
-SRC_PATH        ?= $(WORKDIR)/$(SRC_DIR)
+SRC_DDIR        ?= $(WORKDIR)
 else
-SRC_PATH        ?= $(ENV_DOWN_DIR)/$(SRC_DIR)
+SRC_DDIR        ?= $(ENV_DOWN_DIR)
 endif
+SRC_PATH        ?= $(SRC_DDIR)/$(SRC_DIR)
 PATCH_FOLDER    ?= $(if $(wildcard $(shell pwd)/patch/*.patch),$(shell pwd)/patch)
 else
 SRC_PATH        ?= $(shell pwd)
@@ -170,9 +171,9 @@ define do_fetch
 	if [ -e $(BUILD_DEVF) ]; then \
 		$(COLORECHO) "\033[33mWARNING: Develop Build $(PACKAGE_NAME).\033[0m" >&2; \
 	fi; \
-	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(WORKDIR)/$(SRC_DIR) ]; then \
+	if [ ! -e $(BUILD_DEVF) ] || [ ! -e $(SRC_DDIR)/$(SRC_DIR) ]; then \
 		mkdir -p $(shell dirname $(FETCH_LOCK)) && echo > $(FETCH_LOCK) && \
-		flock $(FETCH_LOCK) -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(WORKDIR) $(SRC_DIR)"; \
+		flock $(FETCH_LOCK) -c "bash $(FETCH_SCRIPT) $(FETCH_METHOD) \"$(SRC_URLS)\" $(SRC_NAME) $(SRC_DDIR) $(SRC_DIR)"; \
 	fi
 endef
 else
@@ -394,12 +395,7 @@ status:
 			$(COLORECHO) "\033[31mSTATUS ($(PACKAGE_ID)):$${status}\033[0m"; \
 		fi
 ifeq ($(FETCH_METHOD),git)
-	$(PREAT)srcpath=""; \
-		if [ "$(SRC_SHARED)" != "y" ]; then \
-			srcpath=$(WORKDIR)/$(SRC_DIR); \
-		else \
-			srcpath=$(ENV_DOWN_DIR)/$(SRC_DIR); \
-		fi; \
+	$(PREAT)srcpath=$(SRC_DDIR)/$(SRC_DIR); \
 		if [ -e $${srcpath} ]; then \
 			cd $${srcpath}; \
 			info1=$$(echo $${srcpath} | sed "s:$(ENV_TOP_DIR)/::g"); \
