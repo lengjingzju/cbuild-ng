@@ -1047,22 +1047,26 @@ Besides open-source software, `system/` contains four special members that wrap 
 | `cbuild` | Installs the global configuration into the sysroot for applications to reference | `install_tofile` installs `.config` as `/usr/include/cbuild` and `config.h` as `/usr/include/cbuild.h` | See 3.10.3.3 |
 | `execld` | Cross-distribution program launcher | A statically linked C program compiled with IMake (`LDFLAGS += -static`) | See 3.10.3.4 |
 
-#### 3.10.3.1 The Linux Kernel Package system/linux
+#### 3.10.3.1 The Linux Kernel Package: system/linux
 
-The kernel is implemented as an ordinary package, so it receives exactly the same treatment as any other: it appears in the configuration menu, can be built on its own, can be weakly depended on by driver packages, and has queryable status.
+The kernel is implemented as an ordinary package and therefore receives exactly the same treatment as any other package: it appears in the configuration menu, can be built on its own, can be weakly depended on by driver packages, has a queryable status, and can hit the cache. What makes it special is not how it is built but the shape of its output: besides the image and the modules, it must leave behind a build tree that external modules can compile against. That build tree is precisely what `break` and `cookcache` are about.
 
-**Declaration characteristics**
+**Declaration**
 
 ```makefile
-#DEPS(mk.deps) linux(singletask menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
+#DEPS(mk.deps) linux(release break menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
 ```
 
-- `singletask`: the kernel enables multi-threaded compilation internally, so an external `make -jn` is unnecessary;
-- `menuconfig` `defconfig` `%_defconfig`: exposes three configuration-related targets;
-- `unselect`: not selected by default;
-- `KERNEL_SRC!=`: the package is excluded from the build when the `KERNEL_SRC` environment variable is empty (automatically excluded in native and application compilation modes).
+- `release`: the release chain invokes the package's own `release` target instead of the default `install`. Build artifacts first land in the package's own installation tree, `$(INS_TOPDIR)`, and are delivered to `$(INS_PREFIX)` in one step by `release`. This is what allows the image, the modules and the kernel build tree to be cached together as one complete image. The package-level `install` is reduced to a notice: `nothing to do, 'release' is real 'install'`.
+- `break`: cuts the installation relationship of dependencies. A package that depends on the kernel still waits for it to be compiled, but no longer pulls the kernel's sysroot artifacts into its own private sysroot, install chain or release chain. What the kernel provides is a build tree pointed to by `KERNEL_SRC` / `KERNEL_OUT`, not headers and libraries in a sysroot, so this declaration matches the kernel's actual role.
+- `menuconfig`, `defconfig`, `%_defconfig`: expose the three configuration targets. `defconfig` ends with `do_unsetforce` to clear the force-build marker; `menuconfig` and `%_defconfig` end with `do_setforce`, so interactively changed configuration cannot be swallowed by a stale cache.
+- `unselect`: deselected by default.
+- `KERNEL_SRC!=`: an environment dependency; the package is excluded from the build when `KERNEL_SRC` is empty (automatically the case in native and application build modes).
+- `singletask` is no longer declared: the parallelism is carried uniformly by `MAKE_FLAGS := $(ENV_BUILD_JOBS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_TOPDIR)`, like every other package.
 
-Source fetching uses the standard `SRC_URL` + `SRC_MD5` mechanism, with both version and md5 coming from `process_machine.sh`:
+**Source retrieval and configuration sources**
+
+Source retrieval uses the standard `SRC_URL` + `SRC_MD5` mechanism; `SRC_DDIR = $(shell dirname $(KERNEL_SRC))` places the unpacked source beside the kernel tree. The version and md5 both come from `process_machine.sh`:
 
 ```makefile
 VERSION  = $(shell $(MACHINE_SCRIPT) linux_version)
@@ -1070,43 +1074,64 @@ SRC_URL  = https://www.kernel.org/pub/linux/kernel/v$(shell echo $(VERSION) | cu
 SRC_MD5  = $(shell $(MACHINE_SCRIPT) linux_srchash)
 ```
 
-**Configuration sources**
+There are two sources of kernel configuration, selected by the Kconfig entry `CONFIG_LINUX_CONFIG` and both realized by `loadconfig`. The entry itself is declared in the package-level [system/linux/mk.kconf](./system/linux/mk.kconf) — a single `string "linux config filename"` item sourced into the top-level Kconfig under `if LINUX ... endif`, so filling in a filename there is all that is needed:
 
-The kernel configuration has two possible sources, chosen by the `CONFIG_LINUX_CONFIG` Kconfig item:
+- **Empty**: run the kernel's own `defconfig`;
+- **Non-empty**: first look for a file of the same name under `board/$(ENV_BUILD_SOC)/linux-configs/`; if found, copy it directly to `.config`; otherwise treat the value as a kernel configuration target (for example `multi_v7_defconfig`).
 
-- **Empty**: the kernel's own `defconfig` is run;
-- **Non-empty**: first look for a file of the same name under `board/$(ENV_BUILD_SOC)/linux-configs/`; if found, copy it directly to `.config`; if not found, treat it as a kernel configuration target name (for example `multi_v7_defconfig`).
+This two-level lookup lets board-level custom configurations coexist with upstream ones: place the custom file in `board/<board>/linux-configs/` and enter its name in the menu.
 
-This two-level lookup lets "board-specific customized configuration" and "kernel-supplied configuration" coexist: put the customized configuration in `board/<board>/linux-configs/` and fill in its filename in the menu.
+**Cache and configuration fingerprint**
+
+The kernel package enables `CACHE_BUILD = y` and makes the configuration itself part of the cache key:
+
+| Configuration source | `CONFIG_CHECKSUM` | Additional action |
+| --- | --- | --- |
+| `LINUX_CONFIG` empty | `defconfig-$(SRC_MD5)` | — |
+| Board-level file exists | `$(LINUX_CONFIG)-<file md5>` | File added to `CACHE_CHECKSUM` |
+| No board-level file | `$(LINUX_CONFIG)-$(SRC_MD5)` | — |
+
+`CACHE_APPENDS += LINUX_CONFIG=$(LINUX_CONFIG)` makes a different configuration name in the menu produce a different cache key; the board-level file in `CACHE_CHECKSUM` makes editing its contents invalidate the cache too; `CACHE_DEPENDS = none` skips dependency-chain analysis because the kernel has no dependencies. `loadconfig` removes the old `.config-md5-*` files and writes a marker named after the current `CONFIG_CHECKSUM`; `compile` reloads the configuration whenever `.config` or the corresponding marker is missing. Consequently, switching configurations, editing a configuration file, and upgrading the kernel version all take effect without manual cleanup.
+
+**`cookcache`: extra work after a cache hit**
+
+For an ordinary package, restoring the installation tree after a cache hit is enough. For the kernel it is not. Driver builds need `.config`, `Module.symvers` and the headers generated by `modules_prepare` inside `KERNEL_OUT`, and `KERNEL_OUT` is a build output directory that is not cached together with `INS_TOPDIR`. Without extra work after a hit, a driver package would face a kernel tree with no configuration and no symbol table.
+
+`compile` therefore deliberately stores those three items in the image when it finishes:
+
+```makefile
+IMAGE_CFGDIR    := $(INS_TOPDIR)/lib/modules/$(KERNEL_VER)/build
+# .config / .config-md5-$(CONFIG_CHECKSUM) / Module.symvers
+```
+
+and `cookcache` is declared in `CUSTOM_TARGETS`. It is an opt-in hook, invoked by the template after a cache hit once the installation tree has been restored: fetch the source (`do_fetch`), create `KERNEL_OUT`, and — if `.config` is absent — copy the three items back from `IMAGE_CFGDIR` into `KERNEL_OUT` and run `make modules_prepare`. A cache-hit build and a full build thus present exactly the same kernel context to driver packages.
 
 **Targets**
 
 | Target | Behavior |
 | --- | --- |
-| `all` | Depends on `defconfig`; if the kernel `.config` or the source directory does not exist, load the default configuration first, then build everything |
-| `clean` | Runs the kernel's `clean` and `mrproper` |
-| `install` | Copies `arch/$(KERNEL_ARCH)/boot/*Image*` to `$(INS_PREFIX)/boot` and runs `modules_install` |
-| `menuconfig` | Opens the kernel configuration UI (preparing sources and the default configuration first if necessary) |
-| `defconfig` / `<name>_defconfig` | Loads a configuration |
-| `getlinux` | Fetches the kernel sources (affected by the development-mode marker) |
-| `dofetch` / `printurl` / `setdev` / `unsetdev` / `status` | Same as for other source packages |
+| `all` | Cache entry point: on a miss, `build` → `compile`; on a hit, restore the installation tree and run `cookcache` |
+| `compile` | Reload via `loadconfig` if the configuration or its fingerprint is missing; then `make all`, `modules_install` (with `INSTALL_MOD_PATH=$(INS_TOPDIR)`), install `*Image*` into `$(INS_TOPDIR)/boot`, and populate `IMAGE_CFGDIR` |
+| `cookcache` | Post-hit recovery: restore the configuration and symbol table from `IMAGE_CFGDIR`, then `modules_prepare` |
+| `install` | No-op; delivery is performed by `release` |
+| `release` | `cp -drf --preserve=mode,timestamps $(INS_TOPDIR)/* $(INS_PREFIX)` |
+| `clean` | Run the kernel's `clean` and `mrproper` |
+| `loadconfig` | Load the configuration via the two-level lookup and write `.config-md5-$(CONFIG_CHECKSUM)` |
+| `menuconfig` | Open the kernel configuration UI; load the default config on first use, otherwise refresh the `.config-md5-*` fingerprint marker, then set the force-build marker |
+| `defconfig` / `<name>_defconfig` | Load a configuration |
+| `dofetch` / `printurl` / `setdev` / `unsetdev` / `status` | Standard targets supplied by `inc.rule.mk`, identical to other source packages; the hand-written `getlinux` is gone |
 
-The kernel is built with `make -C $(KERNEL_SRC) O=$(KERNEL_OUT)`, the standard way to separate output from source. This is the same directory as the driver template's `KERNEL_OUT` variable, so drivers compile correctly against the already-built kernel tree.
+The build uses `make -C $(KERNEL_SRC) O=$(KERNEL_OUT)`, the standard out-of-tree form. This is the same `KERNEL_OUT` directory used by the driver template, so drivers compile against the already-built kernel tree correctly.
 
-When `KERNEL_SRC` is empty, every target of the package is replaced by a catch-all rule that prints a message:
-
-```makefile
-%:
-	$(PREAT)echo "KERNEL_SRC is not set, do nothing!"
-```
-
-So a mistaken invocation does not fail; it just gets a clear message.
+When `KERNEL_SRC` is empty, the platform provides the fallback instead of a `%:` rule inside the package: `KERNEL_SRC!=` generates `depends on "$(KERNEL_SRC)"!=""` in Kconfig, so `linux` is not selectable in native and application build modes; the generated `auto.mk` prints `linux is not enabled!` and exits non-zero for the deselected `linux` and `linux_%` targets. An accidental invocation therefore never enters the kernel build; it only gets a clear message.
 
 **Relationship with driver packages**
 
-A driver package's dependency on the kernel is usually written as the weak dependency `?linux`. A weak dependency fits perfectly here: a driver can be built against the kernel tree built by CBuild-ng, against kernel headers installed on the host (`/lib/modules/$(uname -r)/build`), or against a vendor-supplied kernel tree. A hard dependency would rule out all of those possibilities.
+A driver's dependency on the kernel is normally written as the weak dependency `?linux`. That is a good fit here: a driver may be compiled against the kernel built by CBuild-ng, against the host's installed kernel headers (`/lib/modules/$(uname -r)/build`), or against a vendor-supplied kernel tree. A strong dependency would rule out all of these.
 
-The default value of `KERNEL_SRC` in `inc.mod.mk` is exactly `/lib/modules/$(shell uname -r)/build`, while the environment script exports `KERNEL_SRC` pointing at the kernel tree built by CBuild-ng when cross-compiling—the two connect naturally through the default-value mechanism, so driver packages need no conditional logic at all.
+`break` supplies the other half: even if the dependency is written as a real one, the kernel image and modules are not installed into the driver's private sysroot, and the driver locates the build tree solely through `KERNEL_SRC` / `KERNEL_OUT`. The kernel's own release chain is unaffected and still delivers the image and modules via `release`. `cookcache` then guarantees that this build tree remains complete on the path most easily overlooked — a cache hit.
+
+The default `KERNEL_SRC` in `inc.mod.mk` is `/lib/modules/$(shell uname -r)/build`, while the environment script exports `KERNEL_SRC` pointing at the CBuild-ng-built kernel tree for cross compilation. The two meet naturally through the default-value mechanism, so a driver package needs no conditional logic at all.
 
 #### 3.10.3.2 rootfs
 
@@ -2620,7 +2645,7 @@ Among these, `base_*dir` and `hdrdir` are not part of the GNU standard; they are
 
 ### 5.2.3 Examples for the Environment Template
 
-The typical example of the environment template is the project's own [system/linux/mk.deps](./system/linux/mk.deps): it is not an example of invoking commands, but a build script that "implements compilation itself". The kernel package does not go through `inc.rule.mk`; it only does `include $(ENV_MAKE_DIR)/inc.env.mk` and then uses its own rules to call the kernel build system:
+The typical example of the environment template is the project's own [system/linux/mk.deps](./system/linux/mk.deps) as it stood before version 1.2.0: it is not an example of invoking commands, but a build script that "implements compilation itself". That version did not go through `inc.rule.mk`; it only did `include $(ENV_MAKE_DIR)/inc.env.mk` and then used its own rules to call the kernel build system. The current kernel package has moved to `inc.rule.mk` (see 3.10.3.1); the shape below remains the reference for any package that implements its own build.
 
 What `inc.env.mk` provides here are variables already derived for the current environment—the `WORKDIR` family of directories, `INS_PREFIX`, `ENV_BUILD_JOBS`, `PREAT`, `TOLOG`, `KERNEL_ARCH`, and so on; the script is only responsible for assembling the kernel's own make command. Swap in any custom build system and the shape of the script is the same.
 
@@ -2634,7 +2659,7 @@ What `inc.env.mk` provides here are variables already derived for the current en
 | `install_lics` | A required installation action. `inc.env.mk` defines it as a function (`define install_lics`), and `inc.ins.mk`'s `license` target calls it with `$(call install_lics)`; when `LICFILE` is not declared it is a no-op, so the script can include it unconditionally |
 | `prepare` | Required when the `prepare` attribute is declared in `#DEPS`; `auto.mk` calls it before compilation |
 | `release` | Required when the `release` attribute is declared in `#DEPS`; `<package>_release` calls it, and when it is not declared the platform falls back to `install` |
-| `dofetch` `setdev` `unsetdev` `status` `printurl` | Required when the package manages source downloads itself; used by `all_fetches`, development mode, status queries, and `all_printurls` respectively; the latter half of `linux/mk.deps` shows the complete implementation (including `flock` concurrent locking) |
+| `dofetch` `setdev` `unsetdev` `status` `printurl` | Required when the package manages source downloads itself; used by `all_fetches`, development mode, status queries, and `all_printurls` respectively; `inc.rule.mk` generates the same-named targets for packages going through it (see 7.3); the pre-1.2.0 `linux/mk.deps` shows what a hand-written implementation looks like, including `flock` concurrent locking |
 | `psysroot` | Provided by `inc.rule.mk` when the `psysroot` attribute is declared; a script you implement yourself must either write this target or use `GLOBAL_SYSROOT` |
 
 Packages that go through `inc.rule.mk` do not need to hand-write download targets—the templates already generate targets of the same names; only packages with a fully custom flow, like the kernel, need to implement them.
@@ -4059,10 +4084,13 @@ This field carries three kinds of semantics: package type, package targets, and 
 | `isysroot` | When the top level runs the package it also installs into `$(WORKDIR)/image`; using it requires `dis_isysroot` in `gen_build_chain.py` to be False |
 | `noisysroot` | When the top level runs the package it only compiles and does not install into `$(WORKDIR)/image` |
 | `finally` | The package's build order comes after all other packages (for wrap-up packages such as rootfs and system images) |
+| `break` | Blocking the installation dependency relationship, meaning that packages that depend on this package have their compilation dependent on this package, but do not depend on the product of this package installed to the sysroot |
 | `native` | One declaration defines both a cross-compiled package and a native-compiled package |
 | `cache` | The package supports the cache mechanism; added automatically when `CACHE_BUILD=y` is parsed, no need to write it |
 | `singletask` | Invokes the build single-threaded (the package already uses multiple threads internally or does not support them) |
 | `union` | Several packages share one Makefile |
+
+**`break` in the generated dependency chains**: declaring `break` puts the package into `BreakSet`. A dependent package still waits for it to be compiled, but its name is moved from `<pkg>-deps` to `<pkg>-breakdeps`: it appears in the compile chain (`<pkg>:` and global-sysroot builds) but not in `_psysroot:`, `_install:`, `_release:` or the dependency checksum chain. A package whose only dependencies are `break` ones therefore has nothing to prepare in its private sysroot. See 3.10.3.1 for the kernel, the main user.
 
 **`union` target naming rule**: when several packages share one Makefile, each package's target names get a package-name prefix to avoid conflicts:
 
@@ -4235,7 +4263,7 @@ Field descriptions:
     #DEPS() build-pkg-native(empty): unselect ??prebuild-pkg-native||pkg-native depa-native depb-native
     #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): build-pkg-native
     ```
-- If `gen_build_chain.py` is given the `-e` option, six rules are derived.
+- If `gen_build_chain.py` is given the `-e` option (enabled by default in the top-level Makefile), six rules are derived.
     - If neither `prebuild-pkg` nor `pkg` is selected in Kconfig, `build-pkg` cannot be selected either.
     ```
     #VDEPS(config) pkg-enable(): unselect &build-pkg
@@ -4664,7 +4692,7 @@ The rendered dependency graph looks like this:
 - Several packages are virtual, non-existent packages that carry special meaning:
     - `src-path-existed`: the source of the package that depends on this one does not exist.
     - `depends-of-or-rule-existed`: none of the packages in the OR `|` rule defined by the package that depends on this one exist.
-    - `packages-of-prebuild-vdeps-existed` : : none of the packages in the `prebuild` rule defined by the package that depends on this one exist.
+    - `packages-of-prebuild-vdeps-existed`: none of the packages in the `prebuild` rule defined by the package that depends on this one exist.
 
 #### 6.1.5.5 Practical Uses of Dependency Graphs
 
@@ -4923,7 +4951,7 @@ Yocto mode needs two steps because: the first scans recipe files and recipe appe
 | `-w <dir name list>` | `--keyword` | Menu-level ignore names: if a directory in the path matches one of these names, that path's level count is reduced by one. Used to remove meaningless intermediate levels |
 | `-p <flag or path>` | `--prepend` | In Classic mode, the Kconfig item prefix flag (if you set prefix-free `CONFIG_=""` when running `conf`/`mconf`, set this to 1); in Yocto step 2, the output path of the patch package list |
 | `-u <list>` | `--usermeta` | In Yocto mode, the user layer list; in Classic mode, the unique package list |
-| `-e` | `--envircfg` | In Classic mode, whether a `prebuild` virtual package automatically derives a `config` virtual package to serve as the dependency of the `choice` virtual package (otherwise the dependency is the real `build-pkg` package). |
+| `-e` | `--envircfg` | In Classic mode, whether a `prebuild` virtual package automatically derives a `config` virtual package to serve as the dependency of the `choice` virtual package (otherwise the dependency is the real `build-pkg` package). Enabled by default in the top-level Makefile (see 6.4.1.4). |
 
 `-u` has different semantics in the two modes and must be understood separately:
 
@@ -4934,7 +4962,9 @@ Yocto mode needs two steps because: the first scans recipe files and recipe appe
 
 The configuration filename given by `-c` is not the only candidate. The lookup order is:
 
-- **Classic mode**: in the same directory as the dependency file, first look for a file whose name equals the package name and whose suffix equals the configuration suffix (e.g. package `foo`, config suffix `kconf` → `foo.kconf`); only if not found is the name given by `-c` used. This lets each package have its own configuration when several packages share a directory.
+- **Classic mode**: in the directory of the dependency file (and, when they differ, the directory of the Makefile), first look for a file whose name equals the package name and whose suffix equals the configuration suffix (e.g. package `foo`, config suffix `kconf` → `foo.kconf`); only if not found is the name given by `-c` used. This lets each package have its own configuration when several packages share a directory.
+- **Classic mode, second lookup**: when `SRC_PATH` points at a source tree outside the declaration directory, `add_normal_item_finish` probes that source directory once more, using the same "package name first, then `-c` name" rule, and a match there replaces the earlier one. A local-source package can therefore keep its configuration beside its code rather than beside `mk.deps` (see 7.10.10).
+- The `kconfig` keyword marks a configuration shared by several packages: the generated Kconfig wraps the `source` line in `if FOO || FOO_NATIVE ... endif`, so one file serves the cross and native variants. For a `prebuild` / `srcbuild` pair the same file is moved to the `build-pkg` mount point, so it also serves both candidates (see 6.1.3.1).
 - **Yocto mode**: first look for `<recipe-name>.bbconfig` in the current directory; only if not found look under the path given by `EXTERNALSRC` in the bbappend, following the same "package name first" rule.
 
 #### 6.4.1.4 The Actual Invocation in the Top-Level Makefile
@@ -4947,10 +4977,12 @@ MAXLEVEL       := 3
 deps:
 	@mkdir -p $(WORKDIR)
 	@$(PRECMD)python3 $(ENV_TOOL_DIR)/gen_build_chain.py -m $(WORKDIR)/auto.mk -k $(WORKDIR)/Kconfig -t $(WORKDIR)/Target \
-		-d mk.deps -v mk.vdeps -c mk.kconf -s $(ENV_TOP_DIR) -i $(IGNORE_DIRS) -l $(MAXLEVEL) -w $(KEYWORDS)
+		-d mk.deps -v mk.vdeps -c mk.kconf -s $(ENV_TOP_DIR) -i $(IGNORE_DIRS) -l $(MAXLEVEL) -w $(KEYWORDS) -e
 ```
 
 `-l 3` combined with `oss/`'s two-level classification gives the menu hierarchy "domain → subcategory → package", neither too deep nor too flat. `KEYWORDS := none` means no level names are filtered; if the project has uninformative intermediate directories such as `src` or `pkg`, add them here to flatten the menu.
+
+The trailing `-e` enables the `prebuild` virtual package to derive a `config` virtual package as the choice's dependency (see 6.1.3.1); the top-level Makefile enables it by default.
 
 `$(PRECMD)` is a `/usr/bin/time` prefix injected in timing-statistics mode and is empty normally.
 
@@ -5040,13 +5072,26 @@ Version configuration items generated by the `versioncfg` token are grouped in a
 
 ```
 menu "VERSION"
-config JCORE_VERCFG
-	bool
-	default y
+menuconfig JCORE_VERCFG
+	bool "jcore"
+	default n
+if JCORE_VERCFG
 config JCORE_VERSION
-	string "jcore version"
-	default "1.1.0"
-...
+	string "Version"
+	default ""
+config JCORE_BRANCH
+	string "Branch"
+	default ""
+config JCORE_CHECKSUM
+	string "Checksum (md5/tag/revision)"
+	default ""
+config JCORE_BUILDFLAG
+	string "BuildFlag"
+	default ""
+config JCORE_NATIVE_BUILDFLAG
+	string "BuildFlag (native)"
+	default ""
+endif
 endmenu
 ```
 
@@ -6348,7 +6393,8 @@ For integrators, there is a simple rule for "what to change": issues about compi
 | `SRC_URLS` | Assembled from the above | The complete address string with additional information |
 | `SRC_NAME` | — | Filename or directory name under which the download is saved |
 | `SRC_DIR` | — | Directory name after extraction |
-| `SRC_PATH` | See the table below | Source path used during compilation |
+| `SRC_DDIR` | `$(WORKDIR)` for `SRC_SHARED=n`, `$(ENV_DOWN_DIR)` for git/svn | Directory into which sources are unpacked; `SRC_PATH` is derived from it |
+| `SRC_PATH` | `$(SRC_DDIR)/$(SRC_DIR)` | Source path used during compilation |
 | `SRC_SHARED` | `y` for git/svn, fixed `n` for tar/zip | Whether sources in the download directory are shared |
 | `WORKDIR` | Set by the platform | Destination directory for extraction or copying |
 | `FETCH_LOCK` | `$(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock` | Download lock file |
@@ -6359,11 +6405,11 @@ Defaults for `SRC_PATH`:
 
 | Case | Default |
 | --- | --- |
-| git / svn download (`SRC_SHARED=y`) | `$(ENV_DOWN_DIR)/$(SRC_DIR)` |
-| tar / zip download (`SRC_SHARED=n`) | `$(WORKDIR)/$(SRC_DIR)` |
+| git / svn download (`SRC_SHARED=y`) | `$(SRC_DDIR)/$(SRC_DIR)`, with `SRC_DDIR = $(ENV_DOWN_DIR)` |
+| tar / zip download (`SRC_SHARED=n`) | `$(SRC_DDIR)/$(SRC_DIR)`, with `SRC_DDIR = $(WORKDIR)` |
 | Local sources (`SRC_URL` empty) | Current directory |
 
-`SRC_PATH` can also be set manually; see [system/jprogress/mk.deps](./system/jprogress/mk.deps) and [oss/media/i18n/icu/mk.deps](./oss/media/i18n/icu/mk.deps) for reference.
+`SRC_PATH` can also be set manually; see [system/jprogress/mk.deps](./system/jprogress/mk.deps) and [oss/media/i18n/icu/mk.deps](./oss/media/i18n/icu/mk.deps) for reference. `SRC_DDIR` can be overridden as well: it moves the unpack destination, the fetch call and the development-mode check together, whereas overriding `SRC_PATH` alone only changes where compilation looks. The kernel package uses `SRC_DDIR = $(shell dirname $(KERNEL_SRC))` so the tarball lands beside the kernel tree (see 3.10.3.1).
 
 When `SRC_URL` is set, `PATCH_FOLDER` is detected automatically: if `patch/*.patch` exists in the current directory, `patch` is used.
 
@@ -6388,9 +6434,10 @@ If `PATCH_FOLDER` is set, patches are applied automatically before compilation.
 | --- | --- |
 | `all` | Default target. Calls `cachebuild` or `nocachebuild` according to `CACHE_BUILD` |
 | `nocachebuild` | No-cache path: calls `build` directly |
-| `cachebuild` | Cache path: with no `CACHE_STATUS`, runs `build`, then pushes the cache and prints "Update cache"; with `CACHE_STATUS`, runs `pull` and prints "Match cache: <filename>" |
+| `cachebuild` | Cache path: with no `CACHE_STATUS`, runs `build`, then pushes the cache and prints "Update cache"; with `CACHE_STATUS`, runs `pull`, prints "Match cache: <filename>", and — if `cookcache` is in `CUSTOM_TARGETS` — calls the package's `cookcache` target |
 | `checksum` | Performs cache verification; on a hit creates `$(CACHE_STATUS)` |
 | `psysroot` | Prepares the private sysroot. With caching enabled, skipped if already hit (because `pull` restores everything). It runs before `make all` only if `psysroot` is declared in `Other_Target_Names` |
+| `cookcache` | Additional operations after cache matching |
 | `build` | The whole process of download, patch, configure, compile, and install into `$(WORKDIR)/image` |
 | `prepend` | Pre-compilation operation |
 | `compile` | Compile-and-install operation |
@@ -6405,7 +6452,13 @@ If `PATCH_FOLDER` is set, patches are applied automatically before compilation.
 | `status` | Prints package status; for git types also prints the source path, branch, last commit, and working-tree changes |
 | `%` (catch-all) | Passes through to `$(MAKE) $(MAKE_FLAGS) $@`, so any target in the package Makefile can be called through the platform |
 
-These seven targets—`build`, `prepend`, `compile`, `append`, `clean`, `distclean`, `install`—are all controlled by `CUSTOM_TARGETS`: **if `CUSTOM_TARGETS` contains a target name, the template does not generate that target's default implementation and instead calls the same-named target defined in the package's own Makefile.** This is the most important extension point.
+`CUSTOM_TARGETS` controls eight target names, but with three distinct semantics:
+
+- **Replacement**: for `build`, `clean`, `distclean` and `install`, naming one means the template does **not** generate its default implementation; the same-named target in the package Makefile is used instead.
+- **Build-flow hooks**: `prepend`, `compile` and `append` are inserted only when named — declaring one inserts a call into `build` at the corresponding pinch point; without a declaration nothing runs.
+- **Cache-hit hook**: `cookcache` is likewise opt-in, but lives in the cache path rather than in `build`. When `CACHE_BUILD=y` and a cache hit occurs, `cachebuild` restores the installation tree and then calls the package's `cookcache` target (see 3.10.3.1). There is no default implementation to replace.
+
+This is the most important extension point. Do not confuse the two kinds of names: `ffmpeg` declaring `CUSTOM_TARGETS = compile` replaces the default compilation, while `glib` declaring `CUSTOM_TARGETS = prepend` inserts a step before configure.
 
 ## 7.4 The Complete Flow of the build Target
 
@@ -6733,7 +6786,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 $(eval $(call ft-config,CONFIG_FFMPEG_FT_ALSA,--enable-alsa,--disable-alsa,alsa-lib selected))
 ```
 
-has effects in three places. First, the generated Kconfig contains `config CONFIG_FFMPEG_FT_ALSA` with `depends on CONFIG_ALSA_LIB` and `default y`—the `alsa-lib` in the fourth argument is uppercased into a config item as a dependency, and `selected` is not a package name but a "selected by default" marker. Second, the dependency analyzer records `alsa-lib@@CONFIG_FFMPEG_FT_ALSA` in the conditional dependency table: ffmpeg depends on alsa-lib only when this feature is selected, so deselecting ALSA support in the menu does not pull alsa-lib into the build chain. Third, `ft-config` in `inc.env.mk` expands to `FT_CONFIG += $(if $(filter y,$(CONFIG_FFMPEG_FT_ALSA)),--enable-alsa,--disable-alsa)`, turning the menu value into a configure parameter.
+has effects in three places. First, the generated Kconfig contains `config CONFIG_FFMPEG_FT_ALSA` with `depends on CONFIG_ALSA_LIB` and `default y`—the `alsa-lib` in the fourth argument is uppercased into a config item as a dependency, and `selected` is not a package name but a "selected by default" marker; writing `unselect` there instead makes the feature default to `n`. Second, the dependency analyzer records `alsa-lib@@CONFIG_FFMPEG_FT_ALSA` in the conditional dependency table: ffmpeg depends on alsa-lib only when this feature is selected, so deselecting ALSA support in the menu does not pull alsa-lib into the build chain. Third, `ft-config` in `inc.env.mk` expands to `FT_CONFIG += $(if $(filter y,$(CONFIG_FFMPEG_FT_ALSA)),--enable-alsa,--disable-alsa)`, turning the menu value into a configure parameter.
 
 The auto-generated Kconfig fragment:
 
@@ -7038,6 +7091,8 @@ COMPILE_TOOL     = imake
 - `<package>_BUILDFLAG`: a string for custom configuration or build options.
 - `<package>_NATIVE_BUILDFLAG`: a string for custom configuration or build options (for the native variant).
 
+The package Makefile reads these values through `-include .config`; `ljson` feeds `VERSION` and `CHECKSUM` into `VERSION` and `SRC_REV`, while `BUILDFLAG` / `NATIVE_BUILDFLAG` are available for custom build options.
+
 Git fetching also changes where sources are stored. `inc.rule.mk` defaults `SRC_SHARED ?= y` for `git`/`svn`, so `SRC_PATH` points at the shared download directory rather than each package's `WORKDIR`; `SRC_URLS` gains `;rev=<revision>`, and `fetch_package.sh` checks out that commit accordingly, with multiple packages or builds sharing one repository. `COMPILE_TOOL = imake` makes the template set `MAKE_FLAGS` to `-C $(SRC_PATH) $(REL_CONFIG)` and call the Makefile shipped in that repository—which uses the IMake templates, so it connects directly.
 
 `CACHE_DEPENDS = none` is correct here: ljson has no dependency packages, so skipping automatic dependency analysis saves a scan. But `none` does not mean "a version change will not rebuild": `process_cache.sh`'s `-v $(VERSION)` puts the version into the cache filename, and when `SRC_REV` is non-empty `inc.rule.mk` appends it to `CACHE_APPENDS` (the same treatment as `SRC_MD5` and `SRC_TAG`), so changing the revision still misses the old cache. What `none` actually disables is only the "compute checksums along the dependency chain" part.
@@ -7126,10 +7181,11 @@ Boost.Build reads the toolset declaration from `project-config.jam`; the default
 #DEPS(mk.deps) busybox(psysroot defconfig menuconfig): unselect
 
 CFG_NAME         = default_defconfig
-MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 CACHE_BUILD      = y
 CACHE_CHECKSUM  += $(shell pwd)/config/$(CFG_NAME)
+CONFIG_CHECKSUM  = $(CFG_NAME)-$(shell md5sum config/$(CFG_NAME) | cut -d ' ' -f 1)
 CACHE_DEPENDS    = none
+MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 CUSTOM_TARGETS   = prepend append
 ```
 
@@ -7148,9 +7204,9 @@ menuconfig:
 	$(PREAT)$(call do_setforce)
 ```
 
-The `do_setforce` at the end calls `process_cache.sh -m setforce` to mark this package for forced build. **If a user changes busybox's configuration in the menu and this step is missing, the next build hits the old cache and the changed options never take effect**—and the symptom is confusing: `.config` really did change, but the build log says Cache Match. This is an interaction that every package carrying its own configuration must handle; `CACHE_CHECKSUM += config/$(CFG_NAME)` brings the preset configuration file into verification, while the `.config` the user edits interactively lands in `OBJ_PREFIX` and is covered by the force marker; `CONFIG_PREFIX` points the installation tree at `INS_TOPDIR`.
+The `do_setforce` at the end calls `process_cache.sh -m setforce` to mark this package for forced build. **If a user changes busybox's configuration in the menu and this step is missing, the next build hits the old cache and the changed options never take effect**—and the symptom is confusing: `.config` really did change, but the build log says Cache Match. This is an interaction that every package carrying its own configuration must handle; `CACHE_CHECKSUM += config/$(CFG_NAME)` brings the preset configuration file into verification, and `CONFIG_CHECKSUM` turns its md5 into a `.config-md5-*` marker in `OBJ_PREFIX`; the `.config` the user edits interactively is covered by the force marker; `CONFIG_PREFIX` points the installation tree at `INS_TOPDIR`.
 
-`prepend` protects with `if [ ! -f $(OBJ_PREFIX)/.config ]`: only the first build copies `default_defconfig` in and generates a configuration, after which the user's edited copy is kept, avoiding a reset to defaults on every incremental build. Together with the explicit call inside `menuconfig`, this achieves "a default on first use, no overwriting afterwards".
+`prepend` protects with `if [ ! -f $(OBJ_PREFIX)/.config ] || [ ! -f $(OBJ_PREFIX)/.config-md5-$(CONFIG_CHECKSUM) ]`: it regenerates the configuration when `.config` is missing **or** when the preset configuration file has changed (its md5 is folded into `CONFIG_CHECKSUM`), then deletes the old `.config-md5-*` markers and writes one named after the current checksum. The user's edited `.config` is otherwise kept, so an incremental build does not reset it to defaults. Together with the explicit call inside `menuconfig`, this achieves "a default on first use, a reload when the preset changes, no overwriting otherwise" — the same fingerprint-marker pattern as the kernel package in 3.10.3.1.
 
 `append` deletes `$(INS_TOPDIR)/linuxrc` and `$(INS_TOPDIR)/sbin/init`, because in rootfs scenarios those two entry points are arranged uniformly by the system and installing them from the package would conflict. `CACHE_CHECKSUM` appends the preset configuration path, and `CACHE_DEPENDS = none` says busybox has no dependency packages—it is a base system package that is depended on rather than depending on others. `O=$(OBJ_PREFIX)` follows the kernel's output separation, and `CONFIG_PREFIX=$(INS_TOPDIR)` makes `make install` land in the private installation tree.
 

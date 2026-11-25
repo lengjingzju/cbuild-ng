@@ -1045,22 +1045,26 @@ CONF_SAVE_PATH := $(ENV_TOP_DIR)/board/$(if $(ENV_BUILD_SOC),$(ENV_BUILD_SOC),ge
 | `cbuild` | 把全局配置装进 sysroot，供应用引用 | `install_tofile` 把 `.config` 装成 `/usr/include/cbuild`、`config.h` 装成 `/usr/include/cbuild.h` | 见 3.10.3.3 |
 | `execld` | 跨发行版程序启动器 | 用 IMake 编译的静态链接 C 程序（`LDFLAGS += -static`） | 见 3.10.3.4 |
 
-#### 3.10.3.1 Linux 内核包 system/linux
+#### 3.10.3.1 Linux 内核包：system/linux
 
-内核被实现为一个普通的包，因此享有与其他包完全一致的待遇：出现在配置菜单里、可以单独构建、可以被驱动包弱依赖、可以查看状态。
+内核被实现为一个普通的包，因此享有与其他包完全一致的待遇：出现在配置菜单里、可以单独构建、可以被驱动包弱依赖、可以查看状态、可以命中缓存。内核的特殊之处不在构建方式，而在它的产物形态——除了镜像与模块，还必须留下一份可供外部模块编译的构建树；这份构建树正是 `break` 与 `cookcache` 要处理的对象。
 
 **声明特点**
 
 ```makefile
-#DEPS(mk.deps) linux(singletask menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
+#DEPS(mk.deps) linux(release break menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
 ```
 
-- `singletask`：内核内部启用了多线程编译，无需外部 `make -jn`；
-- `menuconfig` `defconfig` `%_defconfig`：暴露三个配置相关目标；
-- `unselect`：默认不选中；
-- `KERNEL_SRC!=`：环境变量 `KERNEL_SRC` 为空时不参与构建（本地编译与应用编译模式下自动排除）。
+- `release`：发布链调用包内 `release` 目标，而不是默认的 `install`。编译时产物先落到本包自己的安装树 `$(INS_TOPDIR)`，由 `release` 统一投递到 `$(INS_PREFIX)`；这样镜像、模块与内核构建树才能作为完整的一份 image 被缓存打包。包内的 `install` 退化为提示信息「nothing to do, 'release' is real 'install'」。
+- `break`：阻断依赖的安装关系。依赖此包的包在编译上仍等内核编完，但不把内核安装到 sysroot 的产物纳入自己的私有 sysroot、安装链与发布链。内核提供的是 `KERNEL_SRC` / `KERNEL_OUT` 指向的构建树，不是 sysroot 下的头文件与库，因此这项声明与内核的实际角色完全吻合。
+- `menuconfig` `defconfig` `%_defconfig`：暴露三个配置相关目标；`defconfig` 末尾 `do_unsetforce` 清除强制构建标记，`menuconfig` 与 `%_defconfig` 末尾 `do_setforce` 打上标记，保证交互式改过的配置不会被旧缓存吃掉。
+- `unselect`：默认不选中。
+- `KERNEL_SRC!=`：环境依赖，`KERNEL_SRC` 为空时不参与构建（本地编译与应用编译模式下自动排除）。
+- 不再声明 `singletask`：并行参数由 `MAKE_FLAGS := $(ENV_BUILD_JOBS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_TOPDIR)` 统一携带，与平台其余包一致。
 
-源码获取使用标准的 `SRC_URL` + `SRC_MD5` 机制，版本与 md5 都来自 `process_machine.sh`：
+**源码获取与配置来源**
+
+源码获取使用标准的 `SRC_URL` + `SRC_MD5` 机制，`SRC_DDIR = $(shell dirname $(KERNEL_SRC))` 让源码展开到内核树所在目录，版本与 md5 都来自 `process_machine.sh`：
 
 ```makefile
 VERSION  = $(shell $(MACHINE_SCRIPT) linux_version)
@@ -1068,41 +1072,62 @@ SRC_URL  = https://www.kernel.org/pub/linux/kernel/v$(shell echo $(VERSION) | cu
 SRC_MD5  = $(shell $(MACHINE_SCRIPT) linux_srchash)
 ```
 
-**配置来源**
-
-内核配置的来源有两种，由 Kconfig 配置项 `CONFIG_LINUX_CONFIG` 决定：
+内核配置的来源有两种，由 Kconfig 配置项 `CONFIG_LINUX_CONFIG` 决定，统一由 `loadconfig` 兑现。这个配置项本身由包级的 [system/linux/mk.kconf](./system/linux/mk.kconf) 声明——只有一个 `string "linux config filename"` 项，被 `if LINUX ... endif` 包住后 source 进顶层 Kconfig，在菜单里填上文件名即可：
 
 - **为空**：执行内核自己的 `defconfig`；
 - **非空**：先在 `board/$(ENV_BUILD_SOC)/linux-configs/` 下查找同名文件，找到就直接复制为 `.config`；找不到就当作内核的配置目标名执行（例如 `multi_v7_defconfig`）。
 
 这个两级查找让「板级定制配置」与「内核自带配置」可以共存：把定制配置放进 `board/<板名>/linux-configs/`，在菜单里填上文件名即可。
 
+**缓存与配置指纹**
+
+内核包开启 `CACHE_BUILD = y`，并把配置本身做成缓存键的一部分：
+
+| 配置来源 | `CONFIG_CHECKSUM` | 额外动作 |
+| --- | --- | --- |
+| `LINUX_CONFIG` 为空 | `defconfig-$(SRC_MD5)` | — |
+| 板级目录存在同名文件 | `$(LINUX_CONFIG)-<文件 md5>` | 该文件加入 `CACHE_CHECKSUM` |
+| 板级目录无同名文件 | `$(LINUX_CONFIG)-$(SRC_MD5)` | — |
+
+`CACHE_APPENDS += LINUX_CONFIG=$(LINUX_CONFIG)` 让菜单里换一个配置名就换一份缓存；`CACHE_CHECKSUM` 里的板级配置文件让改动配置内容同样立即使缓存失效；`CACHE_DEPENDS = none` 表示内核没有依赖包，跳过依赖链分析。`loadconfig` 每次先删掉旧的 `.config-md5-*`，再写入以当前 `CONFIG_CHECKSUM` 命名的标记文件；`compile` 发现 `.config` 或对应标记缺失就重新加载配置，于是「换配置、改配置文件、升级内核版本」三种变化都不需要手工清理。
+
+**`cookcache`：缓存匹配后的额外操作**
+
+普通包缓存命中后，恢复安装树就够了；内核不行。镜像、模块之外，驱动编译还需要 `KERNEL_OUT` 里的 `.config`、`Module.symvers` 以及 `modules_prepare` 生成的头文件，而 `KERNEL_OUT` 是编译输出目录，不随 `INS_TOPDIR` 一起进缓存。若命中缓存后什么都不做，驱动包会面对一份没有配置与符号表的内核树。
+
+因此 `compile` 在编译完成时特意把三件套存进 image：
+
+```makefile
+IMAGE_CFGDIR    := $(INS_TOPDIR)/lib/modules/$(KERNEL_VER)/build
+# .config / .config-md5-$(CONFIG_CHECKSUM) / Module.symvers
+```
+
+并在 `CUSTOM_TARGETS` 中声明 `cookcache`。它由模板在缓存命中、恢复安装树之后调用，属于「声明才启用」的钩子，动作是：取回源码（`do_fetch`）、建好 `KERNEL_OUT`、在 `.config` 不存在时把 image 里的三件套复制回 `KERNEL_OUT`，再执行 `make modules_prepare`。这样缓存命中的构建与全量编译的构建，对驱动包呈现完全相同的内核上下文。
+
 **目标**
 
 | 目标 | 行为 |
 | --- | --- |
-| `all` | 依赖 `defconfig`；若内核 `.config` 不存在或源码目录不存在则先加载默认配置，然后编译全部 |
+| `all` | 缓存入口：未命中则走 `build` → `compile`；命中则恢复安装树并执行 `cookcache` |
+| `compile` | 配置缺失或指纹变化时先 `loadconfig`；随后 `make all`、`modules_install`（`INSTALL_MOD_PATH=$(INS_TOPDIR)`）、把 `*Image*` 装到 `$(INS_TOPDIR)/boot`、准备 `IMAGE_CFGDIR` 三件套 |
+| `cookcache` | 缓存命中后的恢复动作：从 `IMAGE_CFGDIR` 取回配置与符号表，`modules_prepare` |
+| `install` | 空操作；真正的投递由 `release` 完成 |
+| `release` | `cp -drf --preserve=mode,timestamps $(INS_TOPDIR)/* $(INS_PREFIX)` |
 | `clean` | 执行内核的 `clean` 与 `mrproper` |
-| `install` | 把 `arch/$(KERNEL_ARCH)/boot/*Image*` 复制到 `$(INS_PREFIX)/boot`，并执行 `modules_install` |
-| `menuconfig` | 打开内核配置界面（必要时先准备源码与默认配置） |
+| `loadconfig` | 按两级查找加载配置，并写入 `.config-md5-$(CONFIG_CHECKSUM)` |
+| `menuconfig` | 打开内核配置界面；首次使用时加载默认配置，否则刷新 `.config-md5-*` 指纹标记，末尾置强制构建标记 |
 | `defconfig` / `<名>_defconfig` | 加载配置 |
-| `getlinux` | 获取内核源码（受开发模式标记影响） |
-| `dofetch` / `printurl` / `setdev` / `unsetdev` / `status` | 与其他源码包一致 |
+| `dofetch` / `printurl` / `setdev` / `unsetdev` / `status` | 由 `inc.rule.mk` 提供的标准目标，与其他源码包一致；不再手写 `getlinux` |
 
 内核构建使用 `make -C $(KERNEL_SRC) O=$(KERNEL_OUT)`，即标准的输出分离方式。这与驱动模板的 `KERNEL_OUT` 变量是同一个目录，因此驱动能正确地针对已构建的内核树编译。
 
-`KERNEL_SRC` 为空时，包的所有目标都被一个兜底规则替换为提示信息：
-
-```makefile
-%:
-	$(PREAT)echo "KERNEL_SRC is not set, do nothing!"
-```
-
-因此误操作不会导致失败，只会得到明确的提示。
+`KERNEL_SRC` 为空时由平台层兜底，不再由包自己写 `%:` 规则：`KERNEL_SRC!=` 在 Kconfig 中生成 `depends on "$(KERNEL_SRC)"!=""`，本地编译与应用编译模式下 `linux` 在菜单里不可选；生成的 `auto.mk` 对未选中的 `linux` 与 `linux_%` 目标统一输出 `linux is not enabled!` 并以非零状态退出。误操作不会误入内核编译流程，只会得到明确提示。
 
 **与驱动包的关系**
 
 驱动包对内核的依赖通常写成弱依赖 `?linux`。弱依赖在这里非常贴切：驱动既可以针对 CBuild-ng 构建的内核编译，也可以针对宿主机已安装的内核头文件（`/lib/modules/$(uname -r)/build`）编译，还可以针对厂商提供的内核树编译。用强依赖会把这些可能性都排除掉。
+
+`break` 补上了另一半：即便把依赖写成实依赖，内核镜像与模块也不会被装进驱动包的私有 sysroot，驱动只通过 `KERNEL_SRC` / `KERNEL_OUT` 定位构建树；内核自身的发布链不受影响，仍由 `release` 把镜像与模块投递到最终目标。`cookcache` 则保证在「命中缓存」这一最容易被忽略的路径上，这份构建树依旧完整可用。
 
 `inc.mod.mk` 中 `KERNEL_SRC` 的默认值就是 `/lib/modules/$(shell uname -r)/build`，而环境脚本在交叉编译时会导出 `KERNEL_SRC` 指向 CBuild-ng 构建的内核树——两者通过默认值机制自然衔接，驱动包不需要写任何条件判断。
 
@@ -2633,7 +2658,7 @@ runstatedir    := /run
 
 ### 5.2.3 环境模板的例子
 
-环境模板的典型例子是工程自己的 [system/linux/mk.deps](./system/linux/mk.deps) ：它不是调用命令的示例，而是一份「自己实现编译」的编译脚本。内核包没有走 `inc.rule.mk`，只 `include $(ENV_MAKE_DIR)/inc.env.mk`，然后用自己的规则调用内核构建系统：
+环境模板的典型例子是工程自己的 1.2.0 版本之前的 [system/linux/mk.deps](./system/linux/mk.deps)：它不是调用命令的示例，而是一份「自己实现编译」的编译脚本。那一版没有走 `inc.rule.mk`，只 `include $(ENV_MAKE_DIR)/inc.env.mk`，然后用自己的规则调用内核构建系统。当前内核包已改用 `inc.rule.mk`（见 3.10.3.1）；但下面这个形态仍是任何「自己实现编译」的包的参照。
 
 `inc.env.mk` 在这里提供的是 `WORKDIR` 一族目录、`INS_PREFIX`、`ENV_BUILD_JOBS`、`PREAT`、`TOLOG`、`KERNEL_ARCH` 等已按当前环境推导好的变量；脚本只负责把内核自己的 make 命令拼出来。换成任何自建构建系统，写法都是这个形态。
 
@@ -2647,7 +2672,7 @@ runstatedir    := /run
 | `install_lics` | 必选的安装动作。`inc.env.mk` 把它定义成函数（`define install_lics`），`inc.ins.mk` 的 `license` 目标用 `$(call install_lics)` 调用；未声明 `LICFILE` 时它是空操作，所以脚本可以无条件带上 |
 | `prepare` | 在 `#DEPS` 里声明了 `prepare` 属性时必选；`auto.mk` 会在编译前调用它 |
 | `release` | 在 `#DEPS` 里声明了 `release` 属性时必选；`<包名>_release` 会调用它，未声明时平台退回调用 `install` |
-| `dofetch` `setdev` `unsetdev` `status` `printurl` | 包自己管理源码下载时必选，分别供 `all_fetches`、开发模式、状态查询与 `all_printurls` 调用；`linux/mk.deps` 后半段给出了完整写法（含 `flock` 并发加锁） |
+| `dofetch` `setdev` `unsetdev` `status` `printurl` | 包自己管理源码下载时必选，分别供 `all_fetches`、开发模式、状态查询与 `all_printurls` 调用；走 `inc.rule.mk` 的包由模板生成同名目标（见 7.3）；1.2.0 之前的 `linux/mk.deps` 后半段给出过手写实现（含 `flock` 并发加锁） |
 | `psysroot` | 声明了 `psysroot` 属性时由 `inc.rule.mk` 提供，自己实现的脚本要么写这个目标，要么使用 `GLOBAL_SYSROOT` |
 
 走 `inc.rule.mk` 的包不需要手写下载类目标——模板已经生成了同名目标；只有像内核这样完全自定义流程的包才需要自己实现。
@@ -4072,10 +4097,13 @@ install: install_hdrs install_libs
 | `isysroot` | 顶层运行该包时同时安装到 `$(WORKDIR)/image`；使用它时 `gen_build_chain.py` 中的 `dis_isysroot` 需为 False |
 | `noisysroot` | 顶层运行该包时只编译，不安装到 `$(WORKDIR)/image` |
 | `finally` | 该包的构建顺序排在所有其他包之后（用于 rootfs、系统镜像一类收尾包） |
+| `break` | 阻断依赖的安装关系，即依赖此包的包的编译依赖此包编译，但不依赖此包安装到 sysroot 的产物 |
 | `native` | 一行声明同时定义交叉编译包与本地编译包 |
 | `cache` | 该包支持缓存机制；解析到 `CACHE_BUILD=y` 时自动添加，无需手写 |
 | `singletask` | 单线程调用构建（该包构建时内部已有多线程或不支持多线程） |
 | `union` | 多个包共享同一个 Makefile |
+
+**`break` 在生成的依赖链里** ：声明 `break` 后包被记入 `BreakSet`。依赖它的包在编译上仍等它编完，但它的名字从 `<包名>-deps` 移到 `<包名>-breakdeps`：只出现在编译链（`<包名>:` 与全局 sysroot 构建），不进入 `_psysroot:`、`_install:`、`_release:` 与依赖校验链。因此「只有 break 依赖」的包私有 sysroot 里没有要准备的东西。主要用例见 3.10.3.1 的内核包。
 
 **`union` 的目标命名规则**：当多个包共享一个 Makefile 时，各包的目标名会加上包名前缀以避免冲突：
 
@@ -4224,7 +4252,7 @@ inherit weakdep
 | `config` | `config` 条目 | 一个普通的组织节点 |
 | `menuchoice` | `choice` 结构 | 当前目录（含子目录）下的所有包成为 choice 的子选项 |
 | `choice` | `choice` 结构 | `Other_Infos` 里列出的包成为 choice 的子选项 |
-| `srcbuild` / `prebuild` | 推导出空实包和 choice 虚拟包 | 只仅经典模式下有效，一个推导方法，用于预编译包和编译包自动选择 |
+| `srcbuild` / `prebuild` | 仅经典模式有效：推导出空实包和 choice 虚拟包 | 一个推导方法，用于预编译包与源码编译包自动选择 |
 
 字段说明：
 
@@ -4248,7 +4276,7 @@ inherit weakdep
     #DEPS() build-pkg-native(empty): unselect ??prebuild-pkg-native||pkg-native depa-native depb-native
     #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): build-pkg-native
     ```
-- 如果 `gen_build_chain.py` 指定了 `-e` 参数，则推导出6条规则
+- 如果 `gen_build_chain.py` 指定了 `-e` 参数（顶层 Makefile 默认启用），则推导出6条规则
     - Kconfig 中未选中任何一个 `prebuild-pkg` `pkg` 包，`build-pkg` 也无法选中
     ```
     #VDEPS(config) pkg-enable(): unselect &build-pkg
@@ -4284,7 +4312,7 @@ qt/
 └── qt6/mk.deps     # #DEPS(mk.deps) qt6(native psysroot): ...
 ```
 
-- mk.vdeps 的是 `choice` 虚包，`Other_Infos` 清单里是 `qt5 qt6`，即 qt-choice 是一个虚包，生成 qt5 和 qt6 多选一框，由用户在菜单里选择用哪个大版本。
+- mk.vdeps 中定义的是 `choice` 虚包，`Other_Infos` 清单里是 `qt5 qt6`，即 qt-choice 是一个虚包，生成 qt5 和 qt6 多选一框，由用户在菜单里选择用哪个大版本。
 - mk.deps 定义一个空包（`empty`），弱或依赖 qt5 或 qt6，依赖 qt 的上层包（例如某个 GUI 应用）只需要写 `qt`，不必关心当前选的是 qt5 还是 qt6。
     - 定义弱或依赖 `??||` 而不是或依赖 `||` 的原因是：qt 依赖 qt5||qt6，qt-choice 依赖 qt，qt5 和 qt6 又依赖 qt-choice，Kconfig 中形成循环依赖；而弱或依赖不会自动在 Kconfig 中生成或条目。
     - 不直接定义成弱依赖 `??` 的原因是：如果 qt5 或 qt6 都不存在，qt 还是可以选中但无法编译；而弱或依赖此种情形下会在 Kconfig 中生成一个虚拟不存在的包依赖，保证不会选中。
@@ -4936,7 +4964,7 @@ Yocto 模式需要两步的原因：第一步要扫描各层的配方文件与�
 | `-w <目录名列表>` | `--keyword` | 菜单层级的忽略名：路径中的目录若匹配这些名字，该路径的层数减一。用于消除无意义的中间层级 |
 | `-p <标志或路径>` | `--prepend` | 经典模式下是 Kconfig 配置项的前缀标志（若运行 `conf`/`mconf` 时设置了无前缀 `CONFIG_=""`，此处需设为 1）；Yocto 第二步下是补丁包列表的输出路径 |
 | `-u <列表>` | `--usermeta` | Yocto 模式下是用户层列表；经典模式下是唯一包列表 |
-| `-e` | `--envircfg` | 经典模式下 prebuild 虚包是否自动推导 config 虚包作为 choice 虚包的依赖（否则依赖是 build 实包） |
+| `-e` | `--envircfg` | 经典模式下 prebuild 虚包是否自动推导 config 虚包作为 choice 虚包的依赖（否则依赖是 build 实包）；顶层 Makefile 默认启用（见 6.4.1.4） |
 
 `-u` 在两种模式下语义不同，需要分别理解：
 
@@ -4947,7 +4975,9 @@ Yocto 模式需要两步的原因：第一步要扫描各层的配方文件与�
 
 `-c` 指定的配置文件名并不是唯一候选。查找顺序是：
 
-- **经典模式**：在与依赖文件同目录下，优先查找「文件名等于包名、后缀等于配置文件后缀」的文件（例如包名 `foo`、配置后缀 `kconf` → `foo.kconf`）；找不到才使用 `-c` 指定的名字。这让同目录多包时每个包能有自己的配置。
+- **经典模式**：在依赖文件所在目录（与 Makefile 所在目录不同时两处都查）优先查找「文件名等于包名、后缀等于配置文件后缀」的文件（例如包名 `foo`、配置后缀 `kconf` → `foo.kconf`）；找不到才使用 `-c` 指定的名字。这让同目录多包时每个包能有自己的配置。
+- **经典模式的二次探测**：当 `SRC_PATH` 指向声明目录之外的源码树时，`add_normal_item_finish` 会在源码目录里再查一次，同样遵循「包名优先、再用 `-c` 名字」的规则，命中则替换先前的结果。本地源码包因此可以把配置放在代码旁边，而不必放在 `mk.deps` 旁边（见 7.10.10）。
+- `kconfig` 记号表示这份配置由多个包共享：生成的 Kconfig 用 `if FOO || FOO_NATIVE ... endif` 包住 `source` 行，一份文件同时服务 cross 与 native 两个变体；在 `prebuild` / `srcbuild` 组合里，同一份配置会被移到 `build-pkg` 挂载，因此也同时服务两个候选包（见 6.1.3.1）。
 - **Yocto 模式**：优先查找当前目录下的 `<配方名>.bbconfig`；找不到才到 bbappend 中 `EXTERNALSRC` 指定的路径下查找，同样遵循「包名优先」规则。
 
 #### 6.4.1.4 顶层 Makefile 中的实际调用
@@ -4960,10 +4990,12 @@ MAXLEVEL       := 3
 deps:
 	@mkdir -p $(WORKDIR)
 	@$(PRECMD)python3 $(ENV_TOOL_DIR)/gen_build_chain.py -m $(WORKDIR)/auto.mk -k $(WORKDIR)/Kconfig -t $(WORKDIR)/Target \
-		-d mk.deps -v mk.vdeps -c mk.kconf -s $(ENV_TOP_DIR) -i $(IGNORE_DIRS) -l $(MAXLEVEL) -w $(KEYWORDS)
+		-d mk.deps -v mk.vdeps -c mk.kconf -s $(ENV_TOP_DIR) -i $(IGNORE_DIRS) -l $(MAXLEVEL) -w $(KEYWORDS) -e
 ```
 
 `-l 3` 配合 `oss/` 的两级分类目录，得到的菜单层次是「领域 → 子类 → 包」，既不过深也不过平。`KEYWORDS := none` 表示不过滤任何层级名；如果工程里有 `src`、`pkg` 这类无信息量的中间目录，可以把它们填进去以压平菜单。
+
+末尾的 `-e` 让 `prebuild` 虚包额外推导一个 `config` 虚包作为 choice 的依赖（见 6.1.3.1），顶层 Makefile 默认启用。
 
 `$(PRECMD)` 是时间统计模式下注入的 `/usr/bin/time` 前缀，平时为空。
 
@@ -5053,13 +5085,26 @@ endif
 
 ```
 menu "VERSION"
-config JCORE_VERCFG
-	bool
-	default y
+menuconfig JCORE_VERCFG
+	bool "jcore"
+	default n
+if JCORE_VERCFG
 config JCORE_VERSION
-	string "jcore version"
-	default "1.1.0"
-...
+	string "Version"
+	default ""
+config JCORE_BRANCH
+	string "Branch"
+	default ""
+config JCORE_CHECKSUM
+	string "Checksum (md5/tag/revision)"
+	default ""
+config JCORE_BUILDFLAG
+	string "BuildFlag"
+	default ""
+config JCORE_NATIVE_BUILDFLAG
+	string "BuildFlag (native)"
+	default ""
+endif
 endmenu
 ```
 
@@ -6361,7 +6406,8 @@ $ python3 scripts/bin/convert_recipe.py <recipe文件路径>
 | `SRC_URLS` | 由上述变量拼装 | 完整的带附加信息的地址串 |
 | `SRC_NAME` | — | 下载保存的文件名或目录名 |
 | `SRC_DIR` | — | 解压后的目录名 |
-| `SRC_PATH` | 见下表 | 编译时使用的源码路径 |
+| `SRC_DDIR` | `SRC_SHARED=n` 时为 `$(WORKDIR)`，git/svn 时为 `$(ENV_DOWN_DIR)` | 源码解压到的目录，`SRC_PATH` 由它推导 |
+| `SRC_PATH` | `$(SRC_DDIR)/$(SRC_DIR)` | 编译时使用的源码路径 |
 | `SRC_SHARED` | git/svn 为 `y`，tar/zip 固定 `n` | 是否共享下载目录中的源码 |
 | `WORKDIR` | 由平台设置 | 解压或复制的目标目录 |
 | `FETCH_LOCK` | `$(ENV_DOWN_DIR)/lock/$(SRC_NAME).lock` | 下载锁文件 |
@@ -6372,11 +6418,11 @@ $ python3 scripts/bin/convert_recipe.py <recipe文件路径>
 
 | 情形 | 默认值 |
 | --- | --- |
-| git / svn 下载（`SRC_SHARED=y`） | `$(ENV_DOWN_DIR)/$(SRC_DIR)` |
-| tar / zip 下载（`SRC_SHARED=n`） | `$(WORKDIR)/$(SRC_DIR)` |
+| git / svn 下载（`SRC_SHARED=y`） | `$(SRC_DDIR)/$(SRC_DIR)`，其中 `SRC_DDIR = $(ENV_DOWN_DIR)` |
+| tar / zip 下载（`SRC_SHARED=n`） | `$(SRC_DDIR)/$(SRC_DIR)`，其中 `SRC_DDIR = $(WORKDIR)` |
 | 本地源码（`SRC_URL` 为空） | 当前目录 |
 
-`SRC_PATH` 也可以手动设置，具体可参考 [system/jprogress/mk.deps](./system/jprogress/mk.deps) 和 [oss/media/i18n/icu/mk.deps](./oss/media/i18n/icu/mk.deps)
+`SRC_PATH` 也可以手动设置，具体可参考 [system/jprogress/mk.deps](./system/jprogress/mk.deps) 和 [oss/media/i18n/icu/mk.deps](./oss/media/i18n/icu/mk.deps)。`SRC_DDIR` 也可以手动设置：改它会同时改变解压目标、下载调用与开发模式检查的位置；只改 `SRC_PATH` 则仅改变编译时的查找路径。内核包用 `SRC_DDIR = $(shell dirname $(KERNEL_SRC))` 让压缩包落在内核树旁边（见 3.10.3.1）。
 
 设置了 `SRC_URL` 时，`PATCH_FOLDER` 会自动探测：若当前目录下存在 `patch/*.patch`，则取 `patch`。
 
@@ -6401,9 +6447,10 @@ $ python3 scripts/bin/convert_recipe.py <recipe文件路径>
 | --- | --- |
 | `all` | 默认目标。根据 `CACHE_BUILD` 调用 `cachebuild` 或 `nocachebuild` |
 | `nocachebuild` | 无缓存路径：直接调用 `build` |
-| `cachebuild` | 有缓存路径：无 `CACHE_STATUS` 时执行 `build` 然后 `push` 缓存并打印「Update 缓存」；有 `CACHE_STATUS` 时执行 `pull` 并打印「Match 缓存：<文件名>」 |
+| `cachebuild` | 有缓存路径：无 `CACHE_STATUS` 时执行 `build` 然后 `push` 缓存并打印「Update 缓存」；有 `CACHE_STATUS` 时执行 `pull`、打印「Match 缓存：<文件名>」，并在 `CUSTOM_TARGETS` 含 `cookcache` 时调用包内的 `cookcache` 目标 |
 | `checksum` | 执行缓存校验，命中则创建 `$(CACHE_STATUS)` |
 | `psysroot` | 准备私有 sysroot。启用缓存时若已命中则跳过（因为 pull 会恢复全部内容）。只有 `Other_Target_Names` 中声明了 `psysroot` 才会在 `make all` 前运行 |
+| `cookcache` | 缓存匹配后的额外操作 |
 | `build` | 下载、补丁、配置、编译、安装到 `$(WORKDIR)/image` 的全过程 |
 | `prepend` | 编译前置操作 |
 | `compile` | 编译安装操作 |
@@ -6418,7 +6465,13 @@ $ python3 scripts/bin/convert_recipe.py <recipe文件路径>
 | `status` | 打印包状态；git 类型还打印源码路径、分支、最后一次提交与工作区改动 |
 | `%`（兜底） | 透传到 `$(MAKE) $(MAKE_FLAGS) $@`，因此包内 Makefile 的任何目标都能通过平台调用 |
 
-`build`、`prepend`、`compile`、`append`、`clean`、`distclean`、`install` 这七个目标都受 `CUSTOM_TARGETS` 控制：**如果 `CUSTOM_TARGETS` 包含某个目标名，模板就不生成该目标的默认实现，转而调用用户在包内 Makefile 里定义的同名目标。** 这是最重要的扩展点。
+`CUSTOM_TARGETS` 控制八个目标名，但语义分三类：
+
+- **替换**：`build`、`clean`、`distclean`、`install` 四个目标，声明后模板**不生成**默认实现，改用包内 Makefile 里的同名目标。
+- **编译流程钩子**：`prepend`、`compile`、`append` 属于「声明才插入」，声明后在 `build` 的对应夹点插入一次调用；不声明就不执行。
+- **缓存命中钩子**：`cookcache` 同样是「声明才插入」，但挂在缓存路径而不是 `build` 里。`CACHE_BUILD=y` 且命中缓存时，`cachebuild` 恢复安装树之后调用包内的 `cookcache` 目标（见 3.10.3.1）；它没有默认实现可替换。
+
+这是最重要的扩展点。两类名字不要看反：`ffmpeg` 写 `CUSTOM_TARGETS = compile` 是替换默认编译，`glib` 写 `CUSTOM_TARGETS = prepend` 是在 configure 前插入一步。
 
 ## 7.4 build 目标的完整流程
 
@@ -6746,7 +6799,7 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 $(eval $(call ft-config,CONFIG_FFMPEG_FT_ALSA,--enable-alsa,--disable-alsa,alsa-lib selected))
 ```
 
-在三个地方产生效果。第一，生成的 Kconfig 里出现 `config CONFIG_FFMPEG_FT_ALSA`，`depends on CONFIG_ALSA_LIB`，`default y`——第四参数里的 `alsa-lib` 被转成大写配置项作为依赖，`selected` 不是包名而是「默认选中」标记。第二，依赖分析器把 `alsa-lib@@CONFIG_FFMPEG_FT_ALSA` 记进条件依赖表：只有这个特性被选中，ffmpeg 才依赖 alsa-lib，菜单里取消 ALSA 支持就不会把 alsa-lib 拉进构建链。第三，`inc.env.mk` 里的 `ft-config` 展开为 `FT_CONFIG += $(if $(filter y,$(CONFIG_FFMPEG_FT_ALSA)),--enable-alsa,--disable-alsa)`，把菜单取值变成 configure 参数。
+在三个地方产生效果。第一，生成的 Kconfig 里出现 `config CONFIG_FFMPEG_FT_ALSA`，`depends on CONFIG_ALSA_LIB`，`default y`——第四参数里的 `alsa-lib` 被转成大写配置项作为依赖，`selected` 不是包名而是「默认选中」标记；换成 `unselect` 则该特性默认不选中。第二，依赖分析器把 `alsa-lib@@CONFIG_FFMPEG_FT_ALSA` 记进条件依赖表：只有这个特性被选中，ffmpeg 才依赖 alsa-lib，菜单里取消 ALSA 支持就不会把 alsa-lib 拉进构建链。第三，`inc.env.mk` 里的 `ft-config` 展开为 `FT_CONFIG += $(if $(filter y,$(CONFIG_FFMPEG_FT_ALSA)),--enable-alsa,--disable-alsa)`，把菜单取值变成 configure 参数。
 
 自动生成的Kconfig片段：
 
@@ -7051,7 +7104,7 @@ COMPILE_TOOL     = imake
 - `CONFIG_<包名>_BUILDFLAG` : 自定义配置或编译选项字符串配置
 - `CONFIG_<包名>_NATIVE_BUILDFLAG` : 自定义配置或编译选项字符串配置（native）
 
-于是「用哪个版本」不再靠改 Makefile 里的 `VERSION =`，而是在 `make menuconfig` 里填。包 Makefile 用 `-include .config` 把这三个值读成 Make 变量，再分别喂给 `VERSION` 与 `SRC_REV`。
+于是「用哪个版本」不再靠改 Makefile 里的 `VERSION =`，而是在 `make menuconfig` 里填。包 Makefile 用 `-include .config` 把这些值读成 Make 变量：`ljson` 把 `VERSION` 与 `CHECKSUM` 分别喂给 `VERSION` 与 `SRC_REV`，`BUILDFLAG` / `NATIVE_BUILDFLAG` 供自定义配置或编译选项使用。
 
 Git 获取连带改变源码存放位置。`inc.rule.mk` 对 `git`/`svn` 默认 `SRC_SHARED ?= y`，因此 `SRC_PATH` 指向共享下载目录而不是每个包的 `WORKDIR`；`SRC_URLS` 会拼上 `;rev=<修订>`，`fetch_package.sh` 据此 checkout 到指定提交，多个包或多次构建共享同一份仓库。`COMPILE_TOOL = imake` 让模板把 `MAKE_FLAGS` 设为 `-C $(SRC_PATH) $(REL_CONFIG)`，调用该仓库自带的 Makefile——那个仓库用的是 IMake 模板，所以能直接接上。
 
@@ -7141,10 +7194,11 @@ Boost.Build 从 `project-config.jam` 里读工具集声明，默认那行 `using
 #DEPS(mk.deps) busybox(psysroot defconfig menuconfig): unselect
 
 CFG_NAME         = default_defconfig
-MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 CACHE_BUILD      = y
 CACHE_CHECKSUM  += $(shell pwd)/config/$(CFG_NAME)
+CONFIG_CHECKSUM  = $(CFG_NAME)-$(shell md5sum config/$(CFG_NAME) | cut -d ' ' -f 1)
 CACHE_DEPENDS    = none
+MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 CUSTOM_TARGETS   = prepend append
 ```
 
@@ -7163,9 +7217,9 @@ menuconfig:
 	$(PREAT)$(call do_setforce)
 ```
 
-末尾的 `do_setforce` 调用 `process_cache.sh -m setforce`，给这个包打上强制构建标记。**用户在菜单里改了 busybox 配置，如果没有这一步，下一次构建会命中旧缓存，改动的选项根本不会生效**——而且现象很迷惑：`.config` 确实变了，编译日志却显示 Cache Match。这是所有「包内自带配置」的包都必须处理的联动，`CACHE_CHECKSUM += config/$(CFG_NAME)` 让预置配置文件进入校验，用户交互式改出来的 `.config` 落在 `OBJ_PREFIX` 里，靠强制标记兜住；`CONFIG_PREFIX` 负责把安装树指向 `INS_TOPDIR`。
+末尾的 `do_setforce` 调用 `process_cache.sh -m setforce`，给这个包打上强制构建标记。**用户在菜单里改了 busybox 配置，如果没有这一步，下一次构建会命中旧缓存，改动的选项根本不会生效**——而且现象很迷惑：`.config` 确实变了，编译日志却显示 Cache Match。这是所有「包内自带配置」的包都必须处理的联动，`CACHE_CHECKSUM += config/$(CFG_NAME)` 让预置配置文件进入校验，`CONFIG_CHECKSUM` 把它的 md5 变成 `OBJ_PREFIX` 里的 `.config-md5-*` 标记；用户交互式改出来的 `.config` 靠强制标记兜住；`CONFIG_PREFIX` 负责把安装树指向 `INS_TOPDIR`。
 
-`prepend` 用 `if [ ! -f $(OBJ_PREFIX)/.config ]` 做保护：只有首次构建才把 `default_defconfig` 复制进去并生成配置，之后保留用户改过的那份，避免每次增量构建都把菜单结果覆盖回默认值。它与 `menuconfig` 里的显式调用配合，做到「首次有默认、之后不覆盖」。
+`prepend` 用 `if [ ! -f $(OBJ_PREFIX)/.config ] || [ ! -f $(OBJ_PREFIX)/.config-md5-$(CONFIG_CHECKSUM) ]` 做保护：`.config` 缺失，**或**预置配置文件变了（其 md5 被折进 `CONFIG_CHECKSUM`），就重新生成配置，随即删掉旧的 `.config-md5-*` 标记并写入以当前校验和命名的新标记。其余情况保留用户改过的 `.config`，增量构建不会覆盖回默认值。它与 `menuconfig` 里的显式调用配合，做到「首次有默认、预置变了就重载、其余不覆盖」——与 3.10.3.1 内核包用的是同一套指纹标记。
 
 `append` 删掉 `$(INS_TOPDIR)/linuxrc` 与 `$(INS_TOPDIR)/sbin/init`，因为 rootfs 场景里这两个入口由系统统一安排，包自己装会冲突。`CACHE_CHECKSUM` 追加预置配置路径，`CACHE_DEPENDS = none` 表示 busybox 没有依赖包——它是基础系统包，被别人依赖而不是依赖别人。`O=$(OBJ_PREFIX)` 沿用内核那套输出分离，`CONFIG_PREFIX=$(INS_TOPDIR)` 让 `make install` 落进私有安装树。
 

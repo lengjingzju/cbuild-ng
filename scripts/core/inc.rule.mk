@@ -323,6 +323,9 @@ ifeq ($(wildcard $(CACHE_STATUS)), )
 else
 	$(PREAT)$(call do_pullcache)
 	$(PREAT)$(COLORECHO) "\033[32mMatch $(PACKAGE_ID) Cache: $(shell cat $(CACHE_STATUS))\033[0m"
+ifneq ($(filter cookcache,$(CUSTOM_TARGETS)), )
+	$(PREAT)$(MAKE) -f $(MAKE_FNAME) cookcache
+endif
 endif
 	$(PREAT)rm -f $(CACHE_STATUS)
 

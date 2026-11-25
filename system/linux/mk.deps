@@ -4,7 +4,7 @@
 # Contact: Jing Leng <lengjingzju@163.com> #
 ############################################
 
-#DEPS(mk.deps) linux(menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
+#DEPS(mk.deps) linux(release break menuconfig defconfig %_defconfig): unselect KERNEL_SRC!=
 
 PACKAGE_NAME     = linux
 
@@ -31,12 +31,27 @@ include $(ENV_MAKE_DIR)/inc.env.mk
 
 LINUX_CONFIG    := $(shell echo $(CONFIG_LINUX_CONFIG))
 LINUX_CFGDIR    := $(ENV_TOP_DIR)/board/$(ENV_BUILD_SOC)/linux-configs
-MAKE_FLAGS      := $(ENV_BUILD_JOBS) -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_PREFIX)
+MAKE_FLAGS      := -C $(KERNEL_SRC) O=$(KERNEL_OUT) INSTALL_MOD_PATH=$(INS_TOPDIR)
+IMAGE_CFGDIR    := $(INS_TOPDIR)/lib/modules/$(KERNEL_VER)/build
 
-CUSTOM_TARGETS   = compile install clean
+CACHE_BUILD      = y
+ifneq ($(LINUX_CONFIG), )
+ifneq ($(wildcard $(LINUX_CFGDIR)/$(LINUX_CONFIG)), )
+CACHE_CHECKSUM  += $(LINUX_CFGDIR)/$(LINUX_CONFIG)
+CONFIG_CHECKSUM  = $(LINUX_CONFIG)-$(shell md5sum $(LINUX_CFGDIR)/$(LINUX_CONFIG) | cut -d ' ' -f 1)
+else
+CONFIG_CHECKSUM  = $(LINUX_CONFIG)-$(SRC_MD5)
+endif
+else
+CONFIG_CHECKSUM  = defconfig-$(SRC_MD5)
+endif
+CACHE_APPENDS   += LINUX_CONFIG=$(LINUX_CONFIG)
+CACHE_DEPENDS    = none
+
+CUSTOM_TARGETS   = compile install clean cookcache
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
-.PHONY: loadconfig defconfig menuconfig
+.PHONY: loadconfig defconfig menuconfig release cookcache
 
 loadconfig:
 ifeq ($(LINUX_CONFIG), )
@@ -46,49 +61,81 @@ else
 	$(PREAT)mkdir -p $(KERNEL_OUT)
 	$(PREAT)if [ -f $(LINUX_CFGDIR)/$(LINUX_CONFIG) ]; then \
 		echo "Loading '$(LINUX_CFGDIR)/$(LINUX_CONFIG)' as linux config"; \
-		cp -f $(LINUX_CFGDIR)/$(LINUX_CONFIG) $(KERNEL_OUT)/.config; \
+		cp -drf --preserve=mode,timestamps $(LINUX_CFGDIR)/$(LINUX_CONFIG) $(KERNEL_OUT)/.config; \
 	else \
 		echo "loaLoadingd '$(LINUX_CONFIG)' as linux config"; \
 		$(MAKE) $(MAKE_FLAGS) $(LINUX_CONFIG); \
 	fi
 endif
+	$(PREAT)rm -f $(KERNEL_OUT)/.config-md5-*
+	$(PREAT)echo > $(KERNEL_OUT)/.config-md5-$(CONFIG_CHECKSUM)
 
 defconfig:
 	$(PREAT)$(call do_fetch)
 	$(PREAT)$(MAKE) -f $(MAKE_FNAME) loadconfig
+	$(PREAT)$(call do_unsetforce)
 
 menuconfig:
 	$(PREAT)$(call do_fetch)
 	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ]; then \
 		$(MAKE) -f $(MAKE_FNAME) loadconfig; \
+	else \
+		rm -f $(KERNEL_OUT)/.config-md5-*; \
+		echo > $(KERNEL_OUT)/.config-md5-$(CONFIG_CHECKSUM); \
 	fi
 	$(PREAT)$(MAKE) $(MAKE_FLAGS) menuconfig
+	$(PREAT)$(call do_setforce)
 
 %_defconfig:
 	$(PREAT)$(call do_fetch)
 	$(PREAT)mkdir -p $(KERNEL_OUT)
 	$(PREAT)if [ -f $(LINUX_CFGDIR)/$@ ]; then \
 		echo "Loading '$(LINUX_CFGDIR)/$@' as linux config"; \
-		cp -f $(LINUX_CFGDIR)/$@ $(KERNEL_OUT)/.config; \
+		cp -drf --preserve=mode,timestamps $(LINUX_CFGDIR)/$@ $(KERNEL_OUT)/.config; \
 	else \
 		echo "Loading '$@' as linux config"; \
 		$$(MAKE) (MAKE_FLAGS) $@; \
 	fi
+	$(PREAT)$(call do_setforce)
 
 compile:
-	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ]; then \
+	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ] || [ ! -f $(KERNEL_OUT)/.config-md5-$(CONFIG_CHECKSUM) ]; then \
 		$(MAKE) -f $(MAKE_FNAME) loadconfig; \
 	fi
 	$(PREAT)echo "Compiling linux-$(KERNEL_VER) to $(KERNEL_OUT) ..."
 	$(PREAT)$(MAKE) $(MAKE_FLAGS) all $(TOLOG)
+	$(PREAT)echo "Install linux-$(KERNEL_VER) to $(INS_TOPDIR) ..."
+	$(PREAT)$(MAKE) $(MAKE_FLAGS) modules_install $(TOLOG)
+	$(PREAT)mkdir -p $(INS_TOPDIR)/boot
+	$(PREAT)cp -drf --preserve=mode,timestamps $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/*Image* $(INS_TOPDIR)/boot
+	$(PREAT)rm -rf $(IMAGE_CFGDIR)
+	$(PREAT)mkdir -p $(IMAGE_CFGDIR)
+	$(PREAT)cp -drf --preserve=mode,timestamps $(KERNEL_OUT)/.config $(IMAGE_CFGDIR)
+	$(PREAT)cp -drf --preserve=mode,timestamps $(KERNEL_OUT)/.config-md5-$(CONFIG_CHECKSUM) $(IMAGE_CFGDIR)
+	$(PREAT)cp -drf --preserve=mode,timestamps $(KERNEL_OUT)/Module.symvers $(IMAGE_CFGDIR)/Module.symvers
+	$(PREAT)echo "Install $(PACKAGE_NAME) Done."
 	$(PREAT)echo "Build $(PACKAGE_NAME) Done."
 
+cookcache:
+	$(PREAT)$(call do_fetch)
+	$(PREAT)mkdir -p $(KERNEL_OUT)
+	$(PREAT)if [ ! -f $(KERNEL_OUT)/.config ]; then \
+		cp -drf --preserve=mode,timestamps $(IMAGE_CFGDIR)/.config $(KERNEL_OUT); \
+		cp -drf --preserve=mode,timestamps $(IMAGE_CFGDIR)/.config-md5-* $(KERNEL_OUT); \
+		cp -drf --preserve=mode,timestamps $(IMAGE_CFGDIR)/Module.symvers $(KERNEL_OUT); \
+		$(MAKE) $(MAKE_FLAGS) modules_prepare $(TOLOG); \
+		echo "$(PACKAGE_NAME): modules_prepare from $(IMAGE_CFGDIR)/.config"; \
+	fi
+
 install:
-	$(PREAT)echo "Install linux-$(KERNEL_VER) to $(INS_PREFIX) ..."
-	$(PREAT)mkdir -p $(INS_PREFIX)/boot
-	$(PREAT)cp -dfp $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/*Image* $(INS_PREFIX)/boot
-	$(PREAT)$(MAKE) $(MAKE_FLAGS) modules_install $(TOLOG)
+	$(PREAT)echo "$(PACKAGE_NAME): nothing to do, 'release' is real 'install'."
+
+release:
+	$(PREAT)echo "Install linux-$(KERNEL_VER) to $(INS_TOPDIR) ..."
+	$(PREAT)mkdir -p $(INS_PREFIX)
+	$(PREAT)cp -drf --preserve=mode,timestamps $(INS_TOPDIR)/* $(INS_PREFIX)
 	$(PREAT)echo "Install $(PACKAGE_NAME) Done."
+
 clean:
 	$(PREAT)if [ -e $(KERNEL_SRC) ]; then \
 		$(MAKE) $(MAKE_FLAGS) clean $(TOLOG); \

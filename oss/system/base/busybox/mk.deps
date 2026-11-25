@@ -28,22 +28,25 @@ SRC_DIR          = busybox-$(VERSION)
 SRC_NAME         = $(SRC_DIR).tar.bz2
 SRC_URL          = https://www.busybox.net/downloads/$(SRC_NAME)
 SRC_MD5          = 2a76df79da776a165bf85257403c97bc
+CFG_NAME         = default_defconfig
 
 CACHE_BUILD      = y
 CACHE_CHECKSUM  += $(shell pwd)/config/$(CFG_NAME)
+CONFIG_CHECKSUM  = $(CFG_NAME)-$(shell md5sum config/$(CFG_NAME) | cut -d ' ' -f 1)
 CACHE_DEPENDS    = none
 
-CFG_NAME         = default_defconfig
 MAKE_FLAGS       = -C $(SRC_PATH) O=$(OBJ_PREFIX) CONFIG_PREFIX=$(INS_TOPDIR)
 
 CUSTOM_TARGETS   = prepend append
 include $(ENV_MAKE_DIR)/inc.rule.mk
 
 prepend:
-	$(PREAT)if [ ! -f $(OBJ_PREFIX)/.config ]; then \
+	$(PREAT)if [ ! -f $(OBJ_PREFIX)/.config ] || [ ! -f $(OBJ_PREFIX)/.config-md5-$(CONFIG_CHECKSUM) ]; then \
 		cp -f config/$(CFG_NAME) $(SRC_PATH)/configs/$(CFG_NAME); \
 		mkdir -p $(OBJ_PREFIX); \
 		$(MAKE) $(MAKE_FLAGS) $(CFG_NAME) $(TOLOG); \
+		rm -f $(OBJ_PREFIX)/.config-md5-*; \
+		echo > $(OBJ_PREFIX)/.config-md5-$(CONFIG_CHECKSUM); \
 	fi
 
 append:
