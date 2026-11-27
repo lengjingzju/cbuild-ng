@@ -4247,6 +4247,7 @@ Field descriptions:
 - **`Other_Infos`**: required for the `choice` type, optional for the others.
   - All types may include a path item starting with `/`, indicating that the rule applies to the given subdirectory instead of the current directory;
   - Virtual packages of non-`menu` types may include the `native` keyword to automatically derive the native-package rules;
+  - Virtual packages of `srcbuild` / `prebuild` types may include the `syncdep` keyword, `prebuild-pkg` simply reuse all dependencies of `pkg`;
   - For `config` and `choice`, the path item may also be a virtual path (e.g. `/virtual`; any word works), in which case the virtual item is shown in the current directory rather than in the parent directory;
   - For `choice`, the space-separated package list becomes the sub-options, with the first one selected by default;
   - For `menuchoice`, the default-selected package can be specified.
@@ -4278,6 +4279,8 @@ Field descriptions:
     - So that the configuration only needs to be defined once (and can only be defined once) and can be used by both the source-built package and the prebuilt package.
 - `ideps` from `pkg` are propagated to `prebuild-pkg`, since their conditions come from the (now shared) configuration.
     - As a result, `prebuild-pkg` should declare neither `versioncfg`, `featurecfg` nor `dep@@cond`; every other dependency stays the same as `pkg`'s.
+- If the special attribute `syncdep` is declared in `Other_Infos`, every dependency type of `pkg` is synchronized to `prebuild-pkg`.
+    - This allows `prebuild-pkg` to declare no dependencies at all and simply reuse those of `pkg`.
 - Every relevant actual dependency on `prebuild-pkg` or `pkg` in the project is rewritten to `build-pkg`, so packages depending on it no longer need an OR `|` rule.
 - `srcbuild` and `prebuild` are functionally identical except for which variant — the source-built package or the prebuilt package — is selected by default.
 

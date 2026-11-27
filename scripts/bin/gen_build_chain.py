@@ -96,6 +96,7 @@ class Deps:
         item['conftype'] = ''
         item['disabled'] = ''
         item['prebuild'] = 0    # Only for VDEPS of prebuild, bit0: flag, bit1: prebuild, bit2: srcbuild
+        item['syncdep'] = False
 
 
     def get_env_vars(self, local_config):
@@ -494,6 +495,9 @@ class Deps:
                                     bitem['spath'] += t
                             elif t == 'native':
                                 native_flag = True
+                            elif t == 'syncdep':
+                                if bitem:
+                                    bitem['syncdep'] = True
                             elif 'choice' in vtype:
                                 item['targets'].append(t)
                             else:
@@ -1246,6 +1250,29 @@ class Deps:
 
             if nitem:
                 nitem['ideps'] = kitem['ideps']
+
+
+    def sync_prebuild_item_deps(self):
+        for k, v in self.PrebuildDict.items():
+            if not v[0]['syncdep']:
+                continue
+            v[0]['syncdep'] = False
+            if not v[1] or not v[2]:
+                continue
+
+            v[2]['asdeps'] = v[1]['asdeps']
+            v[2]['vsdeps'] = v[1]['vsdeps']
+            v[2]['awdeps'] = v[1]['awdeps']
+            v[2]['vwdeps'] = v[1]['vwdeps']
+            v[2]['ideps']  = v[1]['ideps']
+            v[2]['wrule']  = v[1]['wrule']
+            v[2]['cdeps']  = v[1]['cdeps']
+            v[2]['edeps']  = v[1]['edeps']
+            v[2]['acount'] = v[1]['acount']
+            v[2]['select'] = v[1]['select']
+            v[2]['imply']  = v[1]['imply']
+            if v[2]['disabled'] != 'src-path-existed':
+                v[2]['disabled'] = v[1]['disabled']
 
 
     def check_item(self, item_list, target_set, poky_set = set()):
@@ -2376,6 +2403,9 @@ def do_normal_analysis(args):
     deps.check_item(deps.ItemList, target_set)
     if debug_mode:
         deps.check_repeat_package()
+
+    if deps.PrebuildSet:
+        deps.sync_prebuild_item_deps()
 
     with open(kconfig_out, 'w') as fp:
         fp.write('mainmenu "Build Configuration"\n\n')

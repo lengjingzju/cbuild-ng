@@ -4260,6 +4260,7 @@ inherit weakdep
 - **`Other_Infos`**：对 `choice` 类型必选，其他类型可选。
   - 所有类型都可以出现一个以 `/` 开头的路径项，表示作用于指定子目录而非当前目录；
   - 非 `menu` 类型的包可以加关键字 `native`，自动推导出本地包规则
+  - `srcbuild` / `prebuild` 可以加关键字 `syncdep`，prebuild-pkg 直接使用 pkg 的所有依赖
   - 对 `config` 与 `choice` 类型，路径项还可以是一个虚拟路径（例如 `/virtual`，单词任意），此时虚拟项显示在当前目录而不是上层目录；
   - 对 `choice` 类型，空格分隔的包列表成为子选项，其中第一个是默认选中项；
   - 对 `menuchoice` 类型，可以指定默认选中的包。
@@ -4290,7 +4291,9 @@ inherit weakdep
 - 将 pkg 的 `Kconfig` / `featurecfg` 配置移动到 build-pkg 挂载
     - 这样配置只要定义一份（也只能定义一份），源码编译包还是预编译包都可以使用
 - 将 pkg 的条件依赖 `ideps` 同步到 prebuild-pkg（原因是条件是配置中定义）
-    - 这样 prebuild-pkg 的依赖需要去掉 `versioncfg` `featurecfg` `dep@@cond`，其他依赖和 pkg 保持一致即可
+    - 这样 prebuild-pkg 的依赖写法可以去掉 `versioncfg` `featurecfg` `dep@@cond`，其他类型的依赖和 pkg 保持一致即可
+- 如果 `Other_Infos` 中声明了 `syncdep` 特殊属性，此时会将 pkg 的所有类型的依赖同步到 prebuild-pkg
+    - 这样 prebuild-pkg 的所有依赖都可以不写，直接使用 `pkg` 的
 - 将工程中设计到的相关实依赖 `prebuild-pkg` `pkg` 都改成 `build-pkg`，这样依赖他的包就不用使用或 `|` 规则了
 - `srcbuild` / `prebuild` 除了默认选择是源码编译包还是预编译包外，功能完全相同
 
