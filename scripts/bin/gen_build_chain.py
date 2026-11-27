@@ -45,7 +45,6 @@ class Deps:
         self.VarDict = {}
         self.InfoDict = {}
         self.KconfigDict = {}
-        self.KconfigList = []
         self.PathList = []
         self.PokyList = []
         self.PokyMoved = []
@@ -361,8 +360,13 @@ class Deps:
         nitem['acount'] = 0
         nitem['default'] = False
 
-        if nitem['conf'] or nitem['featurecfg']:
-            self.KconfigList.append(nitem)
+        raw_target = nitem['target']
+        idx = 1
+        if raw_target.startswith('prebuild-'):
+            raw_target = raw_target[len('prebuild-'):]
+            idx = 2
+        if raw_target in self.PrebuildDict:
+            self.PrebuildDict[raw_target][idx] = nitem
 
         return nitem
 
@@ -505,14 +509,13 @@ class Deps:
                             self.PathList.append((citem['path'], citem['spath'], citem))
                         self.ActualList.append(bitem)
                         self.PathList.append((bitem['path'], bitem['spath'], bitem))
-                        self.PrebuildDict[target] = bitem
+                        self.PrebuildDict[target] = [bitem, {}, {}]
                     else:
                         self.__set_item_deps(last_group.strip().split(), item, False)
                     self.VirtualList.append(item)
                     self.PathList.append((item['path'], item['spath'], item))
 
                     if native_flag and 'menu' not in vtype:
-
                         if bitem:
                             self.PrebuildSet.add(target + '-native')
                             if citem:
@@ -525,7 +528,7 @@ class Deps:
                             target_set.add(nbitem['target'])
                             self.ActualList.append(nbitem)
                             self.PathList.append((nbitem['path'], nbitem['spath'], nbitem))
-                            self.PrebuildDict[target + '-native'] = nbitem
+                            self.PrebuildDict[target + '-native'] = [nbitem, {}, {}]
 
                         nitem = self.__get_native_deps(item)
                         target_set.add(nitem['target'])
@@ -694,8 +697,13 @@ class Deps:
                     item['conf'] = conf_path
                     break
 
-        if item['conf'] or item['featurecfg']:
-            self.KconfigList.append(item)
+        raw_target = item['target']
+        idx = 1
+        if raw_target.startswith('prebuild-'):
+            raw_target = raw_target[len('prebuild-'):]
+            idx = 2
+        if raw_target in self.PrebuildDict:
+            self.PrebuildDict[raw_target][idx] = item
 
 
     def add_normal_item(self, pathpair, dep_name, refs):
@@ -1209,30 +1217,35 @@ class Deps:
 
 
     def override_item_configs(self):
-        for item in self.KconfigList:
-            target = remove_prefix(item['target'], 'prebuild-')
-            if target not in self.PrebuildDict:
+        for k, v in self.PrebuildDict.items():
+            v1_flag = v[1] and (v[1]['conf'] or v[1]['featurecfg'])
+            v2_flag = v[2] and (v[2]['conf'] or v[2]['featurecfg'])
+            if not v1_flag and not v2_flag:
                 continue
-            bitem = self.PrebuildDict[target]
-            if bitem['conf'] or bitem['featurecfg']:
-                print('\033[31mERROR: Duplicate configuration of %s.\033[0m\n' % (target))
+            if v1_flag and v2_flag:
+                print('\033[31mERROR: Duplicate configuration of %s.\033[0m\n' % (k))
                 sys.exit(1)
 
-            if item['conftype'] == 'kconfig':
-                if bitem['target'] not in self.KconfigDict[item['conf']]:
-                    self.KconfigDict[item['conf']].append(bitem['target'])
-                    bitem['conftype'] = item['conftype']
-                    bitem['conf'] = item['conf']
+            bitem = v[0]
+            kitem = v[1] if v1_flag else v[2]
+            nitem = v[2] if v1_flag else v[1]
+            if kitem['conftype'] == 'kconfig':
+                self.KconfigDict[kitem['conf']].append(bitem['target'])
+                bitem['conftype'] = kitem['conftype']
+                bitem['conf'] = kitem['conf']
             else:
-                if item['conf']:
-                    bitem['conf'] = item['conf']
-                    item['conf'] = ''
+                if kitem['conf']:
+                    bitem['conf'] = kitem['conf']
+                    kitem['conf'] = ''
 
-            if item['featurecfg']:
-                bitem['featurecfg'] = item['featurecfg']
-                bitem['features'] = item['features']
-                item['featurecfg'] = False
-                item['features'] = []
+            if kitem['featurecfg']:
+                bitem['featurecfg'] = kitem['featurecfg']
+                bitem['features'] = kitem['features']
+                kitem['featurecfg'] = False
+                kitem['features'] = []
+
+            if nitem:
+                nitem['ideps'] = kitem['ideps']
 
 
     def check_item(self, item_list, target_set, poky_set = set()):
@@ -1408,20 +1421,20 @@ class Deps:
 
         if 'choice' in item['vtype']:
             fp.write('choice\n')
-            fp.write('\tprompt "[v]-%s (%s)"\n' % (item['target'], item['spath']))
+            fp.write('\tprompt "<v>-%s (%s)"\n' % (item['target'], item['spath']))
             if item['targets']:
                 fp.write('\tdefault %s%s\n' % (config_prepend, escape_toupper(item['targets'][0])))
         elif 'menuconfig' == item['vtype']:
             fp.write('menuconfig %s\n' % (target))
-            fp.write('\tbool "[v]-%s (%s)"\n' % (item['target'], item['spath']))
+            fp.write('\tbool "<v>-%s (%s)"\n' % (item['target'], item['spath']))
             fp.write('\tdefault %s\n' % ('y' if item['default'] else 'n'))
         elif 'config' == item['vtype']:
                 fp.write('config %s\n' % (target))
                 if not choice_flag:
-                    fp.write('\tbool "[v]-%s (%s)"\n' % (item['target'], item['spath']))
+                    fp.write('\tbool "<v>-%s (%s)"\n' % (item['target'], item['spath']))
                     fp.write('\tdefault %s\n' % ('y' if item['default'] else 'n'))
                 else:
-                    fp.write('\tbool "[v]-%s"\n' % (item['target']))
+                    fp.write('\tbool "<v>-%s"\n' % (item['target']))
         else:
             if not choice_flag and (item['conf'] or item['features']) and item['conftype'] != 'kconfig':
                 fp.write('menuconfig %s\n' % (target))
@@ -2356,8 +2369,7 @@ def do_normal_analysis(args):
         deps.override_item_vercfg(deps.ItemList)
     if deps.PrebuildSet:
         deps.override_item_deps(deps.ItemList)
-        if deps.KconfigList:
-            deps.override_item_configs()
+        deps.override_item_configs()
 
     target_set = {item['target'] for item in deps.ActualList} \
                | {item['target'] for item in deps.VirtualList if 'choice' not in item['vtype']}

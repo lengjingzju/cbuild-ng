@@ -4287,7 +4287,10 @@ inherit weakdep
     #DEPS() build-pkg-native(empty): unselect prebuild-pkg-native||pkg-native depa-native depb-native
     #VDEPS(choice) pkg-choice-native(prebuild-pkg-native pkg-native): *pkg-enable-native
     ```
-- 将 pkg 的 `Kconfig` / `featurecfg` 配置移动到 build-pkg 挂载，这样配置只要定义一份，源码编译包还是预编译包都可以使用
+- 将 pkg 的 `Kconfig` / `featurecfg` 配置移动到 build-pkg 挂载
+    - 这样配置只要定义一份（也只能定义一份），源码编译包还是预编译包都可以使用
+- 将 pkg 的条件依赖 `ideps` 同步到 prebuild-pkg（原因是条件是配置中定义）
+    - 这样 prebuild-pkg 的依赖需要去掉 `versioncfg` `featurecfg` `dep@@cond`，其他依赖和 pkg 保持一致即可
 - 将工程中设计到的相关实依赖 `prebuild-pkg` `pkg` 都改成 `build-pkg`，这样依赖他的包就不用使用或 `|` 规则了
 - `srcbuild` / `prebuild` 除了默认选择是源码编译包还是预编译包外，功能完全相同
 
